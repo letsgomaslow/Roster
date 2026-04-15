@@ -82,7 +82,7 @@ export function Panel({
             <p
               className={cx(
                 'text-sm leading-6',
-                tone === 'dark' ? 'text-white/72' : 'text-[var(--muted)]',
+                tone === 'dark' ? 'text-white/85' : 'text-[var(--muted)]',
               )}
             >
               {subtitle}
@@ -119,7 +119,7 @@ export function StatCard({
       <p
         className={cx(
           'text-[11px] font-semibold uppercase tracking-[0.22em]',
-          accent === 'strong' ? 'text-white/68' : 'text-[var(--muted)]',
+          accent === 'strong' ? 'text-white/85' : 'text-[var(--muted)]',
         )}
       >
         {label}
@@ -136,7 +136,7 @@ export function StatCard({
         <p
           className={cx(
             'mt-2 text-sm',
-            accent === 'strong' ? 'text-white/78' : 'text-[var(--muted)]',
+            accent === 'strong' ? 'text-white/90' : 'text-[var(--muted)]',
           )}
         >
           {detail}

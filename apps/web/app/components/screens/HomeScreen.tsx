@@ -95,7 +95,7 @@ export function HomeScreen() {
 
           <div className="mt-5 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
             <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/55">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
                 Quick-start clients
               </p>
               <div className="mt-4 grid gap-3">
@@ -122,14 +122,14 @@ export function HomeScreen() {
                     key={item.name}
                   >
                     <p className="font-medium text-white">{item.name}</p>
-                    <p className="mt-1 text-sm leading-6 text-white/70">{item.summary}</p>
+                    <p className="mt-1 text-sm leading-6 text-white/85">{item.summary}</p>
                   </Link>
                 ))}
               </div>
             </div>
 
             <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/55">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
                 MCP readiness checklist
               </p>
               <div className="mt-4 space-y-3">
@@ -155,7 +155,7 @@ export function HomeScreen() {
                     className="flex items-center justify-between rounded-[18px] border border-white/10 px-4 py-3"
                     key={item.label}
                   >
-                    <span className="text-sm text-white/78">{item.label}</span>
+                    <span className="text-sm text-white/90">{item.label}</span>
                     <Badge tone={item.status ? 'success' : 'warning'}>
                       {item.status ? 'Ready' : 'Missing'}
                     </Badge>

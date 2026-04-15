@@ -66,11 +66,11 @@ export function MaslowRosterLogo({
           className={cx(
             'flex items-center gap-1 whitespace-nowrap font-semibold uppercase leading-none',
             compact ? 'text-[0.58rem] tracking-[0.26em]' : 'text-[0.66rem] tracking-[0.28em]',
-            dark ? 'text-white/78' : 'text-[var(--muted)]',
+            dark ? 'text-white/85' : 'text-[var(--muted)]',
           )}
         >
           <span>Maslow</span>
-          <span aria-hidden="true" className={dark ? 'text-white/42' : 'text-[var(--line-strong)]'}>
+          <span aria-hidden="true" className={dark ? 'text-white/65' : 'text-[var(--line-strong)]'}>
             |
           </span>
           <span
@@ -98,7 +98,7 @@ export function MaslowRosterLogo({
                 'rounded-full border px-2 py-0.5 font-semibold uppercase leading-none',
                 compact ? 'text-[0.54rem] tracking-[0.22em]' : 'text-[0.58rem] tracking-[0.24em]',
                 dark
-                  ? 'border-white/14 bg-white/10 text-white/72'
+                  ? 'border-white/20 bg-white/12 text-white/85'
                   : 'border-[var(--line)] bg-white/75 text-[var(--muted)]',
               )}
             >

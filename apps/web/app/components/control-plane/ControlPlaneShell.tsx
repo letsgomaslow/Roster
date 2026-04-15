@@ -112,7 +112,7 @@ export function ControlPlaneShell({
         Skip to main content
       </a>
       <div className="min-h-screen bg-[var(--background)]">
-        <div className="mx-auto grid min-h-screen max-w-[1760px] gap-4 px-3 py-3 xl:grid-cols-[260px_minmax(0,1fr)_320px]">
+        <div className="mx-auto grid min-h-screen max-w-[1440px] gap-4 px-3 py-3 xl:grid-cols-[260px_minmax(0,1fr)]">
           <div
             aria-hidden={!mobileNavOpen}
             className={cx(
@@ -178,13 +178,13 @@ export function ControlPlaneShell({
             </nav>
 
             <div className="mt-8 rounded-[28px] border border-[rgba(255,255,255,0.12)] bg-[var(--panel-strong)] px-4 py-4 text-white [background-image:var(--panel-strong-gradient)]">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/70">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/85">
                 Beta posture
               </p>
               <p className="mt-3 text-lg font-medium tracking-[-0.03em]">
                 Fast path for Claude Desktop, Cursor, and any MCP-compatible host.
               </p>
-              <p className="mt-2 text-sm leading-6 text-white/82">
+              <p className="mt-2 text-sm leading-6 text-white/90">
                 The web app mirrors the MCP server surface, so the shortest route from setup to
                 feedback stays inside one control plane.
               </p>
@@ -257,57 +257,6 @@ export function ControlPlaneShell({
 
             <div className="py-6">{children}</div>
           </main>
-
-          <aside
-            aria-label="Control plane guidance"
-            className="hidden rounded-[34px] border border-[var(--line)] bg-[var(--panel)] p-5 shadow-[var(--shadow-panel)] backdrop-blur-xl xl:block"
-          >
-            <div className="space-y-6">
-              <section className="rounded-[28px] border border-[var(--tech-soft)] bg-[linear-gradient(180deg,rgba(115,193,174,0.12),rgba(255,255,255,0.9))] px-4 py-4">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[var(--strategy-strong)]">
-                  Navigation model
-                </p>
-                <p className="mt-3 text-lg font-medium tracking-[-0.03em] text-[var(--ink)]">
-                  Setup on the left, execution in the center, recovery on the right.
-                </p>
-                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                  Each page keeps one primary action visible and routes secondary friction into the
-                  feedback drawer instead of hiding it behind docs.
-                </p>
-              </section>
-
-              <section className="rounded-[28px] border border-[rgba(255,255,255,0.12)] bg-[var(--panel-strong)] px-4 py-4 text-white [background-image:var(--panel-strong-gradient)]">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/72">
-                  Beta rubric
-                </p>
-                <ul className="mt-3 space-y-3 text-sm text-white/86">
-                  <li>1. Setup must finish without opening repository docs.</li>
-                  <li>2. Prompt edits must land in under three steps.</li>
-                  <li>3. Every backend capability needs an obvious UI entry point.</li>
-                </ul>
-              </section>
-
-              <section className="rounded-[28px] border border-[var(--strategy-soft)] bg-[linear-gradient(180deg,rgba(160,112,166,0.1),rgba(255,255,255,0.9))] px-4 py-4">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[var(--strategy-strong)]">
-                  Quick keys
-                </p>
-                <div className="mt-3 space-y-2 text-sm text-[var(--ink)]">
-                  <p className="flex items-center justify-between">
-                    <span>Open command palette</span>
-                    <span className="rounded-full border border-[var(--line)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">
-                      ⌘K
-                    </span>
-                  </p>
-                  <p className="flex items-center justify-between">
-                    <span>Open feedback drawer</span>
-                    <span className="rounded-full border border-[var(--line)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">
-                      UI
-                    </span>
-                  </p>
-                </div>
-              </section>
-            </div>
-          </aside>
         </div>
       </div>
 
