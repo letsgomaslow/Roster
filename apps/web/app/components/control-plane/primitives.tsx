@@ -51,11 +51,9 @@ export function Panel({
   action?: ReactNode;
 }) {
   const toneClasses = {
-    neutral:
-      'border-[var(--line)] bg-[var(--panel)] text-[var(--ink)] shadow-[var(--shadow-card)]',
+    neutral: 'border-[var(--line)] bg-[var(--panel)] text-[var(--ink)] shadow-[var(--shadow-card)]',
     dark: 'border-[rgba(255,255,255,0.14)] bg-[var(--panel-strong)] text-white shadow-[var(--shadow-panel-strong)] [background-image:var(--panel-strong-gradient)]',
-    tech:
-      'border-[var(--tech-soft)] bg-[linear-gradient(180deg,rgba(115,193,174,0.12),rgba(255,255,255,0.88))] text-[var(--ink)] shadow-[var(--shadow-card)]',
+    tech: 'border-[var(--tech-soft)] bg-[linear-gradient(180deg,rgba(115,193,174,0.12),rgba(255,255,255,0.88))] text-[var(--ink)] shadow-[var(--shadow-card)]',
     strategy:
       'border-[var(--strategy-soft)] bg-[linear-gradient(180deg,rgba(160,112,166,0.11),rgba(255,255,255,0.88))] text-[var(--ink)] shadow-[var(--shadow-card)]',
     attention:
@@ -118,14 +116,29 @@ export function StatCard({
           : 'border-[var(--line)] bg-[var(--panel-soft)]',
       )}
     >
-      <p className={cx('text-[11px] font-semibold uppercase tracking-[0.22em]', accent === 'strong' ? 'text-white/68' : 'text-[var(--muted)]')}>
+      <p
+        className={cx(
+          'text-[11px] font-semibold uppercase tracking-[0.22em]',
+          accent === 'strong' ? 'text-white/68' : 'text-[var(--muted)]',
+        )}
+      >
         {label}
       </p>
-      <p className={cx('mt-3 font-display text-3xl tracking-[-0.05em]', accent === 'strong' ? 'text-white' : 'text-[var(--ink)]')}>
+      <p
+        className={cx(
+          'mt-3 font-display text-3xl tracking-[-0.05em]',
+          accent === 'strong' ? 'text-white' : 'text-[var(--ink)]',
+        )}
+      >
         {value}
       </p>
       {detail ? (
-        <p className={cx('mt-2 text-sm', accent === 'strong' ? 'text-white/78' : 'text-[var(--muted)]')}>
+        <p
+          className={cx(
+            'mt-2 text-sm',
+            accent === 'strong' ? 'text-white/78' : 'text-[var(--muted)]',
+          )}
+        >
           {detail}
         </p>
       ) : null}
@@ -147,11 +160,17 @@ export function Badge({
     info: 'border-[var(--tech-soft)] bg-[var(--tech-wash)] text-[color:var(--ink)]',
     warning: 'border-[var(--attention-soft)] bg-[var(--attention-wash)] text-[color:var(--ink)]',
     error: 'border-[var(--error-soft)] bg-[rgba(213,44,44,0.08)] text-[color:var(--error)]',
-    strategy: 'border-[var(--strategy-soft)] bg-[var(--strategy-wash)] text-[color:var(--label-purple,var(--strategy))]',
+    strategy:
+      'border-[var(--strategy-soft)] bg-[var(--strategy-wash)] text-[color:var(--label-purple,var(--strategy))]',
   };
 
   return (
-    <span className={cx('inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-[0.02em]', tones[tone])}>
+    <span
+      className={cx(
+        'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-[0.02em]',
+        tones[tone],
+      )}
+    >
       {children}
     </span>
   );
@@ -168,16 +187,21 @@ export function ActionButton({
   children: ReactNode;
   onClick?: () => void;
   href?: string;
-  tone?: 'primary' | 'default' | 'ghost' | 'dark';
+  tone?: 'primary' | 'secondary' | 'default' | 'ghost' | 'dark';
   type?: 'button' | 'submit';
   disabled?: boolean;
 }) {
   const classes = cx(
     'inline-flex min-h-11 items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium transition',
-    tone === 'primary' && 'bg-[var(--accent)] text-[var(--ink)] hover:bg-[var(--accent-hover)]',
+    tone === 'primary' &&
+      'bg-[var(--button-primary)] text-[var(--button-primary-ink)] hover:bg-[var(--button-primary-hover)]',
+    tone === 'secondary' &&
+      'bg-[var(--button-secondary)] text-[var(--button-secondary-ink)] hover:bg-[var(--button-secondary-hover)]',
     tone === 'dark' && 'bg-[var(--ink)] text-white hover:bg-[var(--ink-soft)]',
-    tone === 'ghost' && 'border border-[var(--line)] bg-transparent text-[var(--ink)] hover:bg-[var(--panel-soft)]',
-    tone === 'default' && 'border border-[var(--line)] bg-[var(--panel)] text-[var(--ink)] hover:bg-[var(--panel-soft)]',
+    tone === 'ghost' &&
+      'border border-[var(--line)] bg-transparent text-[var(--ink)] hover:bg-[var(--panel-soft)]',
+    tone === 'default' &&
+      'border border-[var(--line)] bg-[var(--panel)] text-[var(--ink)] hover:bg-[var(--panel-soft)]',
     disabled && 'pointer-events-none opacity-60',
   );
 

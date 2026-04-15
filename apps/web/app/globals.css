@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --maslow-dark-navy: #192332;
@@ -68,14 +68,23 @@
   --shadow-panel: 14px 18px 56px rgba(25, 35, 50, 0.1);
   --shadow-panel-strong: 18px 24px 82px rgba(25, 35, 50, 0.18);
   --shadow-card: 12px 14px 38px rgba(25, 35, 50, 0.1);
+
+  --button-primary: var(--maslow-dark-navy);
+  --button-primary-hover: var(--maslow-dark-navy-alt);
+  --button-primary-ink: #ffffff;
+  --button-secondary: #24554b;
+  --button-secondary-hover: #1f4740;
+  --button-secondary-ink: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--ink);
   --font-sans: var(--font-ui);
-  --font-mono: "IBM Plex Mono", "Geist Mono", "SFMono-Regular", "JetBrains Mono", "Consolas", monospace;
-  --font-display: "Source Serif 4", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-mono:
+    'IBM Plex Mono', 'Geist Mono', 'SFMono-Regular', 'JetBrains Mono', 'Consolas', monospace;
+  --font-display:
+    'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
 }
 
 html {
@@ -89,10 +98,9 @@ html {
 
 body {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.14)),
-    var(--background);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.14)), var(--background);
   color: var(--ink);
-  font-family: var(--font-ui), "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+  font-family: var(--font-ui), 'Manrope', 'Avenir Next', 'Segoe UI', sans-serif;
   text-rendering: optimizeLegibility;
 }
 
@@ -107,8 +115,8 @@ button,
 input,
 select,
 textarea,
-[role="button"],
-[tabindex]:not([tabindex="-1"]) {
+[role='button'],
+[tabindex]:not([tabindex='-1']) {
   outline-color: transparent;
   outline-offset: 3px;
 }
@@ -118,8 +126,8 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
-[role="button"]:focus-visible,
-[tabindex]:not([tabindex="-1"]):focus-visible {
+[role='button']:focus-visible,
+[tabindex]:not([tabindex='-1']):focus-visible {
   outline: 2px solid var(--focus-ring-solid);
   box-shadow: 0 0 0 5px var(--focus-ring);
 }
@@ -132,11 +140,12 @@ select {
 }
 
 .font-display {
-  font-family: "Source Serif 4", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-family:
+    'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
 }
 
 .font-brand-mono {
-  font-family: "IBM Plex Mono", "Geist Mono", "SFMono-Regular", "JetBrains Mono", monospace;
+  font-family: 'IBM Plex Mono', 'Geist Mono', 'SFMono-Regular', 'JetBrains Mono', monospace;
 }
 
 .text-balance {
