@@ -167,7 +167,9 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
               Beta Feedback
             </p>
             <h2 className="font-display text-2xl tracking-[-0.04em] text-[var(--ink)]" id={titleId}>
-              {state.micro ? 'What blocked the last step?' : 'Tell us where the control plane breaks down'}
+              {state.micro
+                ? 'What blocked the last step?'
+                : 'Tell us where the control plane breaks down'}
             </h2>
             <p className="text-sm leading-6 text-[var(--muted)]" id={descriptionId}>
               Feedback is stored with route and entity context so the beta backlog stays actionable.
@@ -186,11 +188,18 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
         <form className="mt-5 space-y-4" onSubmit={onSubmit}>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2 text-sm">
-              <span className="text-[var(--muted)]" id={`${typeId}-label`}>Type</span>
+              <span className="text-[var(--muted)]" id={`${typeId}-label`}>
+                Type
+              </span>
               <select
                 className="w-full rounded-2xl border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
                 id={typeId}
-                onChange={(event) => setState((current) => ({ ...current, type: event.target.value as typeof current.type }))}
+                onChange={(event) =>
+                  setState((current) => ({
+                    ...current,
+                    type: event.target.value as typeof current.type,
+                  }))
+                }
                 value={state.type}
               >
                 {TYPES.map((type) => (
@@ -228,7 +237,9 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
               <input
                 className="w-full rounded-2xl border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
                 id={pageId}
-                onChange={(event) => setState((current) => ({ ...current, page: event.target.value }))}
+                onChange={(event) =>
+                  setState((current) => ({ ...current, page: event.target.value }))
+                }
                 value={state.page}
               />
             </label>
@@ -237,7 +248,9 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
               <input
                 className="w-full rounded-2xl border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 font-mono text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
                 id={routeId}
-                onChange={(event) => setState((current) => ({ ...current, route: event.target.value }))}
+                onChange={(event) =>
+                  setState((current) => ({ ...current, route: event.target.value }))
+                }
                 value={state.route}
               />
             </label>
@@ -250,7 +263,9 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
               aria-invalid={error ? 'true' : 'false'}
               className="min-h-40 w-full rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
               id={messageId}
-              onChange={(event) => setState((current) => ({ ...current, message: event.target.value }))}
+              onChange={(event) =>
+                setState((current) => ({ ...current, message: event.target.value }))
+              }
               placeholder="The setup flow looked complete, but the generated config still needed manual edits..."
               required
               value={state.message}
@@ -268,7 +283,12 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
           ) : null}
 
           <div className="flex items-center justify-between gap-3">
-            <p aria-live="polite" className="text-xs text-[var(--muted)]" id={statusId} role="status">
+            <p
+              aria-live="polite"
+              className="text-xs text-[var(--muted)]"
+              id={statusId}
+              role="status"
+            >
               {status === 'saved'
                 ? 'Feedback saved.'
                 : status === 'saving'
@@ -276,7 +296,7 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
                   : 'Stored with route metadata and optional entity context.'}
             </p>
             <button
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)] disabled:opacity-60"
               disabled={status === 'saving' || state.message.trim().length < 10}
               type="submit"
             >

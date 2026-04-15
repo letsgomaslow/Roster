@@ -4,8 +4,17 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { CodeBlock, EmptyState, PageIntro, Panel, Badge } from '@/app/components/control-plane/primitives';
-import { useTrackPageView, useTrackProductEvent } from '@/app/components/control-plane/useProductEvents';
+import {
+  CodeBlock,
+  EmptyState,
+  PageIntro,
+  Panel,
+  Badge,
+} from '@/app/components/control-plane/primitives';
+import {
+  useTrackPageView,
+  useTrackProductEvent,
+} from '@/app/components/control-plane/useProductEvents';
 import { openMicroFeedback } from '@/lib/control-plane-events';
 import { convexEnabled } from '@/lib/convex-client';
 import { formatRelativeDate, titleCase } from '@/lib/formatters';
@@ -16,7 +25,11 @@ type FormState = {
   name: string;
   description: string;
   category: string;
-  promptType: 'standard' | 'subagent_registry' | 'main_agent_template' | 'project_orchestration_template';
+  promptType:
+    | 'standard'
+    | 'subagent_registry'
+    | 'main_agent_template'
+    | 'project_orchestration_template';
   accessLevel: string;
   tags: string;
   variables: string;
@@ -196,9 +209,12 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
     if (isNew || !window.confirm('Delete this prompt?')) return;
 
     try {
-      const response = await rosterFetchEnvelope(`/api/roster/prompts/${encodeURIComponent(form.promptId)}`, {
-        method: 'DELETE',
-      });
+      const response = await rosterFetchEnvelope(
+        `/api/roster/prompts/${encodeURIComponent(form.promptId)}`,
+        {
+          method: 'DELETE',
+        },
+      );
       if (!response.success) {
         throw new Error(response.error || 'Delete failed');
       }
@@ -261,7 +277,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               </button>
             ) : null}
             <button
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--accent-hover)]"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
               onClick={onSave}
               type="button"
             >
@@ -304,7 +320,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               <span className="text-[var(--muted)]">Prompt ID</span>
               <input
                 className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                onChange={(event) => setForm((current) => ({ ...current, promptId: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, promptId: event.target.value }))
+                }
                 value={form.promptId}
               />
             </label>
@@ -312,7 +330,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               <span className="text-[var(--muted)]">Name</span>
               <input
                 className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, name: event.target.value }))
+                }
                 value={form.name}
               />
             </label>
@@ -320,7 +340,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               <span className="text-[var(--muted)]">Category</span>
               <input
                 className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, category: event.target.value }))
+                }
                 value={form.category}
               />
             </label>
@@ -328,7 +350,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               <span className="text-[var(--muted)]">Access level</span>
               <select
                 className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                onChange={(event) => setForm((current) => ({ ...current, accessLevel: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, accessLevel: event.target.value }))
+                }
                 value={form.accessLevel}
               >
                 <option value="private">Private</option>
@@ -340,7 +364,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               <span className="text-[var(--muted)]">Description</span>
               <textarea
                 className="min-h-28 w-full rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, description: event.target.value }))
+                }
                 value={form.description}
               />
             </label>
@@ -359,14 +385,18 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <option value="standard">Standard</option>
                 <option value="subagent_registry">Subagent registry</option>
                 <option value="main_agent_template">Main agent template</option>
-                <option value="project_orchestration_template">Project orchestration template</option>
+                <option value="project_orchestration_template">
+                  Project orchestration template
+                </option>
               </select>
             </label>
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Tags</span>
               <input
                 className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                onChange={(event) => setForm((current) => ({ ...current, tags: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, tags: event.target.value }))
+                }
                 placeholder="onboarding, beta, integration"
                 value={form.tags}
               />
@@ -375,7 +405,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               <span className="text-[var(--muted)]">Variables</span>
               <input
                 className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                onChange={(event) => setForm((current) => ({ ...current, variables: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, variables: event.target.value }))
+                }
                 placeholder="projectName, framework, repositoryUrl"
                 value={form.variables}
               />
@@ -384,7 +416,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               <span className="text-[var(--muted)]">Template</span>
               <textarea
                 className="min-h-[360px] w-full rounded-[28px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 font-mono text-sm text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                onChange={(event) => setForm((current) => ({ ...current, template: event.target.value }))}
+                onChange={(event) =>
+                  setForm((current) => ({ ...current, template: event.target.value }))
+                }
                 value={form.template}
               />
             </label>
@@ -393,7 +427,11 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
 
         <div className="space-y-5">
           <Panel
-            action={<Badge tone={saveState === 'saved' ? 'success' : 'default'}>{titleCase(saveState)}</Badge>}
+            action={
+              <Badge tone={saveState === 'saved' ? 'success' : 'default'}>
+                {titleCase(saveState)}
+              </Badge>
+            }
             subtitle="Advanced fields only matter for non-standard prompt types."
             title="Agent configuration"
             tone="strategy"
@@ -409,7 +447,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                   <span className="text-[var(--muted)]">Model</span>
                   <input
                     className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                    onChange={(event) => setForm((current) => ({ ...current, model: event.target.value }))}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, model: event.target.value }))
+                    }
                     placeholder="claude-sonnet"
                     value={form.model}
                   />
@@ -418,7 +458,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                   <span className="text-[var(--muted)]">Tools</span>
                   <input
                     className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                    onChange={(event) => setForm((current) => ({ ...current, tools: event.target.value }))}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, tools: event.target.value }))
+                    }
                     placeholder="get_prompt, list_prompts"
                     value={form.tools}
                   />
@@ -427,7 +469,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                   <span className="text-[var(--muted)]">MCP servers</span>
                   <input
                     className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                    onChange={(event) => setForm((current) => ({ ...current, mcpServers: event.target.value }))}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, mcpServers: event.target.value }))
+                    }
                     placeholder="@maslowai/roster"
                     value={form.mcpServers}
                   />
@@ -447,7 +491,9 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                   <span className="text-[var(--muted)]">Subagents</span>
                   <input
                     className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
-                    onChange={(event) => setForm((current) => ({ ...current, subagents: event.target.value }))}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, subagents: event.target.value }))
+                    }
                     placeholder="frontend-reviewer, backend-auditor"
                     value={form.subagents}
                   />
@@ -493,7 +539,10 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                     <input
                       className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                       onChange={(event) =>
-                        setApplyInputs((current) => ({ ...current, [variable]: event.target.value }))
+                        setApplyInputs((current) => ({
+                          ...current,
+                          [variable]: event.target.value,
+                        }))
                       }
                       value={applyInputs[variable] ?? ''}
                     />
@@ -510,7 +559,10 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             </div>
           </Panel>
 
-          <Panel subtitle="These version markers come straight from Convex." title="Versions and metadata">
+          <Panel
+            subtitle="These version markers come straight from Convex."
+            title="Versions and metadata"
+          >
             {detail?.versions?.length ? (
               <div className="space-y-3">
                 {detail.versions.map((version) => (

@@ -1,8 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { CodeBlock, EmptyState, PageIntro, Panel, Badge } from '@/app/components/control-plane/primitives';
-import { useTrackPageView, useTrackProductEvent } from '@/app/components/control-plane/useProductEvents';
+import {
+  CodeBlock,
+  EmptyState,
+  PageIntro,
+  Panel,
+  Badge,
+} from '@/app/components/control-plane/primitives';
+import {
+  useTrackPageView,
+  useTrackProductEvent,
+} from '@/app/components/control-plane/useProductEvents';
 import { openMicroFeedback } from '@/lib/control-plane-events';
 import { rosterFetchEnvelope, useRosterResource, type RosterEnvelope } from '@/lib/roster-client';
 import type { IntegrationSetupPayload, RosterTool } from '@/lib/roster-types';
@@ -61,7 +70,11 @@ export function IntegrationsScreen() {
 
       <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
         <Panel
-          action={<Badge tone={health.data?.data?.status === 'healthy' ? 'success' : 'warning'}>{health.data?.data?.status === 'healthy' ? 'Healthy' : 'Check server'}</Badge>}
+          action={
+            <Badge tone={health.data?.data?.status === 'healthy' ? 'success' : 'warning'}>
+              {health.data?.data?.status === 'healthy' ? 'Healthy' : 'Check server'}
+            </Badge>
+          }
           subtitle="Setup payloads are generated from one place so the beta user can compare hosts without reading docs."
           title="Setup payloads"
           tone="strategy"
@@ -169,7 +182,7 @@ export function IntegrationsScreen() {
                 />
               </label>
               <button
-                className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                className="inline-flex items-center justify-center rounded-full bg-[var(--button-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-secondary-ink)] transition hover:bg-[var(--button-secondary-hover)] disabled:opacity-60"
                 disabled={!toolName}
                 onClick={runToolSmokeTest}
                 type="button"
@@ -177,7 +190,10 @@ export function IntegrationsScreen() {
                 Run smoke test
               </button>
               {toolError ? (
-                <div className="rounded-[20px] border border-[var(--error-soft)] bg-[rgba(213,44,44,0.08)] px-4 py-3 text-sm text-[var(--error)]" role="alert">
+                <div
+                  className="rounded-[20px] border border-[var(--error-soft)] bg-[rgba(213,44,44,0.08)] px-4 py-3 text-sm text-[var(--error)]"
+                  role="alert"
+                >
                   {toolError}
                 </div>
               ) : null}

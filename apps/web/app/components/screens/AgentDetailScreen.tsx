@@ -1,8 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Badge, CodeBlock, EmptyState, PageIntro, Panel } from '@/app/components/control-plane/primitives';
-import { useTrackPageView, useTrackProductEvent } from '@/app/components/control-plane/useProductEvents';
+import {
+  Badge,
+  CodeBlock,
+  EmptyState,
+  PageIntro,
+  Panel,
+} from '@/app/components/control-plane/primitives';
+import {
+  useTrackPageView,
+  useTrackProductEvent,
+} from '@/app/components/control-plane/useProductEvents';
 import { titleCase } from '@/lib/formatters';
 import { rosterFetchEnvelope, useRosterResource, type RosterEnvelope } from '@/lib/roster-client';
 import type { AgentRecord } from '@/lib/roster-types';
@@ -35,9 +44,9 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
     kind === 'main-agents',
   );
 
-  const agent = (kind === 'subagents'
-    ? detail.data?.data?.subagent
-    : detail.data?.data?.mainAgent) as AgentRecord | undefined;
+  const agent = (
+    kind === 'subagents' ? detail.data?.data?.subagent : detail.data?.data?.mainAgent
+  ) as AgentRecord | undefined;
 
   async function loadValidation() {
     try {
@@ -110,7 +119,9 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
           {agent ? (
             <div className="space-y-4">
               <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
-                <p className="font-medium text-[var(--ink)]">{agent.description || 'No description available.'}</p>
+                <p className="font-medium text-[var(--ink)]">
+                  {agent.description || 'No description available.'}
+                </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {(agent.tags ?? []).map((tag: string) => (
                     <span
@@ -134,7 +145,9 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     Model
                   </p>
-                  <p className="mt-3 text-sm text-[var(--ink)]">{agent.agentConfig?.model || 'Not set'}</p>
+                  <p className="mt-3 text-sm text-[var(--ink)]">
+                    {agent.agentConfig?.model || 'Not set'}
+                  </p>
                 </div>
               </div>
 
@@ -167,7 +180,11 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
 
         <div className="space-y-5">
           {kind === 'subagents' ? (
-            <Panel subtitle="Execution statistics come from the dedicated subagent stats route." title="Execution statistics" tone="tech">
+            <Panel
+              subtitle="Execution statistics come from the dedicated subagent stats route."
+              title="Execution statistics"
+              tone="tech"
+            >
               <CodeBlock value={JSON.stringify(stats.data?.data?.stats ?? {}, null, 2)} />
             </Panel>
           ) : (
@@ -201,7 +218,7 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
                     Load execution preview
                   </button>
                   <button
-                    className="inline-flex min-h-11 items-center rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--accent-hover)]"
+                    className="inline-flex min-h-11 items-center rounded-full bg-[var(--button-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-secondary-ink)] transition hover:bg-[var(--button-secondary-hover)]"
                     onClick={loadSystemPrompt}
                     type="button"
                   >

@@ -4,7 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { EmptyState, PageIntro, Panel, Badge } from '@/app/components/control-plane/primitives';
-import { useTrackPageView, useTrackProductEvent } from '@/app/components/control-plane/useProductEvents';
+import {
+  useTrackPageView,
+  useTrackProductEvent,
+} from '@/app/components/control-plane/useProductEvents';
 import { formatRelativeDate, titleCase } from '@/lib/formatters';
 import { rosterFetchEnvelope, useRosterResource, type RosterEnvelope } from '@/lib/roster-client';
 import type { RunSummary } from '@/lib/roster-types';
@@ -13,7 +16,9 @@ export function RunsScreen() {
   const router = useRouter();
   const track = useTrackProductEvent();
   const [projectPath, setProjectPath] = useState('');
-  const [mode, setMode] = useState<'analyze' | 'review' | 'refactor' | 'test' | 'document'>('analyze');
+  const [mode, setMode] = useState<'analyze' | 'review' | 'refactor' | 'test' | 'document'>(
+    'analyze',
+  );
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +42,11 @@ export function RunsScreen() {
       if (!response.success || !response.data.executionId) {
         throw new Error(response.error || 'Run failed');
       }
-      await track('orchestration_started', { projectPath, mode, executionId: response.data.executionId });
+      await track('orchestration_started', {
+        projectPath,
+        mode,
+        executionId: response.data.executionId,
+      });
       router.push(`/runs/${encodeURIComponent(response.data.executionId)}`);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Run failed');
@@ -66,7 +75,11 @@ export function RunsScreen() {
       ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
-        <Panel subtitle="This starts the real backend orchestration route." title="Start orchestration" tone="strategy">
+        <Panel
+          subtitle="This starts the real backend orchestration route."
+          title="Start orchestration"
+          tone="strategy"
+        >
           <div className="space-y-4">
             <label className="block space-y-2 text-sm">
               <span className="text-[var(--muted)]">Project path on the connected host</span>
@@ -92,7 +105,7 @@ export function RunsScreen() {
               </select>
             </label>
             <button
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--button-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-secondary-ink)] transition hover:bg-[var(--button-secondary-hover)] disabled:opacity-60"
               disabled={creating || !projectPath.trim()}
               onClick={startRun}
               type="button"
@@ -100,7 +113,9 @@ export function RunsScreen() {
               {creating ? 'Starting…' : 'Start run'}
             </button>
             <p aria-live="polite" className="text-xs text-[var(--muted)]">
-              {creating ? 'Starting orchestration run.' : 'Runs are started against the backend orchestration endpoint.'}
+              {creating
+                ? 'Starting orchestration run.'
+                : 'Runs are started against the backend orchestration endpoint.'}
             </p>
           </div>
         </Panel>
@@ -121,7 +136,9 @@ export function RunsScreen() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-medium text-[var(--ink)]">{run.projectType || 'Unknown project type'}</p>
+                      <p className="font-medium text-[var(--ink)]">
+                        {run.projectType || 'Unknown project type'}
+                      </p>
                       <p className="mt-1 text-sm text-[var(--muted)]">{run.projectPath}</p>
                     </div>
                     <Badge tone={run.status === 'completed' ? 'success' : 'info'}>

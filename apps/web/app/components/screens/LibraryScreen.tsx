@@ -45,7 +45,9 @@ export function LibraryScreen() {
   );
 
   const items = library?.items ?? [];
-  const categoryEntries = Object.entries(library?.facets.categories ?? {}).sort((a, b) => b[1] - a[1]);
+  const categoryEntries = Object.entries(library?.facets.categories ?? {}).sort(
+    (a, b) => b[1] - a[1],
+  );
 
   return (
     <div className="space-y-8">
@@ -61,7 +63,7 @@ export function LibraryScreen() {
               {layout === 'grid' ? 'List view' : 'Grid view'}
             </button>
             <Link
-              className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--accent-hover)]"
+              className="inline-flex items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
               href="/library/new"
             >
               New prompt
@@ -129,10 +131,7 @@ export function LibraryScreen() {
           >
             {items.length ? (
               <div
-                className={cx(
-                  'gap-4',
-                  layout === 'grid' ? 'grid md:grid-cols-2' : 'flex flex-col',
-                )}
+                className={cx('gap-4', layout === 'grid' ? 'grid md:grid-cols-2' : 'flex flex-col')}
               >
                 {items.map((item) => (
                   <Link
@@ -178,7 +177,7 @@ export function LibraryScreen() {
               <EmptyState
                 action={
                   <Link
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--accent-hover)]"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
                     href="/library/new"
                   >
                     Create a prompt
@@ -192,7 +191,11 @@ export function LibraryScreen() {
         </div>
 
         <div className="space-y-5">
-          <Panel subtitle="These facets should stay useful even when the library grows." title="Category facets" tone="tech">
+          <Panel
+            subtitle="These facets should stay useful even when the library grows."
+            title="Category facets"
+            tone="tech"
+          >
             {categoryEntries.length ? (
               <div className="space-y-2">
                 {categoryEntries.slice(0, 12).map(([name, count]) => (
@@ -220,7 +223,11 @@ export function LibraryScreen() {
             )}
           </Panel>
 
-          <Panel subtitle="The beta should make specialized prompt types obvious, not hidden in docs." title="Prompt type mix" tone="strategy">
+          <Panel
+            subtitle="The beta should make specialized prompt types obvious, not hidden in docs."
+            title="Prompt type mix"
+            tone="strategy"
+          >
             <div className="space-y-3">
               {Object.entries(library?.facets.promptTypes ?? {}).map(([name, count]) => (
                 <div

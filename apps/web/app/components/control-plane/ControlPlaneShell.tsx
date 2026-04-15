@@ -49,7 +49,7 @@ function ClerkAuthSection() {
           signInFallbackRedirectUrl={AUTH_REDIRECT_URL}
           signInForceRedirectUrl={AUTH_REDIRECT_URL}
         >
-          <button className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--accent-hover)]">
+          <button className="rounded-full bg-[var(--button-primary)] px-4 py-2 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]">
             Create account
           </button>
         </SignUpButton>
@@ -77,8 +77,8 @@ function DisabledAuthSection() {
         Auth disabled
       </p>
       <p className="mt-2 text-sm leading-6 text-[var(--ink)]">
-        Set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` in `apps/web/.env.local`
-        to enable Clerk without keyless development mode.
+        Set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` in `apps/web/.env.local` to
+        enable Clerk without keyless development mode.
       </p>
     </div>
   );
@@ -164,7 +164,12 @@ export function ControlPlaneShell({
                     onClick={() => setMobileNavOpen(false)}
                   >
                     <p className="font-medium">{item.label}</p>
-                    <p className={cx('mt-1 text-sm', active ? 'text-[var(--strategy-strong)]' : 'text-[var(--muted)]')}>
+                    <p
+                      className={cx(
+                        'mt-1 text-sm',
+                        active ? 'text-[var(--strategy-strong)]' : 'text-[var(--muted)]',
+                      )}
+                    >
                       {item.caption}
                     </p>
                   </Link>
@@ -184,7 +189,7 @@ export function ControlPlaneShell({
                 feedback stays inside one control plane.
               </p>
               <button
-                className="mt-4 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--accent-hover)]"
+                className="mt-4 rounded-full bg-[var(--button-primary)] px-4 py-2 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
                 onClick={() => openFeedback({ page: 'Sidebar', route: pathname })}
                 type="button"
               >
@@ -241,7 +246,7 @@ export function ControlPlaneShell({
                   </span>
                 </button>
                 <button
-                  className="rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--accent-hover)]"
+                  className="rounded-full bg-[var(--button-primary)] px-4 py-2 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
                   onClick={() => openFeedback({ page: pathname, route: pathname })}
                   type="button"
                 >
