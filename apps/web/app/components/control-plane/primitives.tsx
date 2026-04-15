@@ -22,7 +22,7 @@ export function PageIntro({
           {eyebrow}
         </p>
         <div className="space-y-2">
-          <h1 className="font-display text-balance text-3xl tracking-[-0.05em] text-[var(--ink)] md:text-[3.25rem]">
+          <h1 className="font-heading text-balance text-3xl tracking-[-0.05em] text-[var(--ink)] md:text-[3.25rem]">
             {title}
           </h1>
           <p className="max-w-2xl text-sm leading-7 text-[var(--muted)] md:text-[15px]">
@@ -126,7 +126,7 @@ export function StatCard({
       </p>
       <p
         className={cx(
-          'mt-3 font-display text-3xl tracking-[-0.05em]',
+          'mt-3 font-heading text-3xl tracking-[-0.05em]',
           accent === 'strong' ? 'text-white' : 'text-[var(--ink)]',
         )}
       >

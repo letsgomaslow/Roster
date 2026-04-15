@@ -3,7 +3,14 @@
 import Link from 'next/link';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { PageIntro, Panel, StatCard, Badge, ActionButton, EmptyState } from '@/app/components/control-plane/primitives';
+import {
+  PageIntro,
+  Panel,
+  StatCard,
+  Badge,
+  ActionButton,
+  EmptyState,
+} from '@/app/components/control-plane/primitives';
 import { useTrackPageView } from '@/app/components/control-plane/useProductEvents';
 import { convexEnabled } from '@/lib/convex-client';
 import { formatNumber, formatPercent, formatRelativeDate, titleCase } from '@/lib/formatters';
@@ -32,8 +39,12 @@ export function HomeScreen() {
       <PageIntro
         actions={
           <>
-            <ActionButton href="/integrations" tone="primary">Finish MCP setup</ActionButton>
-            <ActionButton href="/library/new" tone="ghost">New prompt</ActionButton>
+            <ActionButton href="/integrations" tone="primary">
+              Finish MCP setup
+            </ActionButton>
+            <ActionButton href="/library/new" tone="ghost">
+              New prompt
+            </ActionButton>
           </>
         }
         description="Roster should read like a working control plane, not a landing page. This view keeps connection status and workspace momentum side by side so beta users can tell whether the MCP server is ready and whether their library is actually moving."
@@ -56,7 +67,11 @@ export function HomeScreen() {
           <div className="grid gap-4 md:grid-cols-3">
             <StatCard
               accent="strong"
-              detail={health?.success ? 'BFF can reach the Roster server.' : 'Health check is not healthy yet.'}
+              detail={
+                health?.success
+                  ? 'BFF can reach the Roster server.'
+                  : 'Health check is not healthy yet.'
+              }
               label="Server health"
               value={healthStatus ? 'Healthy' : 'Check'}
             />
@@ -68,7 +83,11 @@ export function HomeScreen() {
             />
             <StatCard
               accent="strong"
-              detail={subscription?.subscriptionTier ? `${titleCase(subscription.subscriptionTier)} tier` : 'Plan unavailable'}
+              detail={
+                subscription?.subscriptionTier
+                  ? `${titleCase(subscription.subscriptionTier)} tier`
+                  : 'Plan unavailable'
+              }
               label="Rate window"
               value={subscription?.rateLimit ? `${subscription.rateLimit.requests}/hr` : 'Unknown'}
             />
@@ -225,7 +244,11 @@ export function HomeScreen() {
             </div>
           ) : (
             <EmptyState
-              action={<ActionButton href="/library/new" tone="dark">Create the first prompt</ActionButton>}
+              action={
+                <ActionButton href="/library/new" tone="dark">
+                  Create the first prompt
+                </ActionButton>
+              }
               description="No prompt activity is visible yet. The beta user should be able to create, edit, and apply a template without leaving the web app."
               title="Prompt activity has not started"
             />
@@ -254,7 +277,9 @@ export function HomeScreen() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-medium text-[var(--ink)]">{run.projectType || 'Unknown project'}</p>
+                      <p className="font-medium text-[var(--ink)]">
+                        {run.projectType || 'Unknown project'}
+                      </p>
                       <p className="mt-1 text-sm text-[var(--muted)]">{run.projectPath}</p>
                     </div>
                     <Badge tone={run.status === 'completed' ? 'success' : 'info'}>
@@ -270,7 +295,11 @@ export function HomeScreen() {
             </div>
           ) : (
             <EmptyState
-              action={<ActionButton href="/runs" tone="ghost">Start orchestration</ActionButton>}
+              action={
+                <ActionButton href="/runs" tone="ghost">
+                  Start orchestration
+                </ActionButton>
+              }
               description="No orchestration runs are visible yet. The beta needs a working path from starting a run to opening its report."
               title="No run history yet"
             />
@@ -287,8 +316,10 @@ export function HomeScreen() {
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                 Plan
               </p>
-              <p className="mt-3 font-display text-3xl tracking-[-0.05em] text-[var(--ink)]">
-                {subscription?.subscriptionTier ? titleCase(subscription.subscriptionTier) : 'Unavailable'}
+              <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
+                {subscription?.subscriptionTier
+                  ? titleCase(subscription.subscriptionTier)
+                  : 'Unavailable'}
               </p>
               <p className="mt-2 text-sm text-[var(--muted)]">
                 {subscription?.rateLimit
@@ -302,12 +333,14 @@ export function HomeScreen() {
                 Library mix
               </p>
               <div className="mt-4 space-y-3">
-                {Object.entries(snapshot?.counts.byPromptType ?? {}).slice(0, 4).map(([key, value]) => (
-                  <div className="flex items-center justify-between text-sm" key={key}>
-                    <span className="text-[var(--muted)]">{titleCase(key)}</span>
-                    <span className="font-medium text-[var(--ink)]">{formatNumber(value)}</span>
-                  </div>
-                ))}
+                {Object.entries(snapshot?.counts.byPromptType ?? {})
+                  .slice(0, 4)
+                  .map(([key, value]) => (
+                    <div className="flex items-center justify-between text-sm" key={key}>
+                      <span className="text-[var(--muted)]">{titleCase(key)}</span>
+                      <span className="font-medium text-[var(--ink)]">{formatNumber(value)}</span>
+                    </div>
+                  ))}
               </div>
             </div>
 

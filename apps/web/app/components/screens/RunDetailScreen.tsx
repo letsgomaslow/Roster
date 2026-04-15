@@ -1,8 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CodeBlock, EmptyState, PageIntro, Panel, Badge } from '@/app/components/control-plane/primitives';
-import { useTrackPageView, useTrackProductEvent } from '@/app/components/control-plane/useProductEvents';
+import {
+  CodeBlock,
+  EmptyState,
+  PageIntro,
+  Panel,
+  Badge,
+} from '@/app/components/control-plane/primitives';
+import {
+  useTrackPageView,
+  useTrackProductEvent,
+} from '@/app/components/control-plane/useProductEvents';
 import { openMicroFeedback } from '@/lib/control-plane-events';
 import { formatRelativeDate, titleCase } from '@/lib/formatters';
 import { rosterFetchEnvelope, useRosterResource, type RosterEnvelope } from '@/lib/roster-client';
@@ -17,7 +26,9 @@ type ReportState = {
 export function RunDetailScreen({ executionId }: { executionId: string }) {
   const track = useTrackProductEvent();
   const [reports, setReports] = useState<ReportState>({ json: '', markdown: '', html: '' });
-  const [activeReport, setActiveReport] = useState<'summary' | 'json' | 'markdown' | 'html'>('summary');
+  const [activeReport, setActiveReport] = useState<'summary' | 'json' | 'markdown' | 'html'>(
+    'summary',
+  );
 
   useTrackPageView('run_detail_view', { route: `/runs/${executionId}`, executionId });
 
@@ -72,7 +83,13 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
 
       <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
         <Panel
-          action={run?.status ? <Badge tone={run.status === 'completed' ? 'success' : 'info'}>{titleCase(run.status)}</Badge> : undefined}
+          action={
+            run?.status ? (
+              <Badge tone={run.status === 'completed' ? 'success' : 'info'}>
+                {titleCase(run.status)}
+              </Badge>
+            ) : undefined
+          }
           subtitle="Status comes from the orchestration execution route."
           title="Execution summary"
           tone="strategy"
@@ -88,7 +105,9 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
                   Started {formatRelativeDate(run.startTime)}
                 </p>
                 {run.endTime ? (
-                  <p className="mt-1 text-sm text-[var(--muted)]">Ended {formatRelativeDate(run.endTime)}</p>
+                  <p className="mt-1 text-sm text-[var(--muted)]">
+                    Ended {formatRelativeDate(run.endTime)}
+                  </p>
                 ) : null}
               </div>
 
@@ -97,7 +116,7 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     Phase count
                   </p>
-                  <p className="mt-3 font-display text-3xl tracking-[-0.05em] text-[var(--ink)]">
+                  <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
                     {run.phaseCount ?? 0}
                   </p>
                 </div>
@@ -105,7 +124,7 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     Recommendations
                   </p>
-                  <p className="mt-3 font-display text-3xl tracking-[-0.05em] text-[var(--ink)]">
+                  <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
                     {run.recommendations ?? 0}
                   </p>
                 </div>
@@ -119,7 +138,11 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
           )}
         </Panel>
 
-        <Panel subtitle="Switch between summary, JSON, markdown, and HTML without leaving the run." title="Report" tone="tech">
+        <Panel
+          subtitle="Switch between summary, JSON, markdown, and HTML without leaving the run."
+          title="Report"
+          tone="tech"
+        >
           <div className="flex flex-wrap gap-2">
             {[
               { id: 'summary', label: 'Summary' },
@@ -147,10 +170,13 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
               <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-sm leading-7 text-[var(--muted)]">
                 <p className="font-medium text-[var(--ink)]">Run summary</p>
                 <p className="mt-3">
-                  This execution is {run?.status ?? 'unknown'}, targeted {run?.projectType ?? 'an unknown project type'}, and was started in {run?.mode ?? 'unknown'} mode.
+                  This execution is {run?.status ?? 'unknown'}, targeted{' '}
+                  {run?.projectType ?? 'an unknown project type'}, and was started in{' '}
+                  {run?.mode ?? 'unknown'} mode.
                 </p>
                 <p className="mt-3">
-                  Use the JSON, markdown, or HTML tabs when the beta user needs the full backend report instead of the operational summary.
+                  Use the JSON, markdown, or HTML tabs when the beta user needs the full backend
+                  report instead of the operational summary.
                 </p>
               </div>
             ) : activeReport === 'json' ? (

@@ -38,7 +38,7 @@
   );
   --ink: var(--maslow-dark-navy);
   --ink-soft: var(--maslow-near-black);
-  --muted: #4e596d;
+  --muted: var(--maslow-text-grey);
   --line: rgba(25, 35, 50, 0.1);
   --line-strong: rgba(25, 35, 50, 0.18);
   --accent: var(--maslow-accent-pink);
@@ -83,17 +83,14 @@
   --font-sans: var(--font-ui);
   --font-mono:
     'IBM Plex Mono', 'Geist Mono', 'SFMono-Regular', 'JetBrains Mono', 'Consolas', monospace;
-  --font-display:
-    'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  --font-display: var(--font-ui);
 }
 
 html {
   min-height: 100%;
   background:
-    radial-gradient(circle at top left, rgba(109, 196, 173, 0.18), transparent 34%),
-    radial-gradient(circle at top right, rgba(218, 133, 178, 0.16), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(160, 112, 166, 0.12), transparent 28%),
-    linear-gradient(180deg, #fbfcfd 0%, #f6f7f9 48%, #eef1f6 100%);
+    radial-gradient(circle at top left, rgba(109, 196, 173, 0.1), transparent 42%),
+    linear-gradient(180deg, #fbfcfd 0%, #f6f7f9 100%);
 }
 
 body {
@@ -139,9 +136,10 @@ select {
   font: inherit;
 }
 
-.font-display {
-  font-family:
-    'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+.font-heading {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .font-brand-mono {

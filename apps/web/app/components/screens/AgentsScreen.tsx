@@ -56,7 +56,11 @@ export function AgentsScreen() {
             title="Catalog"
             tone="strategy"
           >
-            <div aria-label="Agent catalog type" className="flex flex-wrap items-center gap-3" role="group">
+            <div
+              aria-label="Agent catalog type"
+              className="flex flex-wrap items-center gap-3"
+              role="group"
+            >
               {[
                 { id: 'subagents', label: 'Subagents', count: subagents?.total ?? 0 },
                 { id: 'main-agents', label: 'Main agents', count: mainAgents?.total ?? 0 },
@@ -140,13 +144,17 @@ export function AgentsScreen() {
         </div>
 
         <div className="space-y-5">
-          <Panel subtitle="This should make it obvious whether the backend catalog is healthy." title="Snapshot" tone="tech">
+          <Panel
+            subtitle="This should make it obvious whether the backend catalog is healthy."
+            title="Snapshot"
+            tone="tech"
+          >
             <div className="space-y-3">
               <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                   Subagents
                 </p>
-                <p className="mt-3 font-display text-3xl tracking-[-0.05em] text-[var(--ink)]">
+                <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
                   {formatNumber(subagents?.total)}
                 </p>
               </div>
@@ -154,7 +162,7 @@ export function AgentsScreen() {
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                   Main agents
                 </p>
-                <p className="mt-3 font-display text-3xl tracking-[-0.05em] text-[var(--ink)]">
+                <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
                   {formatNumber(mainAgents?.total)}
                 </p>
               </div>

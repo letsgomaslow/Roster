@@ -166,7 +166,7 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[var(--strategy-strong)]">
               Beta Feedback
             </p>
-            <h2 className="font-display text-2xl tracking-[-0.04em] text-[var(--ink)]" id={titleId}>
+            <h2 className="font-heading text-2xl tracking-[-0.04em] text-[var(--ink)]" id={titleId}>
               {state.micro
                 ? 'What blocked the last step?'
                 : 'Tell us where the control plane breaks down'}

@@ -19,7 +19,7 @@ function MaslowSymbol({ className }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <linearGradient id="maslow-roster-logo-gradient" x1="2" x2="33" y1="4" y2="20">
+        <linearGradient id="maslow-roster-logo-gradient" x1="0" x2="36" y1="11.5" y2="11.5">
           <stop offset="0%" stopColor="#6DC4AD" />
           <stop offset="48.6%" stopColor="#A9A1B0" />
           <stop offset="100%" stopColor="#F377B3" />
@@ -47,31 +47,40 @@ export function MaslowRosterLogo({
   const dark = variant === 'dark';
 
   return (
-    <div
-      className={cx(
-        'inline-flex items-center gap-3',
-        compact ? 'gap-2.5' : 'gap-3.5',
-        className,
-      )}
-    >
-      <MaslowSymbol className={cx('shrink-0', compact ? 'h-[1.1rem] w-[1.7rem]' : 'h-[1.45rem] w-[2.2rem]')} />
+    <div className={cx('inline-flex items-center', compact ? 'gap-2.5' : 'gap-3.5', className)}>
+      <MaslowSymbol
+        className={cx('shrink-0', compact ? 'h-[1.1rem] w-[1.7rem]' : 'h-[1.6rem] w-[2.5rem]')}
+      />
       <div className="min-w-0">
         <div
           className={cx(
-            'flex items-center gap-1 whitespace-nowrap text-[0.65rem] font-semibold uppercase tracking-[0.28em]',
-            dark ? 'text-white/78' : 'text-[var(--muted)]',
+            'flex items-center gap-1.5 whitespace-nowrap font-bold uppercase leading-none',
+            compact ? 'text-[0.8rem] tracking-[0.16em]' : 'text-[0.95rem] tracking-[0.18em]',
+            dark ? 'text-white' : 'text-[var(--ink)]',
           )}
         >
           <span>Maslow</span>
-          <span className={dark ? 'text-white/42' : 'text-[var(--line-strong)]'}>|</span>
-          <span className="font-brand-mono text-[0.58rem] tracking-[0.34em]">AI</span>
-        </div>
-        <div className="flex items-baseline gap-2">
+          <span
+            className={cx('font-normal', dark ? 'text-white/40' : 'text-[var(--line-strong)]')}
+            aria-hidden="true"
+          >
+            |
+          </span>
           <span
             className={cx(
-              'max-w-[12rem] truncate font-display text-[1.7rem] leading-none tracking-[-0.05em]',
-              dark ? 'text-white' : 'text-[var(--ink)]',
-              compact && 'text-[1.2rem]',
+              'font-brand-mono font-semibold',
+              compact ? 'text-[0.62rem] tracking-[0.28em]' : 'text-[0.72rem] tracking-[0.3em]',
+            )}
+          >
+            AI
+          </span>
+        </div>
+        <div className="mt-1 flex items-center gap-2">
+          <span
+            className={cx(
+              'font-medium uppercase leading-none',
+              compact ? 'text-[0.64rem] tracking-[0.22em]' : 'text-[0.72rem] tracking-[0.24em]',
+              dark ? 'text-white/72' : 'text-[var(--muted)]',
             )}
           >
             Roster
@@ -79,9 +88,10 @@ export function MaslowRosterLogo({
           {rosterSuffix ? (
             <span
               className={cx(
-                'mb-0.5 rounded-full border px-2 py-0.5 text-[0.58rem] font-semibold uppercase tracking-[0.24em]',
+                'rounded-full border px-2 py-0.5 font-semibold uppercase leading-none',
+                compact ? 'text-[0.54rem] tracking-[0.2em]' : 'text-[0.58rem] tracking-[0.22em]',
                 dark
-                  ? 'border-white/14 bg-white/8 text-white/72'
+                  ? 'border-white/14 bg-white/10 text-white/72'
                   : 'border-[var(--line)] bg-white/75 text-[var(--muted)]',
               )}
             >
