@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from 'convex/react';
+import { useQuery, useConvexAuth } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import {
   CodeBlock,
@@ -88,9 +88,10 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
     promptId,
   });
 
+  const { isAuthenticated } = useConvexAuth();
   const detail = useQuery(
     api.prompts.getPromptDetail,
-    convexEnabled && !isNew ? { promptId } : 'skip',
+    convexEnabled && isAuthenticated && !isNew ? { promptId } : 'skip',
   );
 
   const [form, setForm] = useState<FormState>(EMPTY_FORM);

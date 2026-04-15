@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from 'convex/react';
+import { useQuery, useConvexAuth } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { EmptyState, PageIntro, Panel, Badge } from '@/app/components/control-plane/primitives';
 import { useTrackPageView } from '@/app/components/control-plane/useProductEvents';
@@ -12,7 +12,11 @@ import type { DashboardApiPayload, FeedbackHistoryItem } from '@/lib/roster-type
 export function SettingsScreen() {
   useTrackPageView('settings_view', { route: '/settings' });
 
-  const feedback = useQuery(api.prompts.listFeedbackHistory, convexEnabled ? { limit: 24 } : 'skip');
+  const { isAuthenticated } = useConvexAuth();
+  const feedback = useQuery(
+    api.prompts.listFeedbackHistory,
+    convexEnabled && isAuthenticated ? { limit: 24 } : 'skip',
+  );
   const subscription = useRosterResource<
     RosterEnvelope<{
       userId?: string;
@@ -100,7 +104,9 @@ export function SettingsScreen() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge>{titleCase(item.type)}</Badge>
-                      {item.severity ? <Badge tone="warning">{titleCase(item.severity)}</Badge> : null}
+                      {item.severity ? (
+                        <Badge tone="warning">{titleCase(item.severity)}</Badge>
+                      ) : null}
                     </div>
                     <span className="text-xs text-[var(--muted)]">
                       {formatRelativeDate(item.createdAt)}
@@ -123,7 +129,11 @@ export function SettingsScreen() {
       </div>
 
       <Panel
-        action={<Badge tone={dashboard.data?.data?.health?.success ? 'success' : 'warning'}>{dashboard.data?.data?.health?.success ? 'Reachable' : 'Unavailable'}</Badge>}
+        action={
+          <Badge tone={dashboard.data?.data?.health?.success ? 'success' : 'warning'}>
+            {dashboard.data?.data?.health?.success ? 'Reachable' : 'Unavailable'}
+          </Badge>
+        }
         subtitle="This keeps environment status visible without opening server logs."
         title="Environment status"
         tone="tech"

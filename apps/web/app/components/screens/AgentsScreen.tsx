@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useDeferredValue, useState } from 'react';
-import { useQuery } from 'convex/react';
+import { useQuery, useConvexAuth } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { EmptyState, PageIntro, Panel, Badge } from '@/app/components/control-plane/primitives';
 import { useTrackPageView } from '@/app/components/control-plane/useProductEvents';
@@ -17,9 +17,10 @@ export function AgentsScreen() {
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search.trim());
 
+  const { isAuthenticated } = useConvexAuth();
   const subagents = useQuery(
     api.prompts.listAgentCatalog,
-    convexEnabled && (tab === 'subagents' || !search)
+    convexEnabled && isAuthenticated && (tab === 'subagents' || !search)
       ? {
           promptType: 'subagent_registry',
           search: deferredSearch || undefined,
@@ -29,7 +30,7 @@ export function AgentsScreen() {
   );
   const mainAgents = useQuery(
     api.prompts.listAgentCatalog,
-    convexEnabled && (tab === 'main-agents' || !search)
+    convexEnabled && isAuthenticated && (tab === 'main-agents' || !search)
       ? {
           promptType: 'main_agent_template',
           search: deferredSearch || undefined,

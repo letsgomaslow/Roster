@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useQuery } from 'convex/react';
+import { useQuery, useConvexAuth } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import {
   PageIntro,
@@ -20,9 +20,10 @@ import type { DashboardApiPayload } from '@/lib/roster-types';
 export function HomeScreen() {
   useTrackPageView('home_view', { route: '/' });
 
+  const { isAuthenticated } = useConvexAuth();
   const snapshot = useQuery(
     api.prompts.dashboardSnapshot,
-    convexEnabled ? { promptLimit: 6, agentLimit: 4 } : 'skip',
+    convexEnabled && isAuthenticated ? { promptLimit: 6, agentLimit: 4 } : 'skip',
   );
   const dashboard = useRosterResource<RosterEnvelope<DashboardApiPayload>>('/api/roster/dashboard');
 

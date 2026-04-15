@@ -3,7 +3,7 @@
 import { useDeferredValue, useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useQuery } from 'convex/react';
+import { useQuery, useConvexAuth } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { openFeedback } from '@/lib/control-plane-events';
 import { convexEnabled } from '@/lib/convex-client';
@@ -18,12 +18,42 @@ type CommandPaletteProps = {
 };
 
 const STATIC_ITEMS = [
-  { id: 'go-home', label: 'Go to Home', description: 'Overview and readiness dashboard', href: '/' },
-  { id: 'go-library', label: 'Open Library', description: 'Search prompts and templates', href: '/library' },
-  { id: 'go-agents', label: 'Browse Agents', description: 'Inspect subagents and main agents', href: '/agents' },
-  { id: 'go-runs', label: 'Inspect Runs', description: 'Review orchestration history', href: '/runs' },
-  { id: 'go-integrations', label: 'Open Integrations', description: 'Claude Desktop, Cursor, and MCP setup', href: '/integrations' },
-  { id: 'go-settings', label: 'Open Settings', description: 'Plan, usage, feedback, and environment', href: '/settings' },
+  {
+    id: 'go-home',
+    label: 'Go to Home',
+    description: 'Overview and readiness dashboard',
+    href: '/',
+  },
+  {
+    id: 'go-library',
+    label: 'Open Library',
+    description: 'Search prompts and templates',
+    href: '/library',
+  },
+  {
+    id: 'go-agents',
+    label: 'Browse Agents',
+    description: 'Inspect subagents and main agents',
+    href: '/agents',
+  },
+  {
+    id: 'go-runs',
+    label: 'Inspect Runs',
+    description: 'Review orchestration history',
+    href: '/runs',
+  },
+  {
+    id: 'go-integrations',
+    label: 'Open Integrations',
+    description: 'Claude Desktop, Cursor, and MCP setup',
+    href: '/integrations',
+  },
+  {
+    id: 'go-settings',
+    label: 'Open Settings',
+    description: 'Plan, usage, feedback, and environment',
+    href: '/settings',
+  },
 ] as const;
 
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
@@ -35,9 +65,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query.trim());
+  const { isAuthenticated } = useConvexAuth();
   const library = useQuery(
     api.prompts.listLibrary,
-    convexEnabled && open
+    convexEnabled && isAuthenticated && open
       ? { search: deferredQuery || undefined, limit: 8 }
       : 'skip',
   );
@@ -232,7 +263,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                           {titleCase(item.promptType)}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-[var(--muted)]">{item.description || item.category}</p>
+                      <p className="mt-1 text-sm text-[var(--muted)]">
+                        {item.description || item.category}
+                      </p>
                       <p className="mt-2 text-xs text-[var(--muted)]">
                         Updated {formatRelativeDate(item.updatedAt)}
                       </p>

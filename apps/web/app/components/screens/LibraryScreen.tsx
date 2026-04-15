@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useDeferredValue, useState } from 'react';
-import { useQuery } from 'convex/react';
+import { useQuery, useConvexAuth } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { EmptyState, PageIntro, Panel, Badge } from '@/app/components/control-plane/primitives';
 import { useTrackPageView } from '@/app/components/control-plane/useProductEvents';
@@ -27,9 +27,10 @@ export function LibraryScreen() {
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
   const deferredSearch = useDeferredValue(search.trim());
 
+  const { isAuthenticated } = useConvexAuth();
   const library = useQuery(
     api.prompts.listLibrary,
-    convexEnabled
+    convexEnabled && isAuthenticated
       ? {
           search: deferredSearch || undefined,
           category: category || undefined,
