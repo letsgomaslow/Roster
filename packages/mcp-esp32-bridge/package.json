@@ -1,10 +1,11 @@
 {
-  "name": "@sparesparrow/mcp-esp32-bridge",
+  "name": "@maslowai/esp32-bridge",
   "version": "1.0.0",
-  "description": "ESP32 bridge service for MCP cognitive platform with FlatBuffers telemetry",
+  "description": "ESP32 bridge service for Roster with FlatBuffers telemetry",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
+    "roster-esp32-bridge": "dist/esp32-bridge.js",
     "mcp-esp32-bridge": "dist/esp32-bridge.js"
   },
   "scripts": {
@@ -20,6 +21,7 @@
   "keywords": [
     "mcp",
     "esp32",
+    "roster",
     "embedded",
     "iot",
     "telemetry",
@@ -27,12 +29,11 @@
     "serial",
     "bridge"
   ],
-  "author": "sparesparrow",
   "license": "Apache-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.2",
-    "@sparesparrow/mcp-prompts": "workspace:*",
-    "@sparesparrow/mcp-fbs": "workspace:*",
+    "@maslowai/roster": "workspace:*",
+    "@maslowai/fbs": "workspace:*",
     "flatbuffers": "^23.5.26",
     "serialport": "^12.0.0",
     "pino": "^8.21.0",
@@ -54,9 +55,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "workspaces": [
-    "../../mcp-prompts",
-    "../mcp-fbs"
-  ]
+  }
 }

@@ -5,6 +5,7 @@ Unified coordinator for embedded systems providing high-level orchestration of E
 ## Overview
 
 The Embedded Coordinator provides:
+
 - **Device Discovery**: Automatic detection and registration of embedded devices
 - **Cross-Device Coordination**: Orchestrated workflows spanning multiple devices
 - **Data Aggregation**: Unified telemetry and clipboard data access
@@ -14,24 +15,28 @@ The Embedded Coordinator provides:
 ## Features
 
 ### Device Coordination
+
 - **Unified Device Registry**: ESP32 and Android devices in single interface
 - **Automatic Discovery**: Device detection and capability assessment
 - **Status Monitoring**: Real-time health and connectivity monitoring
 - **Capability Mapping**: Device feature and limitation tracking
 
 ### Data Orchestration
+
 - **Telemetry Aggregation**: Cross-device sensor data collection and analysis
 - **Clipboard Synchronization**: Unified clipboard management across devices
 - **Historical Analysis**: Time-series data analysis and pattern detection
 - **Data Backup**: Coordinated backup of device data and configurations
 
 ### Cognitive Workflows
+
 - **Cross-Device Workflows**: Multi-device orchestrated operations
 - **Pattern Recognition**: Usage pattern analysis across device ecosystem
 - **Predictive Modeling**: Behavior prediction based on historical data
 - **Anomaly Detection**: Automated detection of unusual device behavior
 
 ### Safety and Reliability
+
 - **Emergency Shutdown**: Coordinated emergency stop for all devices
 - **Health Monitoring**: Continuous system health assessment
 - **Fault Tolerance**: Graceful handling of device failures
@@ -40,22 +45,27 @@ The Embedded Coordinator provides:
 ## MCP Tools
 
 ### Device Management
+
 - `discover_embedded_devices` - Discover and list all embedded devices
 - `get_embedded_device_status` - Get overview of device status and health
 
 ### Data Operations
+
 - `sync_clipboard_across_devices` - Synchronize clipboard across devices
 - `aggregate_embedded_telemetry` - Aggregate sensor data from multiple devices
 
 ### Workflow Orchestration
+
 - `execute_cross_device_workflow` - Execute coordinated multi-device workflows
 - `monitor_embedded_health` - Monitor health of all embedded devices
 
 ### Cognitive Analysis
+
 - `analyze_embedded_patterns` - Analyze usage patterns across devices
 - `predict_embedded_behavior` - Predict device behavior based on patterns
 
 ### Safety Operations
+
 - `emergency_embedded_shutdown` - Emergency shutdown of all devices
 - `backup_embedded_data` - Backup data from all embedded devices
 
@@ -213,8 +223,8 @@ ESP32 Devices          │ • Prediction     │    Android Devices
                               │
                               ▼
                        ┌─────────────────┐
-                       │ mcp-prompts     │
-                       │                 │
+                       │   Roster MCP    │
+                       │ @maslowai/roster│
                        │ • Cognitive     │
                        │ • Learning      │
                        │ • Patterns      │
@@ -259,10 +269,10 @@ pnpm dev
 
 ## Dependencies
 
-- `@sparesparrow/mcp-prompts` - Cognitive prompt management
-- `@sparesparrow/mcp-fbs` - FlatBuffers schemas
-- `@sparesparrow/mcp-esp32-bridge` - ESP32 device bridge
-- `@sparesparrow/mcp-android-bridge` - Android device bridge
+- `@maslowai/roster` - Cognitive prompt management
+- `@maslowai/fbs` - FlatBuffers schemas
+- `@maslowai/esp32-bridge` - ESP32 device bridge
+- `@maslowai/android-bridge` - Android device bridge
 - `@modelcontextprotocol/sdk` - MCP protocol
 
 ## License

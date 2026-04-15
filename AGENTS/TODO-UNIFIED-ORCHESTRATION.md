@@ -1,23 +1,25 @@
-# MCP-Prompts: Unified Orchestration Implementation TODO
+> **Archive / historical context:** Planning doc with older naming. **Current product:** Roster MCP · Maslow AI · npm `@maslowai/roster`.
 
-**Goal**: Integrate Claude Orchestrator v3, subagent patterns from VoltAgent, and scaffolding capabilities from mcp-project-orchestrator into mcp-prompts as a single, unified system.
+# Unified orchestration implementation TODO (historical)
+
+**Goal**: Integrate Claude Orchestrator v3, subagent patterns from VoltAgent, and scaffolding capabilities from external orchestrator projects into **Roster MCP** as a single, unified system.
 
 **Status**: Planning Phase  
 **Last Updated**: 2025-01-09  
-**Owner**: sparesparrow
+**Owner**: Maslow AI (historical draft)
 
 ---
 
 ## Phase 0: Preparation & Research
 
 ### 0.1 Study source repositories
-- [ ] **Clone and review mcp-project-orchestrator**
-  - URL: https://github.com/sparesparrow/mcp-project-orchestrator
+
+- [ ] **Clone and review mcp-project-orchestrator** (use your org’s fork or GitHub search)
   - Focus on:
     - `src/` directory structure (ports & adapters pattern)
     - `templates/` folder (what templates exist for projects/components)
     - `project_orchestration.json` schema and usage
-    - Integration plan: https://github.com/sparesparrow/mcp-project-orchestrator/blob/main/integration_plan.md
+    - Upstream integration / design docs in that repository
   - Copy/reuse:
     - Hexagonal architecture code generation patterns
     - Project template system
@@ -45,6 +47,7 @@
   - Reference: https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk
 
 ### 0.2 Audit current mcp-prompts codebase
+
 - [ ] Map existing storage adapters (DynamoDB, PostgreSQL, file, memory)
 - [ ] Review current REST API structure
 - [ ] Identify where new subagent registry endpoints will live
@@ -52,6 +55,7 @@
 - [ ] Review current TypeScript/Node patterns and linting rules
 
 ### 0.3 Design unified data model
+
 - [ ] Create unified JSON schema for:
   - Subagent definitions (combining VoltAgent + your v3 design)
   - Main agent templates (per project type)
@@ -65,8 +69,10 @@
 ## Phase 1: Data Model & Storage Extensions
 
 ### 1.1 Extend Prompt model to support "Subagent Registry"
+
 - [ ] Add new Prompt type: `"type": "subagent_registry"`
 - [ ] Schema fields:
+
   ```json
   {
     "id": "subagent_registry",
@@ -80,15 +86,16 @@
     "tools": ["tool1", "tool2"],
     "mcp_servers": ["github", "filesystem"],
     "version": "1.0.0",
-    "author": "sparesparrow|voltAgent|contributor",
+    "author": "maslow|voltAgent|contributor",
     "source_url": "https://github.com/...",
     "compatible_with": ["multiplatform_iot", "python_backend"],
-    "variables": [{"name": "...", "type": "..."}]
+    "variables": [{ "name": "...", "type": "..." }]
   }
   ```
 
 - [ ] Add new Prompt type: `"type": "main_agent_template"`
 - [ ] Schema fields:
+
   ```json
   {
     "id": "main_agent_cpp_backend",
@@ -122,6 +129,7 @@
   ```
 
 ### 1.2 Create storage/adapter methods for new types
+
 - [ ] In `src/domain/`:
   - Create `Subagent` entity
   - Create `MainAgentTemplate` entity
@@ -139,6 +147,7 @@
   - Ensure all return fully-formed JSON suitable for Claude's `agents` parameter or shell script generation
 
 ### 1.3 Add database migrations
+
 - [ ] PostgreSQL migrations:
   - Create `subagent_registry` table
   - Create `main_agent_templates` table
@@ -157,6 +166,7 @@
 ## Phase 2: REST API & MCP Tools
 
 ### 2.1 Add REST endpoints for subagent registry
+
 - [ ] `GET /v1/subagents` - List all subagents with filtering
   - Query params: `?category=dev&tags=iot&model=sonnet`
   - Returns: Array of subagent definitions
@@ -183,6 +193,7 @@
   - Returns: JSON with which subagents to spawn, MCP servers to use, expected time/cost
 
 ### 2.2 Add MCP tools
+
 - [ ] In `src/mcp/tools/`:
   - `list_subagents(category?: string, tags?: string[])` → List available subagents
   - `get_subagent(id: string)` → Fetch subagent definition
@@ -199,11 +210,13 @@
 ## Phase 3: Curate & Port Subagent Definitions
 
 ### 3.1 Import VoltAgent categories into mcp-prompts
+
 Reference: https://github.com/VoltAgent/awesome-claude-code-subagents
 
 Create Prompt entries (type: `subagent_registry`) for each VoltAgent subagent adapted to your needs:
 
 #### Dev & Language Specialists
+
 - [ ] `dev/backend-developer` (base analyzer template, adaptable per language)
 - [ ] `dev/typescript-pro` (for Node/Web components)
 - [ ] `dev/python-pro` (for Python services)
@@ -213,6 +226,7 @@ Create Prompt entries (type: `subagent_registry`) for each VoltAgent subagent ad
 - [ ] `dev/mcp-developer` (MCP server/tool design, new category)
 
 #### Infrastructure & DevOps
+
 - [ ] `infra/devops-engineer`
 - [ ] `infra/kubernetes-specialist`
 - [ ] `infra/terraform-engineer`
@@ -221,6 +235,7 @@ Create Prompt entries (type: `subagent_registry`) for each VoltAgent subagent ad
 - [ ] `infra/ci-cd-engineer`
 
 #### Quality & Security
+
 - [ ] `quality/code-reviewer`
 - [ ] `quality/security-auditor`
 - [ ] `quality/performance-engineer`
@@ -228,25 +243,30 @@ Create Prompt entries (type: `subagent_registry`) for each VoltAgent subagent ad
 - [ ] `quality/penetration-tester` (optional, advanced)
 
 #### DX & Documentation
+
 - [ ] `dx/documentation-engineer`
 - [ ] `dx/dx-optimizer`
 - [ ] `dx/git-workflow-manager`
 - [ ] `dx/tooling-engineer`
 
 #### Specialized IoT/Hardware
+
 - [ ] `iot/embedded-systems` (ESP32, Arduino, FreeRTOS)
 - [ ] `iot/iot-engineer` (system-level IoT orchestration)
 - [ ] `iot/sensor-integration` (data pipelines, protocols)
 - [ ] `iot/edge-computing` (local processing, Pi as gateway)
 
 #### Meta & Orchestration
+
 - [ ] `meta/multi-agent-coordinator` (inspire main orchestrator logic)
 - [ ] `meta/workflow-orchestrator` (task planning)
 - [ ] `meta/context-manager` (manage context across agents)
 - [ ] `meta/project-architect` (overall design decisions)
 
 ### 3.2 For each subagent category, create Prompt entries
+
 Template structure:
+
 ```bash
 # For each subagent above:
 1. Create file: src/data/subagents/{category}/{name}.json
@@ -261,6 +281,7 @@ Template structure:
 ```
 
 Example file structure:
+
 ```
 src/data/subagents/
 ├── dev/
@@ -289,6 +310,7 @@ src/data/subagents/
 ```
 
 ### 3.3 Sources to extract from
+
 - [ ] **VoltAgent awesome-claude-code-subagents**:
   - GitHub: https://github.com/VoltAgent/awesome-claude-code-subagents
   - Extract: Prompt templates, tool lists, role descriptions
@@ -309,6 +331,7 @@ src/data/subagents/
 ## Phase 4: Main Agent Templates
 
 ### 4.1 Create main agent templates per project type
+
 Create Prompt entries (type: `main_agent_template`) for each project type from your v3 design:
 
 - [ ] `main_agent_cpp_backend.json`
@@ -360,6 +383,7 @@ Create Prompt entries (type: `main_agent_template`) for each project type from y
   - MCP servers: github, filesystem, mcp-project-orchestrator (when available)
 
 ### 4.2 Store main agents in mcp-prompts
+
 - [ ] Create `src/data/main-agents/` directory
 - [ ] Add one JSON file per main agent template
 - [ ] Register in storage adapters and API endpoints
@@ -370,7 +394,8 @@ Create Prompt entries (type: `main_agent_template`) for each project type from y
 ## Phase 5: Project Orchestration Integration
 
 ### 5.1 Integrate mcp-project-orchestrator capabilities
-**Reference**: https://github.com/sparesparrow/mcp-project-orchestrator
+
+**Reference**: Your orchestrator template repository (search GitHub for `mcp-project-orchestrator` or use an internal fork).
 
 Instead of embedding all of mcp-project-orchestrator, create a **lightweight adapter**:
 
@@ -392,7 +417,7 @@ Instead of embedding all of mcp-project-orchestrator, create a **lightweight ada
       "project_name": "my-mcp-server",
       "description": "My new MCP server",
       "variables": {
-        "author": "sparesparrow",
+        "author": "maslow",
         "license": "MIT",
         "storage_backend": "postgres"
       },
@@ -419,7 +444,7 @@ Instead of embedding all of mcp-project-orchestrator, create a **lightweight ada
   - Rationale: Simpler, no submodules, all in one repo, easier to customize
 
 - [ ] **Copy templates from mcp-project-orchestrator repo**
-  - URL: https://github.com/sparesparrow/mcp-project-orchestrator/tree/main/templates
+  - URL: (your orchestrator fork)
   - Copy/adapt:
     - `templates/hexagonal-architecture/` → for MCP servers
     - `templates/aws-cdk/` → for AWS infrastructure
@@ -429,6 +454,7 @@ Instead of embedding all of mcp-project-orchestrator, create a **lightweight ada
   - Store as JSON Prompt entries with template_id mapping
 
 ### 5.2 Create project template Prompt entries
+
 - [ ] `project_template_mcp_server.json`
   - Includes: hexagonal architecture, MCP tool definitions, storage adapter pattern, devcontainer, GitHub Actions, Docker
 
@@ -448,6 +474,7 @@ Instead of embedding all of mcp-project-orchestrator, create a **lightweight ada
   - Includes: Vite/Webpack, React/Vue structure, testing, linting, build config
 
 ### 5.3 Create MCP tool for scaffolding
+
 - [ ] `generate_project_structure(template_id, variables)` MCP tool
   - Fetches template from storage
   - Renders variables (using handlebars or simple string replacement)
@@ -459,6 +486,7 @@ Instead of embedding all of mcp-project-orchestrator, create a **lightweight ada
 ## Phase 6: Orchestrator Integration
 
 ### 6.1 Create "orchestrator" REST endpoint
+
 - [ ] `POST /v1/orchestrate` - Master orchestration endpoint
   - Input:
     ```json
@@ -485,9 +513,11 @@ Instead of embedding all of mcp-project-orchestrator, create a **lightweight ada
   - Returns plan only (no execution)
 
 ### 6.2 Create claude-orchestrate-v4.sh script
+
 This replaces your v3 script, now fetching everything from mcp-prompts:
 
 - [ ] Script flow:
+
   ```bash
   1. Parse arguments (project_path, mode)
   2. Call POST /v1/orchestrate (or GET /v1/orchestration-plan with ?dry_run=true)
@@ -508,6 +538,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 - [ ] Location: `scripts/claude-orchestrate-v4.sh` in mcp-prompts repo
 
 ### 6.3 Add CI/CD integration
+
 - [ ] GitHub Actions workflow: `.github/workflows/auto-analyze.yml`
   - Triggers on: PR, push to main, manual dispatch
   - Runs: `claude-orchestrate-v4.sh . analyze`
@@ -518,6 +549,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 ## Phase 7: AGENTS.md Standardization
 
 ### 7.1 Create AGENTS.md template Prompt entries
+
 - [ ] `agents_md_template_mcp_server.json`
   - Contains markdown template for MCP servers
   - Sections: Project Overview, Components, Build, Testing, Config, etc.
@@ -533,6 +565,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 - [ ] For each archetype: one template Prompt
 
 ### 7.2 Create "documentation-engineer" subagent
+
 - [ ] Subagent definition: `dx/documentation-engineer.json`
   - System prompt: "You are a documentation expert. You create clear, agent-friendly AGENTS.md files for projects."
   - Tools: Read, Edit, (optionally push to GitHub via MCP)
@@ -545,6 +578,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - Uses: documentation-engineer subagent + AGENTS.md templates
 
 ### 7.3 Standardize docs for your own repos
+
 - [ ] Add AGENTS.md to mcp-prompts itself
   - Describe: REST API, MCP tools, subagent registry, main agents, project templates
   - How to: Use subagent registry, request orchestration, extend with custom subagents
@@ -559,6 +593,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 ## Phase 8: Testing & Validation
 
 ### 8.1 Add tests for new endpoints
+
 - [ ] `tests/api/subagents.test.ts`
   - `GET /v1/subagents` returns correct list
   - Filtering by category, tags works
@@ -577,6 +612,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - End-to-end: Detect project type, fetch config, build agents JSON, verify structure
 
 ### 8.2 Test with real projects
+
 - [ ] Run orchestrator on mia/ project
   - Verify: Detects multiplatform_iot
   - Verify: Loads mia_orchestrator main agent
@@ -594,6 +630,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - Verify: FastAPI-specific subagent customizations applied
 
 ### 8.3 Cost & performance validation
+
 - [ ] Estimate token usage for full orchestration run:
   - Discovery phase (all haiku subagents in parallel): ~50k tokens
   - Analysis phase (sonnet subagents): ~100k tokens
@@ -611,6 +648,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 ## Phase 9: Documentation & Examples
 
 ### 9.1 Create comprehensive docs
+
 - [ ] `docs/subagent-registry.md`
   - What is a subagent?
   - How to create one
@@ -642,6 +680,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - Examples per project type
 
 ### 9.2 Add examples
+
 - [ ] `examples/orchestration-results/` folder
   - Example outputs from full analyses
   - Example agent configs generated
@@ -656,6 +695,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - How to use it to scaffold a project
 
 ### 9.3 Update main README.md
+
 - [ ] Add sections:
   - Unified Orchestration System (new!)
   - Subagent Registry (new!)
@@ -668,6 +708,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 ## Phase 10: Migration & Rollout
 
 ### 10.1 Prepare migration from scattered configs
+
 - [ ] Consolidate all agent configs into mcp-prompts:
   - Move improved-agents.json → `/v1/main-agents` endpoint
   - Move mia-agents-v3.json → `/v1/main-agents/main_agent_multiplatform_iot`
@@ -678,6 +719,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 - [ ] Create migration guide for teams using old system
 
 ### 10.2 Integrate mcp-prompts into your workflow
+
 - [ ] Update mcp-prompts deployment to include new endpoints
   - Deploy: Docker image (include new storage adapters)
   - Deploy: AWS CDK stack (new DynamoDB tables for subagents, etc.)
@@ -690,7 +732,9 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - DynamoDB + S3 (production AWS)
 
 ### 10.3 Create GitHub Actions for your repos
+
 - [ ] Add to mia/, mcp-prompts, ai-servis:
+
   ```yaml
   .github/workflows/auto-analyze.yml
   - Trigger: PR, push to main
@@ -706,6 +750,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   ```
 
 ### 10.4 Create onboarding guide
+
 - [ ] `ORCHESTRATION_ONBOARDING.md`
   - Step 1: Understand the architecture (read Phase 1–9 docs)
   - Step 2: Deploy mcp-prompts with new endpoints
@@ -719,6 +764,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 ## Phase 11: Advanced Features (Post-MVP)
 
 ### 11.1 Subagent customization & fine-tuning
+
 - [ ] Allow users to:
   - Fork existing subagents
   - Create custom variants with different prompts/tools
@@ -729,6 +775,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 - [ ] Add `POST /v1/subagents/{id}/rate` endpoint
 
 ### 11.2 Agent feedback loop
+
 - [ ] Collect metrics on subagent performance:
   - Execution time, token usage, success rate
   - User feedback (thumbs up/down)
@@ -740,16 +787,29 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - A/B testing different subagent sets
 
 ### 11.3 Workflow orchestration
+
 - [ ] Allow defining complex workflows:
+
   ```json
   {
     "workflow_id": "full_project_hardening",
     "steps": [
-      {"step": 1, "agent": "project-architect", "task": "Design improvements"},
-      {"step": 2, "agent": "code-reviewer", "task": "Review design", "depends_on": [1]},
-      {"step": 3, "agents": ["refactoring-specialist", "test-engineer"], "task": "Implement & test", "depends_on": [2], "parallel": true},
-      {"step": 4, "agent": "security-auditor", "task": "Audit changes", "depends_on": [3]},
-      {"step": 5, "agent": "documentation-engineer", "task": "Document changes", "depends_on": [3]}
+      { "step": 1, "agent": "project-architect", "task": "Design improvements" },
+      { "step": 2, "agent": "code-reviewer", "task": "Review design", "depends_on": [1] },
+      {
+        "step": 3,
+        "agents": ["refactoring-specialist", "test-engineer"],
+        "task": "Implement & test",
+        "depends_on": [2],
+        "parallel": true
+      },
+      { "step": 4, "agent": "security-auditor", "task": "Audit changes", "depends_on": [3] },
+      {
+        "step": 5,
+        "agent": "documentation-engineer",
+        "task": "Document changes",
+        "depends_on": [3]
+      }
     ]
   }
   ```
@@ -757,8 +817,9 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 - [ ] Add `POST /v1/workflows` to define and execute workflows
 
 ### 11.4 Agent marketplace / community sharing
+
 - [ ] GitHub-based subagent sharing:
-  - Create `sparesparrow/awesome-claude-agents` as curated list
+  - Create a curated `awesome-claude-agents`-style list under your org
   - Link to community contributions
   - Standardized metadata format for sharing
 
@@ -770,6 +831,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 ## Phase 12: Quality Assurance & Launch
 
 ### 12.1 Security audit
+
 - [ ] Review:
   - Input validation for all new endpoints
   - SQL injection risks (if using stored SQL templates)
@@ -782,6 +844,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - Rate limiting on orchestration runs
 
 ### 12.2 Performance tuning
+
 - [ ] Profile:
   - Database queries for subagent lookups
   - API response times
@@ -793,6 +856,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - Parallel subagent fetching
 
 ### 12.3 Documentation pass
+
 - [ ] Review all docs for:
   - Clarity, correctness, completeness
   - Examples and code samples
@@ -801,6 +865,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 - [ ] Create "quick start" guide
 
 ### 12.4 Launch checklist
+
 - [ ] ✅ All tests passing
 - [ ] ✅ Documentation complete
 - [ ] ✅ AGENTS.md for mcp-prompts itself
@@ -817,6 +882,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 ## Reference Links & Resources
 
 ### Official Documentation
+
 - **Claude Agent SDK**: https://code.claude.com/docs/
 - **Claude SDK CLI Reference**: https://code.claude.com/docs/en/cli-reference
 - **MCP Documentation**: https://code.claude.com/docs/en/mcp
@@ -824,16 +890,10 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 - **MCP Hooks Guide**: https://code.claude.com/docs/en/hooks-guide
 - **Anthropic Engineering: Building Agents with Claude Agent SDK**: https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk
 
-### Key GitHub Repositories
-- **Your mcp-prompts repo**: https://github.com/sparesparrow/mcp-prompts
-  - Current structure, storage adapters, API patterns
-  - Copy: TypeScript patterns, storage abstraction, REST framework
+### Key repositories
 
-- **Your mcp-project-orchestrator repo**: https://github.com/sparesparrow/mcp-project-orchestrator
-  - Location: https://github.com/sparesparrow/mcp-project-orchestrator
-  - Integration plan: https://github.com/sparesparrow/mcp-project-orchestrator/blob/main/integration_plan.md
-  - Copy: `templates/` folder for project scaffolding JSON
-  - Copy: Hexagonal architecture code generation patterns
+- **Roster MCP (this repo)**: `@maslowai/roster` — storage adapters, MCP tools, HTTP/MCP entrypoints.
+- **Orchestrator / template repos**: locate via your package registry or GitHub; use as inspiration for scaffolding and hexagonal layouts.
 
 - **VoltAgent awesome-claude-code-subagents**: https://github.com/VoltAgent/awesome-claude-code-subagents
   - Copy: Subagent category structure
@@ -842,6 +902,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - Adapt: Add your MCP-specific and IoT-specific variations
 
 ### Community & Examples
+
 - **AGENTS.md Standard**: https://agents.md/
   - Reference for structuring agent-friendly documentation
 
@@ -852,6 +913,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
   - Reference for subagent communication and coordination
 
 ### Your Existing Docs (to reference/build on)
+
 - **MIA-AGENTS.md**: Use as template for other projects' AGENTS.md
 - **IMPLEMENTATION-GUIDE.md**: Already created in previous phase, core reference
 - **improved-agents.json**: Core agent definitions to port into mcp-prompts
@@ -861,6 +923,7 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 ## Success Criteria
 
 ### By end of Phase 12, verify:
+
 - ✅ **Unification**: All orchestration config in mcp-prompts, no separate config files needed (fallback OK)
 - ✅ **Reusability**: 20+ subagent definitions available, categorized, testable
 - ✅ **Integration**: MCP tools for subagent discovery, main agent fetching, project scaffolding
@@ -874,22 +937,22 @@ This replaces your v3 script, now fetching everything from mcp-prompts:
 
 ## Summary: Effort Estimate
 
-| Phase | Task | Effort | Timeline |
-|-------|------|--------|----------|
-| 0 | Preparation & Research | 8 hours | 1-2 days |
-| 1 | Data Model Extensions | 16 hours | 3-4 days |
-| 2 | REST API & MCP Tools | 24 hours | 4-5 days |
-| 3 | Subagent Curation | 32 hours | 5-7 days |
-| 4 | Main Agent Templates | 12 hours | 2-3 days |
-| 5 | Project Orchestration | 20 hours | 3-4 days |
-| 6 | Orchestrator Integration | 16 hours | 3-4 days |
-| 7 | AGENTS.md Standardization | 12 hours | 2-3 days |
-| 8 | Testing & Validation | 20 hours | 3-4 days |
-| 9 | Documentation | 16 hours | 2-3 days |
-| 10 | Migration & Rollout | 12 hours | 2-3 days |
-| 11 | Advanced Features | 24 hours | Post-MVP |
-| 12 | QA & Launch | 12 hours | 2-3 days |
-| **Total** | | **216 hours** | **4-5 weeks** |
+| Phase     | Task                      | Effort        | Timeline      |
+| --------- | ------------------------- | ------------- | ------------- |
+| 0         | Preparation & Research    | 8 hours       | 1-2 days      |
+| 1         | Data Model Extensions     | 16 hours      | 3-4 days      |
+| 2         | REST API & MCP Tools      | 24 hours      | 4-5 days      |
+| 3         | Subagent Curation         | 32 hours      | 5-7 days      |
+| 4         | Main Agent Templates      | 12 hours      | 2-3 days      |
+| 5         | Project Orchestration     | 20 hours      | 3-4 days      |
+| 6         | Orchestrator Integration  | 16 hours      | 3-4 days      |
+| 7         | AGENTS.md Standardization | 12 hours      | 2-3 days      |
+| 8         | Testing & Validation      | 20 hours      | 3-4 days      |
+| 9         | Documentation             | 16 hours      | 2-3 days      |
+| 10        | Migration & Rollout       | 12 hours      | 2-3 days      |
+| 11        | Advanced Features         | 24 hours      | Post-MVP      |
+| 12        | QA & Launch               | 12 hours      | 2-3 days      |
+| **Total** |                           | **216 hours** | **4-5 weeks** |
 
 **Recommended sprint structure**: 2-week sprints, 2-3 items per sprint, parallel work possible on Phases 1-4.
 

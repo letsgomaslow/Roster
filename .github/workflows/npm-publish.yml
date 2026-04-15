@@ -113,7 +113,7 @@ jobs:
       - name: Check if version exists on npm
         id: check-version
         run: |
-          PACKAGE_NAME="@sparesparrow/mcp-prompts"
+          PACKAGE_NAME="@maslowai/roster"
           VERSION="${{ steps.package-version.outputs.version }}"
 
           if npm view $PACKAGE_NAME@$VERSION version 2>/dev/null; then
@@ -149,12 +149,12 @@ jobs:
 
             ### Installation
             ```bash
-            npm install @sparesparrow/mcp-prompts@${{ steps.package-version.outputs.version }}
+            npm install @maslowai/roster@${{ steps.package-version.outputs.version }}
             ```
 
             ### Docker
             ```bash
-            docker pull ghcr.io/sparesparrow/mcp-prompts:${{ steps.package-version.outputs.version }}
+            docker pull ghcr.io/${{ github.repository }}:${{ steps.package-version.outputs.version }}
             ```
           draft: false
           prerelease: false
@@ -180,7 +180,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://npm.pkg.github.com'
-          scope: '@sparesparrow'
+          scope: '@maslowai'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -218,6 +218,6 @@ jobs:
 
       - name: Success notification
         run: |
-          echo "✅ Successfully published @sparesparrow/mcp-prompts@${{ steps.version.outputs.version }}"
-          echo "📦 NPM: https://www.npmjs.com/package/@sparesparrow/mcp-prompts"
-          echo "🐳 Docker: https://github.com/sparesparrow/mcp-prompts/pkgs/container/mcp-prompts"
+          echo "✅ Successfully published @maslowai/roster@${{ steps.version.outputs.version }}"
+          echo "📦 NPM: https://www.npmjs.com/package/@maslowai/roster"
+          echo "🐳 Container registry: ghcr.io/${{ github.repository }}"

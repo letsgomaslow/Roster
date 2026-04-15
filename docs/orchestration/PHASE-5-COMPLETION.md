@@ -1,3 +1,5 @@
+> **Archive / historical context:** Internal phase notes. **Current product:** Roster MCP · Maslow AI · npm `@maslowai/roster`.
+
 # Phase 5: Orchestrator Script V4 - Completion Summary
 
 **Date**: 2026-01-10
@@ -14,20 +16,21 @@
 
 **Transformation from V3 to V4**:
 
-| Aspect | V3 | V4 |
-|--------|----|----|
-| **Architecture** | Config file-based | API-first |
-| **Agent Selection** | Hardcoded JSON files | Dynamic REST API |
-| **Execution** | Direct Claude CLI | HTTP API endpoints |
-| **Configuration** | Single IMPROVED_AGENTS.json | Configuration profiles |
-| **Error Handling** | Basic | Comprehensive with exit codes |
-| **Status Monitoring** | None | Polling with configurable intervals |
-| **Report Formats** | Hardcoded | Dynamic (JSON/Markdown/HTML) |
-| **Logging** | Echo statements | Colored output with levels |
+| Aspect                | V3                          | V4                                  |
+| --------------------- | --------------------------- | ----------------------------------- |
+| **Architecture**      | Config file-based           | API-first                           |
+| **Agent Selection**   | Hardcoded JSON files        | Dynamic REST API                    |
+| **Execution**         | Direct Claude CLI           | HTTP API endpoints                  |
+| **Configuration**     | Single IMPROVED_AGENTS.json | Configuration profiles              |
+| **Error Handling**    | Basic                       | Comprehensive with exit codes       |
+| **Status Monitoring** | None                        | Polling with configurable intervals |
+| **Report Formats**    | Hardcoded                   | Dynamic (JSON/Markdown/HTML)        |
+| **Logging**           | Echo statements             | Colored output with levels          |
 
 **Key Features Implemented**:
 
 1. **API-First Design**
+
    ```bash
    # V3: Direct file-based configuration
    IMPROVED_AGENTS_JSON=$(load_json "$IMPROVED_AGENTS")
@@ -51,6 +54,7 @@
    - Profile-based environment variable override system
 
 4. **Multiple Report Formats**
+
    ```bash
    # Dynamic format selection
    --format json       # For programmatic processing
@@ -59,12 +63,14 @@
    ```
 
 5. **Dry-Run Mode**
+
    ```bash
    # Preview what would be executed without calling API
    DRY_RUN=true ./scripts/claude-orchestrate-v4.sh /path/to/project
    ```
 
 6. **Flexible Execution Modes**
+
    ```bash
    # Wait for completion and save report (default)
    ./scripts/claude-orchestrate-v4.sh /path/to/project
@@ -89,6 +95,7 @@
 **Profile Files Created**:
 
 #### default.env
+
 - Standard configuration for local development
 - API URL: http://localhost:3000
 - Poll interval: 2 seconds
@@ -97,6 +104,7 @@
 - Verbose: false
 
 #### embedded.env
+
 - Optimized for embedded systems projects
 - Extended timeout: 600 seconds (10 minutes)
 - Report format: JSON (for tool integration)
@@ -104,6 +112,7 @@
 - Output directory: ./embedded-analysis-reports
 
 #### ci.env
+
 - Optimized for CI/CD pipeline integration
 - Extended timeout: 1200 seconds (20 minutes)
 - Poll interval: 5 seconds (reduce API load)
@@ -112,6 +121,7 @@
 - Output directory: ./ci-reports
 
 #### dev.env
+
 - Optimized for interactive development
 - Poll interval: 1 second (quick feedback)
 - Wait time: 300 seconds
@@ -218,18 +228,18 @@ Response: Report content in requested format
 
 **V3 → V4 Migration Benefits**:
 
-| Feature | V3 | V4 |
-|---------|----|----|
-| **Config Management** | Hardcoded JSON files | Dynamic profiles + API |
-| **Error Messages** | Generic | Specific with solutions |
-| **Status Feedback** | Fire-and-forget | Real-time polling |
-| **Report Formats** | Single format | 3 formats (JSON/MD/HTML) |
-| **Timeout Control** | Fixed | Configurable |
-| **Dry-run Mode** | Partial | Full support |
-| **API Flexibility** | Hardcoded | Configurable URL |
-| **Logging** | Basic echo | Color-coded with levels |
-| **Profile Support** | No | Yes (4 profiles) |
-| **Extensibility** | Limited | High (profiles, hooks) |
+| Feature               | V3                   | V4                       |
+| --------------------- | -------------------- | ------------------------ |
+| **Config Management** | Hardcoded JSON files | Dynamic profiles + API   |
+| **Error Messages**    | Generic              | Specific with solutions  |
+| **Status Feedback**   | Fire-and-forget      | Real-time polling        |
+| **Report Formats**    | Single format        | 3 formats (JSON/MD/HTML) |
+| **Timeout Control**   | Fixed                | Configurable             |
+| **Dry-run Mode**      | Partial              | Full support             |
+| **API Flexibility**   | Hardcoded            | Configurable URL         |
+| **Logging**           | Basic echo           | Color-coded with levels  |
+| **Profile Support**   | No                   | Yes (4 profiles)         |
+| **Extensibility**     | Limited              | High (profiles, hooks)   |
 
 ---
 
@@ -238,6 +248,7 @@ Response: Report content in requested format
 ### Code Created
 
 **Main Script**: `scripts/claude-orchestrate-v4.sh`
+
 - **Lines**: 470+
 - **Functions**: 18 total
   - 6 utility functions (log, success, error, warn, debug)
@@ -246,6 +257,7 @@ Response: Report content in requested format
 - **Features**: 12 major features
 
 **Configuration Profiles**: 4 files
+
 - `default.env` - Standard setup
 - `embedded.env` - Embedded systems optimization
 - `ci.env` - CI/CD pipeline optimization
@@ -266,6 +278,7 @@ Response: Report content in requested format
 ### Supported Orchestration Modes
 
 All 5 modes from Phase 4:
+
 - ✅ analyze - Comprehensive code analysis
 - ✅ review - Code quality review
 - ✅ refactor - Refactoring opportunities
@@ -279,36 +292,40 @@ All 5 modes from Phase 4:
 ### Function Structure
 
 **Configuration & Validation**:
+
 ```typescript
-validate_args()         // Argument validation
-check_api()             // API connectivity verification
-load_profile()          // Load configuration profile
+validate_args(); // Argument validation
+check_api(); // API connectivity verification
+load_profile(); // Load configuration profile
 ```
 
 **API Operations**:
+
 ```typescript
-detect_project_type()   // Call detection endpoint
-start_orchestration()   // Call orchestration endpoint
-get_execution_status()  // Poll status endpoint
-get_report()            // Retrieve report endpoint
-wait_for_completion()   // Poll with timeout
+detect_project_type(); // Call detection endpoint
+start_orchestration(); // Call orchestration endpoint
+get_execution_status(); // Poll status endpoint
+get_report(); // Retrieve report endpoint
+wait_for_completion(); // Poll with timeout
 ```
 
 **Output & Reporting**:
+
 ```typescript
-save_report()           // Save report to file
-display_summary()       // Show execution summary
-show_help()             // Display help information
-list_profiles()         // Show available profiles
+save_report(); // Save report to file
+display_summary(); // Show execution summary
+show_help(); // Display help information
+list_profiles(); // Show available profiles
 ```
 
 **Logging & Diagnostics**:
+
 ```typescript
-log()                   // Blue info messages
-success()               // Green success messages
-error()                 // Red error messages
-warn()                  // Yellow warning messages
-debug()                 // Debug messages (when verbose)
+log(); // Blue info messages
+success(); // Green success messages
+error(); // Red error messages
+warn(); // Yellow warning messages
+debug(); // Debug messages (when verbose)
 ```
 
 ### Error Handling Strategy
@@ -338,6 +355,7 @@ debug()                 // Debug messages (when verbose)
 ### Polling Strategy
 
 **Smart Timeout Management**:
+
 ```bash
 # Configurable parameters
 POLL_INTERVAL=2         # Time between checks (seconds)
@@ -422,6 +440,7 @@ EXEC_ID=$(./scripts/claude-orchestrate-v4.sh ... --no-wait)
 ## 📚 Documentation Files
 
 ### Created in Phase 5
+
 - `scripts/claude-orchestrate-v4.sh` - Main orchestration script
 - `scripts/profiles/default.env` - Default configuration
 - `scripts/profiles/embedded.env` - Embedded systems profile
@@ -430,6 +449,7 @@ EXEC_ID=$(./scripts/claude-orchestrate-v4.sh ... --no-wait)
 - `docs/orchestration/PHASE-5-COMPLETION.md` - This file
 
 ### Related Documentation
+
 - `docs/orchestration/PHASE-4-COMPLETION.md` - REST API details
 - `docs/orchestration/OVERALL-PROGRESS.md` - Project overview
 
@@ -440,21 +460,25 @@ EXEC_ID=$(./scripts/claude-orchestrate-v4.sh ... --no-wait)
 ### Service Dependencies
 
 **OrchestrateService**:
+
 - ✅ Project type detection (`detectProjectType`)
 - ✅ Orchestration execution (`orchestrate`)
 - ✅ Status retrieval (`getExecution`)
 - ✅ Execution listing (`listExecutions`)
 
 **ProjectScaffoldService**:
+
 - Not used in V4 script (scaffolding handled separately)
 
 **ReportGenerationService**:
+
 - ✅ Report generation in multiple formats
 - ✅ JSON/Markdown/HTML output
 
 ### API Endpoint Integration
 
 **All 9 Phase 4 endpoints utilized**:
+
 1. Health check - Connectivity verification
 2. Project detection - Type identification
 3. Orchestration start - Execution initiation
@@ -482,30 +506,37 @@ EXEC_ID=$(./scripts/claude-orchestrate-v4.sh ... --no-wait)
 ## 🎯 Key Improvements Over V3
 
 ### 1. **Decoupled Architecture**
+
 - V3: Agent configs hardcoded in script
 - V4: Configs retrieved dynamically from API
 
 ### 2. **Better Error Messages**
+
 - V3: Generic error messages
 - V4: Specific errors with actionable solutions
 
 ### 3. **Status Feedback**
+
 - V3: Fire-and-forget execution
 - V4: Real-time polling with progress updates
 
 ### 4. **Format Flexibility**
+
 - V3: Single output format
 - V4: JSON for tools, Markdown for docs, HTML for web
 
 ### 5. **Configuration Management**
+
 - V3: Edit environment variables
 - V4: Load configuration profiles
 
 ### 6. **Extensibility**
+
 - V3: Hard to modify for different scenarios
 - V4: Profiles allow easy customization
 
 ### 7. **Operational Visibility**
+
 - V3: Minimal logging
 - V4: Color-coded output with multiple detail levels
 
@@ -514,6 +545,7 @@ EXEC_ID=$(./scripts/claude-orchestrate-v4.sh ... --no-wait)
 ## 🚀 Ready for Phase 6
 
 All infrastructure in place to support:
+
 - End-to-end integration testing
 - Performance benchmarking
 - Comprehensive user documentation
@@ -531,17 +563,20 @@ Next: Phase 6 - Integration, Testing & Documentation
 ## Quick Reference
 
 ### Start the API Server
+
 ```bash
 cd /home/sparrow/projects/mcp/ai-mcp-monorepo/packages/mcp-prompts
 PROMPTS_DIR=./data/prompts npx tsx src/http/server-with-agents.ts
 ```
 
 ### Run V4 Script
+
 ```bash
 ./scripts/claude-orchestrate-v4.sh /path/to/project [mode] [options]
 ```
 
 ### Available Modes
+
 ```bash
 analyze   # Comprehensive code analysis
 review    # Code quality review
@@ -551,6 +586,7 @@ document  # Documentation assessment
 ```
 
 ### Report Formats
+
 ```bash
 --format json       # Machine-readable
 --format markdown   # Documentation
@@ -558,6 +594,7 @@ document  # Documentation assessment
 ```
 
 ### Configuration Profiles
+
 ```bash
 --profile default   # Standard setup
 --profile embedded  # Embedded systems

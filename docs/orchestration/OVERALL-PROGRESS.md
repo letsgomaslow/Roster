@@ -1,3 +1,5 @@
+> **Archive / historical context:** Internal progress notes. **Current product:** Roster MCP · Maslow AI · npm `@maslowai/roster`. Older phrases such as “MCP Prompts” may appear below.
+
 # Agent Orchestration Implementation - Overall Progress
 
 **Last Updated**: 2026-01-10
@@ -9,7 +11,9 @@
 ## 📊 Completion Status by Phase
 
 ### Phase 0: Research & Architecture ✅ COMPLETE
+
 **Status**: Architecture locked and documented
+
 - Repository structure analysis
 - Technology stack selection
 - Integration patterns identified
@@ -17,14 +21,18 @@
 - **Deliverables**: PHASE-0-RESEARCH.md
 
 ### Phase 1: Data Import - VoltAgent Subagents ⚠️ DOCUMENTED (Needs Verification)
+
 **Status**: Import script created, execution not fully verified
+
 - 127 VoltAgent subagents identified across 10 categories
 - Import script: `scripts/import-voltAgent-subagents.ts`
 - Categories: dev, language, infra, quality, data, dx, specialized, business, meta, research
 - **Note**: VoltAgent subagent directories exist in `/data/prompts/subagents/` (business, data, dev, etc.) but need verification
 
 ### Phase 2: Service Layer & REST API ✅ COMPLETE
+
 **Status**: All infrastructure in place and integrated
+
 - SubagentService: 15 methods for subagent management
 - MainAgentService: 10 methods for main agent orchestration
 - REST API: 14 endpoints (7 subagent + 7 main agent endpoints)
@@ -32,7 +40,9 @@
 - **Deliverables**: PHASE-2-COMPLETION.md
 
 ### Phase 3: Data Migration & Import ✅ COMPLETE
+
 **Status**: All templates imported and validated
+
 - 7 main agent templates imported (C++, Python, Embedded, Android, Web, DevOps, Multi-platform)
 - 11 global subagents imported (explorer, analyzer, diagrammer, etc.)
 - Repository enhancement: `findById` now searches subdirectories
@@ -40,7 +50,9 @@
 - **Deliverables**: PHASE-3-COMPLETION.md
 
 ### Phase 4: Business Logic & Orchestration Service ✅ COMPLETE
+
 **Status**: All services implemented and integrated
+
 - OrchestrateService implementation (400+ lines)
 - Project type detection for 8+ languages
 - 5 orchestration modes (analyze, review, refactor, test, document)
@@ -52,7 +64,9 @@
 - **Actual Time**: 1 day (estimated 2 days - 50% faster)
 
 ### Phase 5: Orchestrator Script V4 ✅ COMPLETE
+
 **Status**: All components implemented and tested
+
 - V4 script created with API-first approach (470+ lines)
 - 4 configuration profiles (default, embedded, ci, dev)
 - Dry-run mode fully implemented
@@ -63,7 +77,9 @@
 - **Actual Time**: 0.5 days (estimated 1 day - 50% faster)
 
 ### Phase 6: Integration & Testing ✅ COMPLETE
+
 **Status**: All testing infrastructure implemented
+
 - Integration test suite (20 test scenarios, 500+ lines)
 - GitHub Actions CI/CD workflow (4 jobs, 250+ lines)
 - Migration guide V3→V4 (600+ lines)
@@ -137,13 +153,16 @@ packages/mcp-prompts/
 ## 🔗 API Overview
 
 ### Running the Server
+
 ```bash
 export PROMPTS_DIR=./data/prompts
 npx tsx src/http/server-with-agents.ts
 ```
+
 Server runs on http://localhost:3000
 
 ### Main Agent Endpoints (7)
+
 - `GET /v1/main-agents` - List all main agents
 - `GET /v1/main-agents/:id` - Get specific main agent
 - `GET /v1/main-agents/:id/configuration` - Full config with subagents
@@ -153,6 +172,7 @@ Server runs on http://localhost:3000
 - `GET /v1/main-agents/:id/preview` - Execution preview
 
 ### Subagent Endpoints (7)
+
 - `GET /v1/subagents` - List with filtering
 - `GET /v1/subagents/:id` - Get specific subagent
 - `GET /v1/subagents/categories` - List categories
@@ -162,6 +182,7 @@ Server runs on http://localhost:3000
 - `POST /v1/subagents/:id/execute` - Record execution
 
 ### Example Requests
+
 ```bash
 # Get C++ backend main agent
 curl http://localhost:3000/v1/main-agents/main_agent_cpp_backend
@@ -184,15 +205,17 @@ curl http://localhost:3000/v1/subagents/explorer/stats
 ## 📊 Data Statistics
 
 ### Templates & Subagents
-| Category | Count | Status |
-|----------|-------|--------|
-| Main Agent Templates | 7 | ✅ Complete |
-| Global Subagents | 11 | ✅ Complete |
-| VoltAgent Subagents | 127 | ⚠️ Documented |
-| **Total Manageable Agents** | **145** | ⚠️ |
-| Subagent References | 56 | ✅ Validated |
+
+| Category                    | Count   | Status        |
+| --------------------------- | ------- | ------------- |
+| Main Agent Templates        | 7       | ✅ Complete   |
+| Global Subagents            | 11      | ✅ Complete   |
+| VoltAgent Subagents         | 127     | ⚠️ Documented |
+| **Total Manageable Agents** | **145** | ⚠️            |
+| Subagent References         | 56      | ✅ Validated  |
 
 ### Project Types Supported
+
 - C++ Backend
 - Python Backend
 - Embedded IoT (ESP32, Arduino, PlatformIO)
@@ -202,6 +225,7 @@ curl http://localhost:3000/v1/subagents/explorer/stats
 - Multi-platform IoT (MIA - Raspberry Pi, ESP32, Android, Backend, Web)
 
 ### Capabilities by Model
+
 - **Claude Opus** (4 min response): Main agent orchestration, complex analysis
 - **Claude Sonnet** (3 min response): Analyzer, Reviewer, Refactorer subagents
 - **Claude Haiku** (1 min response): Explorer, Diagrammer, Tester, Config subagents
@@ -211,6 +235,7 @@ curl http://localhost:3000/v1/subagents/explorer/stats
 ## 🎯 Key Features Implemented
 
 ### Phase 2-3 Features
+
 1. **Flexible Filtering**
    - By category, tags, model, project type
    - Full-text search across all fields
@@ -245,6 +270,7 @@ curl http://localhost:3000/v1/subagents/explorer/stats
 ## 🚀 Next Steps - Phase 4: Orchestration Service
 
 ### OrchestrateService Implementation
+
 ```typescript
 // Core methods needed:
 detectProjectType(filePath): Promise<ProjectType>
@@ -255,12 +281,14 @@ captureInsights(result): Promise<void>
 ```
 
 ### Project Type Detection
+
 - Analyze project structure
 - Detect languages and frameworks
 - Identify best-fit main agent template
 - Return confidence scores
 
 ### Orchestration Modes
+
 - **analyze**: Deep code analysis and architecture review
 - **review**: Code quality and best practices evaluation
 - **refactor**: Identify and recommend refactoring opportunities
@@ -268,6 +296,7 @@ captureInsights(result): Promise<void>
 - **document**: Documentation needs and recommendations
 
 ### Multi-phase Execution
+
 1. **Phase 1**: Use Explorer to map project
 2. **Phase 2**: Use appropriate Analyzer for language/framework
 3. **Phase 3**: Execute specialized analysis based on mode
@@ -279,6 +308,7 @@ captureInsights(result): Promise<void>
 ## 📈 Metrics & Monitoring
 
 ### Current Metrics (Post-Phase 3)
+
 - **API Endpoints**: 14 active
 - **Main Agent Templates**: 7
 - **Subagent Registry**: 11 global + 127 VoltAgent = 138 total
@@ -287,12 +317,14 @@ captureInsights(result): Promise<void>
 - **Import Success Rate**: 100%
 
 ### Expected Metrics (Post-Phase 4)
+
 - **Service Methods**: 15+ in OrchestrateService
 - **Project Type Detection**: 7+ project types supported
 - **Orchestration Modes**: 5 modes
 - **Business Logic Tests**: 20+ tests
 
 ### Expected Metrics (Post-Phase 6)
+
 - **Total Lines of Code**: ~5000+ (all phases)
 - **Test Coverage**: >90% for core logic
 - **API Documentation**: Complete OpenAPI/Swagger
@@ -302,19 +334,20 @@ captureInsights(result): Promise<void>
 
 ## 📚 Documentation Files
 
-| File | Phase | Purpose |
-|------|-------|---------|
-| PHASE-0-RESEARCH.md | 0 | Architecture decisions and technology selection |
-| PHASE-1-SUBAGENT-IMPORT.md | 1 | VoltAgent import documentation |
-| PHASE-2-COMPLETION.md | 2 | Service layer and REST API implementation |
-| PHASE-3-COMPLETION.md | 3 | Main agent templates and global subagents |
-| OVERALL-PROGRESS.md | - | This summary document |
+| File                       | Phase | Purpose                                         |
+| -------------------------- | ----- | ----------------------------------------------- |
+| PHASE-0-RESEARCH.md        | 0     | Architecture decisions and technology selection |
+| PHASE-1-SUBAGENT-IMPORT.md | 1     | VoltAgent import documentation                  |
+| PHASE-2-COMPLETION.md      | 2     | Service layer and REST API implementation       |
+| PHASE-3-COMPLETION.md      | 3     | Main agent templates and global subagents       |
+| OVERALL-PROGRESS.md        | -     | This summary document                           |
 
 ---
 
 ## ✅ Verification Checklist
 
 ### Phase 2 (Service Layer & REST API)
+
 - ✅ SubagentService with 15 methods
 - ✅ MainAgentService with 10 methods
 - ✅ 14 REST API endpoints
@@ -323,6 +356,7 @@ captureInsights(result): Promise<void>
 - ✅ Error handling with custom exceptions
 
 ### Phase 3 (Data Migration & Import)
+
 - ✅ 7 main agent templates imported
 - ✅ 11 global subagents imported
 - ✅ File repository enhanced for subdirectories
@@ -331,6 +365,7 @@ captureInsights(result): Promise<void>
 - ✅ Comprehensive test suite passes
 
 ### Ready for Phase 4
+
 - ✅ Data infrastructure complete
 - ✅ API layer complete
 - ✅ Service layer complete

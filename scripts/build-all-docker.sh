@@ -47,11 +47,11 @@ pnpm run docker:build:mcp
 # Tag with version if provided
 if [ -n "$TAG_VERSION" ]; then
   echo "🏷️  Tagging images with version $TAG_VERSION..."
-  docker tag sparesparrow/mcp-prompts:file sparesparrow/mcp-prompts:file-$TAG_VERSION
-  docker tag sparesparrow/mcp-prompts:memory sparesparrow/mcp-prompts:memory-$TAG_VERSION
-  docker tag sparesparrow/mcp-prompts:postgres sparesparrow/mcp-prompts:postgres-$TAG_VERSION
-  docker tag sparesparrow/mcp-prompts:aws sparesparrow/mcp-prompts:aws-$TAG_VERSION
-  docker tag sparesparrow/mcp-prompts:latest sparesparrow/mcp-prompts:$TAG_VERSION
+  docker tag roster/roster:file roster/roster:file-$TAG_VERSION
+  docker tag roster/roster:memory roster/roster:memory-$TAG_VERSION
+  docker tag roster/roster:postgres roster/roster:postgres-$TAG_VERSION
+  docker tag roster/roster:aws roster/roster:aws-$TAG_VERSION
+  docker tag roster/roster:latest roster/roster:$TAG_VERSION
 fi
 
 # Push to registries if requested
@@ -69,18 +69,18 @@ fi
 echo "✅ All Docker images built successfully!"
 echo ""
 echo "Available images:"
-docker images | grep sparesparrow/mcp-prompts | head -10
+docker images | grep roster/roster | head -10
 echo ""
 echo "Usage examples:"
 echo "  # Run with file storage"
-echo "  docker run -p 3003:3003 -v \$(pwd)/data:/app/data sparesparrow/mcp-prompts:file"
+echo "  docker run -p 3003:3003 -v \$(pwd)/data:/app/data roster/roster:file"
 echo ""
 echo "  # Run with memory storage"
-echo "  docker run -p 3003:3003 sparesparrow/mcp-prompts:memory"
+echo "  docker run -p 3003:3003 roster/roster:memory"
 echo ""
 echo "  # Run with PostgreSQL (requires postgres container)"
 echo "  docker-compose -f docker-compose.postgres.yml up"
 echo ""
 echo "  # Run with AWS storage (requires AWS credentials)"
-echo "  docker run -p 3003:3003 -e AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY sparesparrow/mcp-prompts:aws"
+echo "  docker run -p 3003:3003 -e AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY roster/roster:aws"
 

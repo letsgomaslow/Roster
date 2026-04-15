@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import fs from 'node:fs';
+import https from 'node:https';
+
 // AWS adapters are imported dynamically to avoid dependencies
 import { PromptService } from './core/services/prompt.service';
 import { McpServer } from './mcp/mcp-server';
@@ -11,14 +14,31 @@ import pino from 'pino';
 import { URL } from 'url';
 import { DynamoDBClient, GetItemCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { PaymentService } from './core/services/payment.service';
+import { clerkMiddleware, getAuth, requireAuth } from '@clerk/express';
+import { convexAuthStorage, getCanonicalConvexOwnerId } from './lib/convex-auth-context.js';
+import { createPromptsSdkMcpServer } from './mcp/prompts-sdk-mcp-server.js';
+import { registerStreamableMcpRoutes } from './mcp/register-streamable-mcp.js';
+import { SlashCommandsService } from './core/services/slash-commands.service.js';
+import { SubagentService } from './core/services/subagent.service.js';
+import { MainAgentService } from './core/services/main-agent.service.js';
+import { OrchestrateService } from './core/services/orchestrate.service.js';
+import { ProjectScaffoldService } from './core/services/project-scaffold.service.js';
+import { ReportGenerationService } from './core/services/report-generation.service.js';
+import { createSubagentsRouter } from './http/routes/subagents.router.js';
+import { createMainAgentsRouter } from './http/routes/main-agents.router.js';
+import { createOrchestrateRouter } from './http/routes/orchestrate.router.js';
 
 // Create a logger that outputs to stderr for MCP mode compatibility
 // In MCP stdio mode, disable logging to avoid interfering with JSON-RPC protocol
-const logger = process.env.MODE === 'mcp'
-  ? { info: () => {}, error: () => {}, warn: () => {}, debug: () => {} } // No-op logger for MCP
-  : pino({
-      level: process.env.LOG_LEVEL || 'info'
-    }, process.stderr); // Normal logger for other modes
+const logger =
+  process.env.MODE === 'mcp'
+    ? { info: () => {}, error: () => {}, warn: () => {}, debug: () => {} } // No-op logger for MCP
+    : pino(
+        {
+          level: process.env.LOG_LEVEL || 'info',
+        },
+        process.stderr,
+      ); // Normal logger for other modes
 
 // In MCP mode, silence all console output to prevent interference with JSON-RPC protocol
 if (process.env.MODE === 'mcp') {
@@ -36,7 +56,11 @@ const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 // Middleware to extract user context from Authorization header
-async function extractUserContext(req: express.Request, res: express.Response, next: express.NextFunction) {
+async function extractUserContext(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
   try {
     const authHeader = req.headers.authorization;
 
@@ -50,16 +74,18 @@ async function extractUserContext(req: express.Request, res: express.Response, n
 
       if (userId) {
         // Get user subscription info from DynamoDB
-        const userResult = await dynamoClient.send(new GetItemCommand({
-          TableName: process.env.USERS_TABLE!,
-          Key: { user_id: { S: userId } }
-        }));
+        const userResult = await dynamoClient.send(
+          new GetItemCommand({
+            TableName: process.env.USERS_TABLE!,
+            Key: { user_id: { S: userId } },
+          }),
+        );
 
         if (userResult.Item) {
           (req as any).userContext = {
             userId,
             email: userEmail,
-            subscriptionTier: userResult.Item.subscription_tier?.S || 'free'
+            subscriptionTier: userResult.Item.subscription_tier?.S || 'free',
           };
         }
       }
@@ -80,6 +106,13 @@ function rateLimit(req: express.Request, res: express.Response, next: express.Ne
 
 async function startServer() {
   try {
+    // Accept frontend-style publishable key var for local/dev parity.
+    const clerkPublishableKey =
+      process.env.CLERK_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    if (clerkPublishableKey && !process.env.CLERK_PUBLISHABLE_KEY) {
+      process.env.CLERK_PUBLISHABLE_KEY = clerkPublishableKey;
+    }
+
     const mode = process.env.MODE || 'mcp';
     const port = parseInt(process.env.PORT || '3000');
     const host = process.env.HOST || '0.0.0.0';
@@ -101,45 +134,70 @@ async function startServer() {
       eventBus = new MemoryEventBus();
     } else if (storageType === 'postgres') {
       // PostgreSQL support temporarily disabled - needs pg module installation
-      throw new Error('PostgreSQL storage is not yet implemented. Use file or memory storage instead.');
+      throw new Error(
+        'PostgreSQL storage is not yet implemented. Use file or memory storage instead.',
+      );
     } else if (storageType === 'memory') {
-      const { MemoryPromptRepository } = await import('./adapters/memory/memory-prompt-repository.js');
+      const { MemoryPromptRepository } =
+        await import('./adapters/memory/memory-prompt-repository.js');
       const { FileCatalogRepository } = await import('./adapters/file/file-catalog-repository.js');
       const { MemoryEventBus } = await import('./adapters/memory/memory-event-bus.js');
 
       promptRepository = new MemoryPromptRepository();
       catalogRepository = new FileCatalogRepository(process.env.PROMPTS_DIR || './data/prompts');
       eventBus = new MemoryEventBus();
-        } else {
-            // AWS-based storage (legacy default)
-            const { DynamoDBAdapter } = await import('./adapters/aws/dynamodb-adapter.js');
-            const { S3CatalogAdapter } = await import('./adapters/aws/s3-adapter.js');
-            const { SQSAdapter } = await import('./adapters/aws/sqs-adapter.js');
+    } else if (storageType === 'convex') {
+      if (!process.env.CONVEX_URL) {
+        throw new Error('STORAGE_TYPE=convex requires CONVEX_URL');
+      }
+      const hasClerk = !!clerkPublishableKey && !!process.env.CLERK_SECRET_KEY;
+      const hasDevOwner = !!process.env.CONVEX_DEV_OWNER_USER_ID;
+      if (!hasClerk && !hasDevOwner) {
+        throw new Error(
+          'STORAGE_TYPE=convex requires CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY, or CONVEX_DEV_OWNER_USER_ID (dev only)',
+        );
+      }
+      const { ConvexPromptRepository } =
+        await import('./adapters/convex/convex-prompt-repository.js');
+      const { MemoryCatalogRepository } = await import('./adapters/memory-adapter.js');
+      const { MemoryEventBus } = await import('./adapters/memory/memory-event-bus.js');
+      promptRepository = new ConvexPromptRepository(process.env.CONVEX_URL);
+      catalogRepository = new MemoryCatalogRepository();
+      eventBus = new MemoryEventBus();
+    } else {
+      // AWS-based storage (legacy default)
+      const { DynamoDBAdapter } = await import('./adapters/aws/dynamodb-adapter.js');
+      const { S3CatalogAdapter } = await import('./adapters/aws/s3-adapter.js');
+      const { SQSAdapter } = await import('./adapters/aws/sqs-adapter.js');
 
-            promptRepository = new DynamoDBAdapter(
-              process.env.PROMPTS_TABLE || 'mcp-prompts'
-            );
-            catalogRepository = new S3CatalogAdapter(
-              process.env.PROMPTS_BUCKET || 'mcp-prompts-catalog'
-            );
-            eventBus = new SQSAdapter(
-              process.env.PROCESSING_QUEUE || 'mcp-prompts-processing'
-            );
-        }
+      promptRepository = new DynamoDBAdapter(process.env.PROMPTS_TABLE || 'mcp-prompts');
+      catalogRepository = new S3CatalogAdapter(process.env.PROMPTS_BUCKET || 'mcp-prompts-catalog');
+      eventBus = new SQSAdapter(process.env.PROCESSING_QUEUE || 'mcp-prompts-processing');
+    }
 
     const metricsCollector = new MetricsCollector();
 
     // Initialize services
-    const promptService = new PromptService(
-      promptRepository,
-      catalogRepository,
-      eventBus
-    );
+    const promptService = new PromptService(promptRepository, catalogRepository, eventBus);
     const paymentService = new PaymentService();
     const mcpServer = new McpServer(promptService, promptRepository);
+    const subagentService = new SubagentService(promptRepository, eventBus);
+    const mainAgentService = new MainAgentService(promptRepository, subagentService, eventBus);
+    const orchestrateService = new OrchestrateService(
+      promptRepository,
+      subagentService,
+      mainAgentService,
+      eventBus,
+    );
+    const projectScaffoldService = new ProjectScaffoldService(promptRepository, eventBus);
+    const reportGenerationService = new ReportGenerationService(eventBus);
 
     // Update rate limiting function with service reference
-    const actualRateLimit = function(req: express.Request, res: express.Response, next: express.NextFunction) {
+    const actualRateLimit = function (
+      req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) {
       const userContext = (req as any).userContext;
       const clientId = userContext?.userId || req.ip || 'anonymous';
 
@@ -148,7 +206,10 @@ async function startServer() {
       const windowStart = Math.floor(now / limits.windowMs) * limits.windowMs;
 
       const key = `${clientId}:${windowStart}`;
-      const current = rateLimitStore.get(key) || { count: 0, resetTime: windowStart + limits.windowMs };
+      const current = rateLimitStore.get(key) || {
+        count: 0,
+        resetTime: windowStart + limits.windowMs,
+      };
 
       if (now > current.resetTime) {
         current.count = 0;
@@ -159,7 +220,8 @@ async function startServer() {
       rateLimitStore.set(key, current);
 
       // Clean up old entries periodically
-      if (Math.random() < 0.01) { // 1% chance to clean up
+      if (Math.random() < 0.01) {
+        // 1% chance to clean up
         for (const [k, v] of rateLimitStore.entries()) {
           if (now > v.resetTime) {
             rateLimitStore.delete(k);
@@ -170,13 +232,13 @@ async function startServer() {
       res.set({
         'X-RateLimit-Limit': limits.requests.toString(),
         'X-RateLimit-Remaining': Math.max(0, limits.requests - current.count).toString(),
-        'X-RateLimit-Reset': new Date(current.resetTime).toISOString()
+        'X-RateLimit-Reset': new Date(current.resetTime).toISOString(),
       });
 
       if (current.count > limits.requests) {
         return res.status(429).json({
           error: 'Rate limit exceeded',
-          retryAfter: Math.ceil((current.resetTime - now) / 1000)
+          retryAfter: Math.ceil((current.resetTime - now) / 1000),
         });
       }
 
@@ -190,6 +252,8 @@ async function startServer() {
     } else if (mode === 'http') {
       // Start HTTP server
       const app = express();
+      const hasClerkKeys = !!clerkPublishableKey && !!process.env.CLERK_SECRET_KEY;
+      const slashCommandsService = new SlashCommandsService(promptRepository);
 
       app.use(helmet());
       app.use(cors());
@@ -198,38 +262,92 @@ async function startServer() {
       // Serve static files
       app.use(express.static('public'));
 
-      // Apply middleware
-      app.use(extractUserContext);
-      app.use(actualRateLimit);
-
-      // Health check endpoint
+      // Health check endpoint (no auth)
       app.get('/health', async (req, res) => {
         try {
           const health = await Promise.all([
             promptRepository.healthCheck(),
             catalogRepository.healthCheck(),
-            eventBus.healthCheck()
+            eventBus.healthCheck(),
           ]);
 
-          const allHealthy = health.every(h => h.status === 'healthy');
+          const allHealthy = health.every((h) => h.status === 'healthy');
 
           res.status(allHealthy ? 200 : 503).json({
             status: allHealthy ? 'healthy' : 'unhealthy',
             services: {
-              dynamodb: health[0],
-              s3: health[1],
-              sqs: health[2]
+              prompts: health[0],
+              catalog: health[1],
+              events: health[2],
             },
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         } catch (error) {
           logger.error('Health check failed:', error);
           res.status(503).json({
             status: 'unhealthy',
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
+
+      if (hasClerkKeys) {
+        app.use(clerkMiddleware());
+      }
+
+      app.use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+        const publicPaths = new Set(['/health', '/v1/webhook/stripe']);
+        if (publicPaths.has(req.path)) {
+          return next();
+        }
+        if (hasClerkKeys) {
+          return requireAuth()(req, res, async () => {
+            try {
+              const auth = getAuth(req);
+              const template = process.env.CLERK_CONVEX_JWT_TEMPLATE ?? 'convex';
+              let token: string | undefined;
+              if (storageType === 'convex') {
+                token = (await auth.getToken({ template })) ?? undefined;
+              }
+              const ownerId = storageType === 'convex' ? getCanonicalConvexOwnerId(token) : undefined;
+              (req as any).userContext = {
+                userId: auth.userId ?? undefined,
+                email: (auth.sessionClaims as Record<string, unknown>)?.email as string | undefined,
+                subscriptionTier: 'premium' as const,
+              };
+              convexAuthStorage.run(
+                {
+                  token,
+                  userId: auth.userId ?? undefined,
+                  ownerId: ownerId ?? auth.userId ?? undefined,
+                },
+                () => next(),
+              );
+            } catch (e) {
+              next(e);
+            }
+          });
+        }
+        extractUserContext(req, res, () => {
+          if (storageType === 'convex' && process.env.CONVEX_DEV_OWNER_USER_ID) {
+            const devId = process.env.CONVEX_DEV_OWNER_USER_ID;
+            (req as any).userContext = {
+              userId: devId,
+              subscriptionTier: 'premium' as const,
+            };
+            return convexAuthStorage.run(
+              { token: undefined, userId: devId, ownerId: devId },
+              () => next(),
+            );
+          }
+          return convexAuthStorage.run(
+            { token: undefined, userId: undefined, ownerId: undefined },
+            () => next(),
+          );
+        });
+      });
+
+      app.use(actualRateLimit);
 
       // MCP capabilities endpoint
       app.get('/mcp', (req, res) => {
@@ -250,10 +368,14 @@ async function startServer() {
         } catch (error) {
           logger.error('Tool execution failed:', error);
           res.status(500).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
+
+      registerStreamableMcpRoutes(app, '/mcp/streamable', () =>
+        createPromptsSdkMcpServer(promptService, slashCommandsService),
+      );
 
       // Prompts API endpoints
       app.get('/v1/prompts', async (req, res) => {
@@ -262,21 +384,26 @@ async function startServer() {
           const userContext = (req as any).userContext;
 
           const prompts = category
-            ? await promptService.getPromptsByCategory(category as string, parseInt(limit as string))
+            ? await promptService.getPromptsByCategory(
+                category as string,
+                parseInt(limit as string),
+              )
             : await promptService.getLatestPrompts(parseInt(limit as string), userContext);
 
           // Filter prompts based on access control
-          const accessiblePrompts = prompts.filter(p => promptService.hasAccessToPrompt(p, userContext));
+          const accessiblePrompts = prompts.filter((p) =>
+            promptService.hasAccessToPrompt(p, userContext),
+          );
 
           res.json({
-            prompts: accessiblePrompts.map(p => p.toJSON()),
+            prompts: accessiblePrompts.map((p) => p.toJSON()),
             total: accessiblePrompts.length,
-            userTier: userContext?.subscriptionTier || 'anonymous'
+            userTier: userContext?.subscriptionTier || 'anonymous',
           });
         } catch (error) {
           logger.error('Failed to list prompts:', error);
           res.status(500).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -299,7 +426,7 @@ async function startServer() {
         } catch (error) {
           logger.error('Failed to get prompt:', error);
           res.status(500).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -308,29 +435,37 @@ async function startServer() {
         try {
           const userContext = (req as any).userContext;
 
-          // Check if user can create prompts
-          if (!userContext || !promptService.canCreatePrompt(userContext)) {
+          if (!userContext?.userId) {
+            return res.status(401).json({ error: 'Authentication required' });
+          }
+
+          const allowCreate =
+            storageType === 'convex' || promptService.canCreatePrompt(userContext);
+          if (!allowCreate) {
             return res.status(403).json({
-              error: 'Prompt creation requires a premium subscription'
+              error: 'Prompt creation requires a premium subscription',
             });
           }
 
-          // Add author information to the prompt
+          const template = req.body.template ?? req.body.content;
           const promptData = {
             ...req.body,
+            template,
             author_id: userContext.userId,
-            access_level: req.body.access_level || (userContext.subscriptionTier === 'premium' ? 'premium' : 'private')
+            access_level:
+              req.body.access_level ||
+              (userContext.subscriptionTier === 'premium' ? 'premium' : 'private'),
           };
 
           const prompt = await promptService.createPrompt(promptData);
           res.status(201).json({
             prompt: prompt.toJSON(),
-            message: 'Prompt created successfully'
+            message: 'Prompt created successfully',
           });
         } catch (error) {
           logger.error('Failed to create prompt:', error);
           res.status(400).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -340,12 +475,12 @@ async function startServer() {
           const prompt = await promptService.updatePrompt(req.params.id, req.body);
           res.json({
             prompt: prompt.toJSON(),
-            message: 'Prompt updated successfully'
+            message: 'Prompt updated successfully',
           });
         } catch (error) {
           logger.error('Failed to update prompt:', error);
           res.status(400).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -357,7 +492,7 @@ async function startServer() {
         } catch (error) {
           logger.error('Failed to delete prompt:', error);
           res.status(400).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -367,12 +502,52 @@ async function startServer() {
           const result = await promptService.applyTemplate(req.params.id, req.body.variables || {});
           res.json({
             result,
-            appliedVariables: req.body.variables || {}
+            appliedVariables: req.body.variables || {},
           });
         } catch (error) {
           logger.error('Failed to apply template:', error);
           res.status(400).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+      });
+
+      app.use('/v1/subagents', createSubagentsRouter(subagentService));
+      app.use('/v1/main-agents', createMainAgentsRouter(mainAgentService));
+      app.use(
+        '/v1/orchestrate',
+        createOrchestrateRouter(
+          orchestrateService,
+          projectScaffoldService,
+          reportGenerationService,
+        ),
+      );
+
+      app.get('/v1/stats', async (req, res) => {
+        try {
+          const allPrompts = await promptRepository.findLatestVersions(10000);
+
+          res.json({
+            total: allPrompts.length,
+            byType: {
+              standard: allPrompts.filter((p: any) => p.promptType === 'standard').length,
+              subagent: allPrompts.filter((p: any) => p.promptType === 'subagent_registry').length,
+              mainAgent: allPrompts.filter((p: any) => p.promptType === 'main_agent_template').length,
+              projectTemplate: allPrompts.filter(
+                (p: any) => p.promptType === 'project_orchestration_template',
+              ).length,
+            },
+            subagents: {
+              total: allPrompts.filter((p: any) => p.isSubagent()).length,
+              categories: await promptRepository.getSubagentCategories(),
+              models: await promptRepository.getAgentModels(),
+            },
+            generatedAt: new Date().toISOString(),
+          });
+        } catch (error) {
+          logger.error('Failed to get stats:', error);
+          res.status(500).json({
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -383,19 +558,21 @@ async function startServer() {
           const userContext = (req as any).userContext;
           const { category, limit = '20' } = req.query;
 
-          const slashCommandsService = new (await import('./core/services/slash-commands.service')).SlashCommandsService(promptRepository);
+          const slashCommandsService = new (
+            await import('./core/services/slash-commands.service')
+          ).SlashCommandsService(promptRepository);
           const commands = category
             ? await slashCommandsService.getCommandsByCategory(category as string, userContext)
             : await slashCommandsService.getAvailableCommands(userContext);
 
           res.json({
             commands: commands.slice(0, parseInt(limit as string)),
-            total: commands.length
+            total: commands.length,
           });
         } catch (error) {
           logger.error('Failed to list slash commands:', error);
           res.status(500).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -409,17 +586,19 @@ async function startServer() {
             return res.status(400).json({ error: 'Query parameter is required' });
           }
 
-          const slashCommandsService = new (await import('./core/services/slash-commands.service')).SlashCommandsService(promptRepository);
+          const slashCommandsService = new (
+            await import('./core/services/slash-commands.service')
+          ).SlashCommandsService(promptRepository);
           const suggestions = await slashCommandsService.getCommandSuggestions(query, userContext);
 
           res.json({
             suggestions: suggestions.slice(0, parseInt(limit as string)),
-            total: suggestions.length
+            total: suggestions.length,
           });
         } catch (error) {
           logger.error('Failed to get slash command suggestions:', error);
           res.status(500).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -433,14 +612,16 @@ async function startServer() {
             return res.status(400).json({ error: 'Command is required' });
           }
 
-          const slashCommandsService = new (await import('./core/services/slash-commands.service')).SlashCommandsService(promptRepository);
+          const slashCommandsService = new (
+            await import('./core/services/slash-commands.service')
+          ).SlashCommandsService(promptRepository);
           const result = await slashCommandsService.executeCommand(command, variables, userContext);
 
           res.json(result);
         } catch (error) {
           logger.error('Failed to execute slash command:', error);
           res.status(400).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -453,7 +634,7 @@ async function startServer() {
         } catch (error) {
           logger.error('Failed to get subscription plans:', error);
           res.status(500).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -466,11 +647,22 @@ async function startServer() {
             return res.status(401).json({ error: 'Authentication required' });
           }
 
+          if (!process.env.USERS_TABLE || storageType === 'convex') {
+            return res.json({
+              userId: userContext.userId,
+              email: userContext.email,
+              subscriptionTier: userContext.subscriptionTier || 'premium',
+              rateLimit: promptService.getRateLimit(userContext),
+            });
+          }
+
           // Get user subscription info from DynamoDB
-          const userResult = await dynamoClient.send(new GetItemCommand({
-            TableName: process.env.USERS_TABLE!,
-            Key: { user_id: { S: userContext.userId } }
-          }));
+          const userResult = await dynamoClient.send(
+            new GetItemCommand({
+              TableName: process.env.USERS_TABLE!,
+              Key: { user_id: { S: userContext.userId } },
+            }),
+          );
 
           if (!userResult.Item) {
             return res.status(404).json({ error: 'User not found' });
@@ -482,14 +674,14 @@ async function startServer() {
             subscriptionTier: userResult.Item.subscription_tier?.S || 'free',
             subscriptionId: userResult.Item.subscription_id?.S,
             subscriptionExpiresAt: userResult.Item.subscription_expires_at?.S,
-            rateLimit: promptService.getRateLimit(userContext)
+            rateLimit: promptService.getRateLimit(userContext),
           };
 
           res.json(subscriptionStatus);
         } catch (error) {
           logger.error('Failed to get subscription status:', error);
           res.status(500).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -513,7 +705,7 @@ async function startServer() {
         } catch (error) {
           logger.error('Failed to create payment intent:', error);
           res.status(500).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -527,6 +719,13 @@ async function startServer() {
             return res.status(401).json({ error: 'Authentication required' });
           }
 
+          if (!process.env.USERS_TABLE || storageType === 'convex') {
+            return res.status(501).json({
+              error:
+                'Subscription provisioning requires USERS_TABLE (DynamoDB) and non-convex storage mode',
+            });
+          }
+
           if (!planId) {
             return res.status(400).json({ error: 'Plan ID is required' });
           }
@@ -535,27 +734,30 @@ async function startServer() {
             userContext.userId,
             userContext.email,
             planId,
-            paymentMethodId
+            paymentMethodId,
           );
 
           // Update user subscription in database
-          await dynamoClient.send(new UpdateItemCommand({
-            TableName: process.env.USERS_TABLE!,
-            Key: { user_id: { S: userContext.userId } },
-            UpdateExpression: 'SET subscription_tier = :tier, subscription_id = :subId, subscription_expires_at = :expires, updated_at = :updated',
-            ExpressionAttributeValues: {
-              ':tier': { S: planId.startsWith('premium') ? 'premium' : 'free' },
-              ':subId': { S: subscription.subscriptionId },
-              ':expires': { S: subscription.currentPeriodEnd.toISOString() },
-              ':updated': { S: new Date().toISOString() }
-            }
-          }));
+          await dynamoClient.send(
+            new UpdateItemCommand({
+              TableName: process.env.USERS_TABLE!,
+              Key: { user_id: { S: userContext.userId } },
+              UpdateExpression:
+                'SET subscription_tier = :tier, subscription_id = :subId, subscription_expires_at = :expires, updated_at = :updated',
+              ExpressionAttributeValues: {
+                ':tier': { S: planId.startsWith('premium') ? 'premium' : 'free' },
+                ':subId': { S: subscription.subscriptionId },
+                ':expires': { S: subscription.currentPeriodEnd.toISOString() },
+                ':updated': { S: new Date().toISOString() },
+              },
+            }),
+          );
 
           res.json(subscription);
         } catch (error) {
           logger.error('Failed to create subscription:', error);
           res.status(500).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
@@ -569,48 +771,65 @@ async function startServer() {
             return res.status(401).json({ error: 'Authentication required' });
           }
 
+          if (!process.env.USERS_TABLE || storageType === 'convex') {
+            return res.status(501).json({
+              error:
+                'Subscription cancel requires USERS_TABLE (DynamoDB) and non-convex storage mode',
+            });
+          }
+
           await paymentService.cancelSubscription(subscriptionId, cancelAtPeriodEnd);
 
           // Update user subscription in database
-          await dynamoClient.send(new UpdateItemCommand({
-            TableName: process.env.USERS_TABLE!,
-            Key: { user_id: { S: userContext.userId } },
-            UpdateExpression: 'SET subscription_tier = :tier, updated_at = :updated',
-            ExpressionAttributeValues: {
-              ':tier': { S: 'free' },
-              ':updated': { S: new Date().toISOString() }
-            }
-          }));
+          await dynamoClient.send(
+            new UpdateItemCommand({
+              TableName: process.env.USERS_TABLE!,
+              Key: { user_id: { S: userContext.userId } },
+              UpdateExpression: 'SET subscription_tier = :tier, updated_at = :updated',
+              ExpressionAttributeValues: {
+                ':tier': { S: 'free' },
+                ':updated': { S: new Date().toISOString() },
+              },
+            }),
+          );
 
           res.json({ message: 'Subscription cancelled successfully' });
         } catch (error) {
           logger.error('Failed to cancel subscription:', error);
           res.status(500).json({
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       });
 
-      app.post('/v1/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
-        try {
-          const signature = req.headers['stripe-signature'] as string;
-          await paymentService.handleWebhook(req.body, signature);
-          res.json({ received: true });
-        } catch (error) {
-          logger.error('Webhook processing failed:', error);
-          res.status(400).json({
-            error: error instanceof Error ? error.message : 'Webhook processing failed'
-          });
-        }
-      });
+      app.post(
+        '/v1/webhook/stripe',
+        express.raw({ type: 'application/json' }),
+        async (req, res) => {
+          try {
+            const signature = req.headers['stripe-signature'] as string;
+            await paymentService.handleWebhook(req.body, signature);
+            res.json({ received: true });
+          } catch (error) {
+            logger.error('Webhook processing failed:', error);
+            res.status(400).json({
+              error: error instanceof Error ? error.message : 'Webhook processing failed',
+            });
+          }
+        },
+      );
 
-      app.listen(port, host, () => {
-        logger.info(`MCP Prompts HTTP server started on http://${host}:${port}`);
+      const logEndpoints = (scheme: 'http' | 'https') => {
+        const displayHost = host === '0.0.0.0' ? 'localhost' : host;
+        logger.info(
+          `MCP Prompts ${scheme.toUpperCase()} server started on ${scheme}://${displayHost}:${port}`,
+        );
         logger.info('Available endpoints:');
         logger.info('  GET  /health - Health check');
         logger.info('  GET  /mcp - MCP capabilities');
         logger.info('  GET  /mcp/tools - List MCP tools');
         logger.info('  POST /mcp/tools - Execute MCP tool');
+        logger.info('  POST /mcp/streamable - MCP Streamable HTTP (spec-native, stateless)');
         logger.info('  GET  /v1/prompts - List prompts');
         logger.info('  GET  /v1/prompts/:id - Get prompt');
         logger.info('  POST /v1/prompts - Create prompt');
@@ -626,9 +845,55 @@ async function startServer() {
         logger.info('  POST /v1/subscription/create - Create subscription');
         logger.info('  POST /v1/subscription/cancel - Cancel subscription');
         logger.info('  POST /v1/webhook/stripe - Stripe webhooks');
-      });
-    }
+      };
 
+      const keyPath = process.env.HTTPS_KEY_PATH;
+      const certPath = process.env.HTTPS_CERT_PATH;
+      const devLocalHttpsFlag = String(process.env.DEV_LOCAL_HTTPS || '').toLowerCase();
+      const devLocalHttps =
+        devLocalHttpsFlag === '1' || devLocalHttpsFlag === 'true' || devLocalHttpsFlag === 'yes';
+      const hasAnyCertPath = Boolean(keyPath || certPath);
+      const isProd = process.env.NODE_ENV === 'production';
+
+      if ((keyPath && !certPath) || (!keyPath && certPath)) {
+        throw new Error(
+          'HTTPS_KEY_PATH and HTTPS_CERT_PATH must both be set to enable TLS (or omit both for HTTP)',
+        );
+      }
+
+      if (isProd) {
+        if (hasAnyCertPath || devLocalHttps) {
+          logger.warn(
+            'In-process TLS env vars (HTTPS_KEY_PATH, HTTPS_CERT_PATH, DEV_LOCAL_HTTPS) are ignored when NODE_ENV=production; listen on HTTP and terminate TLS at your load balancer or reverse proxy.',
+          );
+        }
+        app.listen(port, host, () => logEndpoints('http'));
+      } else if (devLocalHttps && (!keyPath || !certPath)) {
+        throw new Error(
+          'DEV_LOCAL_HTTPS is set but both HTTPS_KEY_PATH and HTTPS_CERT_PATH are required for local TLS (or unset DEV_LOCAL_HTTPS).',
+        );
+      } else if (hasAnyCertPath && !devLocalHttps) {
+        throw new Error(
+          'HTTPS_KEY_PATH and HTTPS_CERT_PATH are set; add DEV_LOCAL_HTTPS=1 for local development TLS only, or unset HTTPS_* variables.',
+        );
+      } else if (keyPath && certPath && devLocalHttps) {
+        const tlsOpts: https.ServerOptions = {
+          key: fs.readFileSync(keyPath),
+          cert: fs.readFileSync(certPath),
+        };
+        const caPath = process.env.HTTPS_CA_PATH;
+        if (caPath) {
+          tlsOpts.ca = fs.readFileSync(caPath);
+        }
+        const pass = process.env.HTTPS_KEY_PASSPHRASE;
+        if (pass) {
+          tlsOpts.passphrase = pass;
+        }
+        https.createServer(tlsOpts, app).listen(port, host, () => logEndpoints('https'));
+      } else {
+        app.listen(port, host, () => logEndpoints('http'));
+      }
+    }
   } catch (error) {
     logger.error('Failed to start server:', error);
     if (error instanceof Error) {
@@ -651,7 +916,7 @@ process.on('SIGTERM', () => {
 });
 
 // Start the server
-startServer().catch(error => {
+startServer().catch((error) => {
   logger.error('Fatal error:', error);
   if (error instanceof Error) {
     logger.error('Fatal error details:', error.message);

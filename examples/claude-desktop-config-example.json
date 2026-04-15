@@ -1,11 +1,11 @@
 {
   "mcpServers": {
-    "mcp-prompts": {
+    "roster": {
       "command": "npx",
-      "args": ["-y", "@sparesparrow/mcp-prompts"],
+      "args": ["-y", "@maslowai/roster"],
       "env": {
         "STORAGE_TYPE": "file",
-        "PROMPTS_DIR": "~/Documents/mcp-prompts",
+        "PROMPTS_DIR": "~/Documents/roster-prompts",
         "LOG_LEVEL": "info"
       }
     }

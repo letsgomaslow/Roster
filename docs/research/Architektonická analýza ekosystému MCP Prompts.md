@@ -1,3 +1,5 @@
+> **Archive / historical context:** Research note; “MCP Prompts” refers to the orchestrator role now shipped as **Roster MCP** · Maslow AI · npm `@maslowai/roster`. Footnotes and package names citing other orgs are **historical citations**, not current publishing coordinates.
+
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" class="logo" width="120"/>
 
 # Architektonická analýza ekosystému MCP Prompts
@@ -16,7 +18,6 @@ Funguje jako **hlavní orchestrátor** poskytující centralizovaný MCP server 
 - Poskytování HTTP serveru s health check endpointy
 - Docker nasazení s více konfiguračními profily
 
-
 ### mcp-prompts-catalog (Datové úložiště)
 
 Slouží jako **centrální datové úložiště** obsahující kolekci promptů ve formátu JSON[^2]. Charakteristiky:
@@ -25,7 +26,6 @@ Slouží jako **centrální datové úložiště** obsahující kolekci promptů
 - Řeší problém "prompt rot" - fragmentace a ztráty cenných promptů v týmech
 - Poskytuje jednotný zdroj pravdy pro repozitář mcp-prompts
 - Podporuje JavaScript jako primární jazyk (100% podle statistik)
-
 
 ### mcp-prompts-contracts (API kontrakt)
 
@@ -36,7 +36,6 @@ Definuje **API kontrakty a společné datové struktury**[^3] pro celý ekosyst�
 - Automatické generování JSON schémat přes skripty `generate-openapi.ts` a `generate-json-schema.ts`
 - Umožňuje budoucí generování typů pro další jazyky (Rust, Kotlin) pomocí openapi-generator
 
-
 ### mcp-prompts-ts (Implementace)
 
 Představuje **TypeScript implementaci** MCP Prompts serveru[^4] s pokročilými funkcemi:
@@ -45,7 +44,6 @@ Představuje **TypeScript implementaci** MCP Prompts serveru[^4] s pokročilými
 - Podporuje Kubernetes nasazení přes Helm charts v `charts/mcp-prompts/`
 - Implementuje pokročilé funkce jako workflow service, SSE (Server-Sent Events)
 - Zahrnuje rozsáhlou testovací infrastrukturu v adresáři `tests/`
-
 
 ## Strom závislostí
 
@@ -81,7 +79,6 @@ Představuje **TypeScript implementaci** MCP Prompts serveru[^4] s pokročilými
 }
 ```
 
-
 ### Vztahy mezi projekty
 
 1. **mcp-prompts-ts** závisí na contracts pro typy a na catalog pro data
@@ -111,7 +108,6 @@ Představuje **TypeScript implementaci** MCP Prompts serveru[^4] s pokročilými
 - Prettier pro jednotné formátování kódu
 - Automatické kontroly v CI/CD pipeline
 
-
 ## Verzování strategie
 
 ### Sémantické verzování
@@ -130,13 +126,11 @@ Ekosystém implementuje automatizované sémantické verzování[^6]:
     fi
 ```
 
-
 ### Synchronizace verzí
 
 - **Koordinované vydání**: Automatické určení typu verze na základě commit zpráv
 - **Git tagy**: Automatické vytváření tagů při publikaci nových verzí
 - **NPM publikace**: Koordinovaná publikace všech balíčků současně
-
 
 ## Testovací metodologie
 
@@ -147,7 +141,6 @@ Ekosystém implementuje automatizované sémantické verzování[^6]:
 - Jednotkové testy: `"test:unit": "jest --testPathPattern=\"tests/unit|src/__tests__\"`
 - Integrační testy: `"test:integration": "jest --testPathPattern=\"tests/integration\"`
 - Pokrytí kódu: `"test:coverage": "jest --coverage"`
-
 
 ### CI/CD testovací pipeline[^6]
 
@@ -169,14 +162,12 @@ services:
 - Docker testy jako samostatný job po dokončení základních testů
 - Upload výsledků testů jako artifakty pro další analýzu
 
-
 ### Kvalitní assurance
 
 - **Linting**: ESLint kontroly pro konzistenci kódu
 - **Formátování**: Prettier kontroly pro jednotný styl
 - **Audit závislostí**: `npm audit --audit-level=moderate`
 - **Build validace**: Ověření úspěšnosti build procesu
-
 
 ## Role Docker a kontejnerizace
 
@@ -188,7 +179,6 @@ services:
 - Podpora pro různé typy úložišť (file, postgres, MDC)
 - Health check endpointy pro monitoring stavu
 
-
 ### Docker Compose orchestrace[^1]
 
 **Více profilů pro různé scénáře**:
@@ -198,7 +188,6 @@ services:
 - **PostgreSQL integration**: Database backend s Adminer pro správu
 - **Testing environment**: Optimalizováno pro automatizované testování
 - **Multi-server integration**: Integrace s dalšími MCP servery
-
 
 ### CI/CD Docker integrace[^6]
 
@@ -214,7 +203,6 @@ services:
       sparesparrow/mcp-prompts:latest
       sparesparrow/mcp-prompts:${{ steps.bump.outputs.VERSION_TYPE }}
 ```
-
 
 ## Architektonické shrnutí
 
@@ -350,4 +338,3 @@ Původní architektura byla více monolitická nebo vrstvená, což vedlo k těs
 [^24]: https://github.com/sparesparrow/mcp-prompts/blob/main/.github/workflows/npm-publish.yml
 
 [^25]: https://github.com/sparesparrow/mcp-project-orchestrator
-

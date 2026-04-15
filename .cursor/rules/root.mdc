@@ -2,7 +2,7 @@
 globs: package.json, tsconfig.json, tsconfig.options.json
 alwaysApply: false
 ---
-# MCP Prompts Monorepo Root Rules
+# Roster monorepo root rules
 
 ## Build & Package Management
 - Use pnpm for all package operations
@@ -12,7 +12,7 @@ alwaysApply: false
 
 ## Import Strategy
 - Use workspace:* for internal dependencies
-- Import from built outputs: @mcp-prompts/core/dist/
+- Import workspace packages as `@maslowai/*` (see package.json names)
 - Avoid circular dependencies
 
 ## Code Style
@@ -25,4 +25,4 @@ alwaysApply: false
 - Hexagonal architecture patterns
 - Ports (interfaces) in core/ports/
 - Adapters in separate packages
-- Pure domain logic in core/ # MCP Prompts Monorepo Root Rules
+- Pure domain logic in core/

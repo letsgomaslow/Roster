@@ -1,34 +1,37 @@
-# Release Notes - v3.14.0
+# Release notes — v3.14.0 (Roster MCP · Maslow AI)
 
-## 🎉 New Release
+**npm package:** `@maslowai/roster`
 
-**Date**: January 7, 2026
-**Version**: 3.14.0
+## New release
+
+**Date**: January 7, 2026  
+**Version**: 3.14.0  
 **Tag**: `v3.14.0`
 
-## 📦 Published Platforms
+## Published platforms
 
-- ✅ **npm**: `@sparesparrow/mcp-prompts@3.14.0`
-- ✅ **GitHub Packages**: `@sparesparrow/mcp-prompts@3.14.0`
-- ✅ **Cloudsmith**: `mcp-prompts@3.14.0`
-- ✅ **Docker**: `ghcr.io/sparesparrow/mcp-prompts:3.14.0`
+- **npm**: `@maslowai/roster@3.14.0`
+- **GitHub Packages / Cloudsmith / Docker**: use your org’s registry names and tags
 
 ## 🆕 What's New
 
 ### 🚀 Major Architecture Improvements
 
 #### Configurable Storage Backends (No AWS Dependency)
+
 - **File Storage**: Local filesystem-based prompt storage
 - **Memory Storage**: In-memory storage for testing/development
 - **PostgreSQL Support**: Planned for future release
 - **AWS Storage**: Optional, only when explicitly configured
 
 #### Event Publishing Made Optional
+
 - **Local Development**: No AWS services required
 - **Configurable Event Bus**: Memory-based for local, SQS for cloud
 - **Zero Breaking Changes**: Existing AWS deployments unaffected
 
 #### New Storage Adapters
+
 - `FilePromptRepository`: Persistent file-based storage
 - `MemoryPromptRepository`: Volatile in-memory storage
 - `MemoryEventBus`: Local event publishing (no AWS)
@@ -37,23 +40,25 @@
 ### 🔧 Technical Improvements
 
 #### Build System Overhaul
+
 - **CommonJS Migration**: Resolved ES module compatibility issues
 - **Dynamic Imports**: AWS dependencies loaded only when needed
 - **Improved Module Resolution**: Better Node.js compatibility
 
 #### API Consistency Fixes
+
 - **Tool Schema Alignment**: Fixed create_prompt parameter mapping
 - **Error Handling**: Better validation and user feedback
 - **MCP Compliance**: Enhanced protocol adherence
 
 ### 📊 Storage Type Comparison
 
-| Feature | File Storage | Memory Storage | PostgreSQL | AWS |
-|---------|-------------|----------------|------------|-----|
-| **AWS Dependency** | ❌ None | ❌ None | ❌ None | ✅ Required |
-| **Persistence** | ✅ File-based | ❌ Ephemeral | ✅ Database | ✅ S3/DynamoDB |
-| **Performance** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ |
-| **Setup Complexity** | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ |
+| Feature              | File Storage  | Memory Storage | PostgreSQL  | AWS            |
+| -------------------- | ------------- | -------------- | ----------- | -------------- |
+| **AWS Dependency**   | ❌ None       | ❌ None        | ❌ None     | ✅ Required    |
+| **Persistence**      | ✅ File-based | ❌ Ephemeral   | ✅ Database | ✅ S3/DynamoDB |
+| **Performance**      | ⭐⭐⭐        | ⭐⭐⭐⭐⭐     | ⭐⭐⭐⭐    | ⭐⭐           |
+| **Setup Complexity** | ⭐⭐          | ⭐⭐⭐⭐⭐     | ⭐⭐⭐      | ⭐             |
 
 ### 🔒 Security & Compatibility
 
@@ -71,25 +76,27 @@
 
 ---
 
-# Release Notes - v3.12.6
+# Release notes — v3.12.6 (historical)
 
-## 🎉 New Release
+**Current npm package:** `@maslowai/roster` (Roster MCP · Maslow AI). The publishing coordinates below describe the **v3.12.6** release era only.
+
+## New release
 
 **Date**: January 1, 2026  
 **Version**: 3.12.6  
 **Tag**: `v3.12.6`
 
-## 📦 Published Platforms
+## Published platforms (at time of release)
 
-- ✅ **npm**: `@sparesparrow/mcp-prompts@3.12.6`
-- ✅ **GitHub Packages**: `@sparesparrow/mcp-prompts@3.12.6`
-- ✅ **Cloudsmith**: `mcp-prompts@3.12.6`
-- ✅ **Docker**: `ghcr.io/sparesparrow/mcp-prompts:3.12.6`
+- **npm** and other registries: use your org’s package name and version tag for that era.
+- **Docker**: use your registry’s image name and tag for v3.12.6.
 
 ## 🆕 What's New
 
 ### ESP32 Embedded Development Prompts
+
 Added 6 atomic prompts for ESP32 development workflows:
+
 - `esp32-network-ap-mode-configuration` - WiFi AP mode setup
 - `esp32-platformio-serial-upload-debugging` - Build/upload troubleshooting
 - `esp32-flatbuffers-schema-sync-workflow` - Schema regeneration
@@ -98,50 +105,36 @@ Added 6 atomic prompts for ESP32 development workflows:
 - `embedded-audio-fft-memory-constraints` - Memory optimization
 
 ### Meta-Workflow
+
 - `embedded-esp32-full-bringup-workflow` - Complete ESP32 setup workflow combining all atomic prompts
 
 ### Self-Improving Learning Loop
+
 - Validation script: `scripts/validate_learned_knowledge.sh`
 - Index regeneration: `scripts/regenerate_index.py`
 - Knowledge reusability map: `docs/knowledge-reusability-map.md`
 - Implementation summary: `docs/self-improving-loop-implementation-summary.md`
 
 ### Publishing Infrastructure
+
 - GitHub Packages publishing workflow
 - Cloudsmith upload support
 - Docker image publishing
 - Comprehensive release workflow
 
-## 📋 Installation
+## Installation (current)
 
-### npm
 ```bash
-npm install @sparesparrow/mcp-prompts@3.12.6
+pnpm add @maslowai/roster
+# or
+npm install @maslowai/roster
 ```
 
-### GitHub Packages
-```bash
-npm install @sparesparrow/mcp-prompts@3.12.6 --registry https://npm.pkg.github.com
-```
+For v3.12.6-era artifacts, use the release assets and registry coordinates documented in that release’s notes in your source control history.
 
-### Docker
-```bash
-docker pull ghcr.io/sparesparrow/mcp-prompts:3.12.6
-```
+## Links
 
-### Cloudsmith
-```bash
-cloudsmith download raw sparesparrow-conan/sparetools \
-  --name "mcp-prompts" \
-  --version "3.12.6"
-```
-
-## 🔗 Links
-
-- **GitHub Release**: https://github.com/sparesparrow/mcp-prompts/releases/tag/v3.12.6
-- **npm Package**: https://www.npmjs.com/package/@sparesparrow/mcp-prompts
-- **GitHub Packages**: https://github.com/sparesparrow/mcp-prompts/packages
-- **Cloudsmith**: https://cloudsmith.io/~sparesparrow-conan/repos/sparetools/packages/
+- **Current npm**: [https://www.npmjs.com/package/@maslowai/roster](https://www.npmjs.com/package/@maslowai/roster)
 
 ## 📊 Statistics
 

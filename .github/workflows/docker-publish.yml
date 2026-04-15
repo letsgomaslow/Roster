@@ -11,7 +11,7 @@ on:
 env:
   REGISTRY_GHCR: ghcr.io
   REGISTRY_DOCKERHUB: docker.io
-  IMAGE_NAME: sparesparrow/mcp-prompts
+  IMAGE_NAME: roster/roster
 
 jobs:
   build-and-push:

@@ -1,11 +1,12 @@
-# Security Policy
+# Security policy — Roster MCP
 
-If you discover a security vulnerability in MCP-Prompts, **please do not report it via a public GitHub issue**.
+If you discover a security vulnerability in **Roster MCP** (Maslow AI), **do not** open a public GitHub issue.
 
-## Reporting a Vulnerability
+## Reporting
 
-- Email: security@sparesparrow.dev
-- Please include as much detail as possible so we can investigate and address the issue promptly.
-- We will acknowledge receipt within 2 business days and provide updates as we work on a fix.
+- Email **security@maslow.ai** (or your Maslow AI security contact if different).
+- Include reproduction steps, impact, and versions (Node, package version `@maslowai/roster`, deployment mode).
 
-Thank you for helping keep MCP-Prompts and its users safe!
+We will acknowledge receipt as soon as practical and coordinate a fix and disclosure.
+
+Thank you for helping keep Roster MCP users safe.

@@ -1,36 +1,37 @@
-# Examples Directory
+# Examples — Roster MCP (Maslow AI)
 
-This directory contains example configuration files and usage snippets for MCP Prompts integrations and supported clients.
+Example MCP client configs and workflow snippets for **[Roster MCP](https://www.npmjs.com/package/@maslowai/roster)** (`@maslowai/roster`).
 
-## 📁 **Available Examples**
+For **Convex** (hosted prompts), see **[OPERATIONS.md](../OPERATIONS.md)** and [docs/02-configuration.md](../docs/02-configuration.md).
 
-### **MCP Client Configuration Files**
+## MCP client configuration files
 
-| File | Description | Use Case |
-|------|-------------|----------|
-| `mcp-prompts-config-file-latest.json` | File storage configuration | Local development, single-user setups |
-| `mcp-prompts-config-memory-latest.json` | In-memory storage configuration | Testing, development, temporary usage |
-| `mcp-prompts-config-postgres-latest.json` | PostgreSQL storage configuration | Production, multi-user, enterprise |
-| `mcp-prompts-config-mdc-latest.json` | MDC format storage configuration | Markdown Cursor integration |
+| File                                 | Description              | Use case                                                    |
+| ------------------------------------ | ------------------------ | ----------------------------------------------------------- |
+| `roster-config-file-latest.json`     | File storage             | Local development                                           |
+| `roster-config-memory-latest.json`   | In-memory storage        | Tests, ephemeral sessions                                   |
+| `roster-config-postgres-latest.json` | PostgreSQL env example   | Reference only — HTTP entrypoint does not wire Postgres yet |
+| `roster-config-mdc-latest.json`      | MDC-oriented env example | Experimental / future MDC adapter                           |
 
-### **Workflow Examples**
+## Workflow examples
 
-| File | Description | Use Case |
-|------|-------------|----------|
-| `advanced-workflow-example.json` | Multi-step prompt chaining workflow | Complex AI automation, prompt sequences |
-| `claude-desktop-config-example.json` | Claude Desktop MCP setup | Claude Desktop integration |
+| File                                 | Description                |
+| ------------------------------------ | -------------------------- |
+| `advanced-workflow-example.json`     | Multi-step prompt chaining |
+| `claude-desktop-config-example.json` | Claude Desktop MCP snippet |
 
-## 🚀 **Quick Start**
+## Quick start (file storage)
 
-### **1. File Storage (Recommended for Development)**
+Use server key `roster` in `mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "mcp-prompts": {
+    "roster": {
       "command": "npx",
-      "args": ["-y", "@sparesparrow/mcp-prompts"],
+      "args": ["-y", "@maslowai/roster"],
       "env": {
+        "MODE": "mcp",
         "STORAGE_TYPE": "file",
         "PROMPTS_DIR": "./prompts",
         "LOG_LEVEL": "info"
@@ -40,156 +41,17 @@ This directory contains example configuration files and usage snippets for MCP P
 }
 ```
 
-### **2. In-Memory Storage (Testing)**
+## Storage types (see [docs/03-storage-adapters.md](../docs/03-storage-adapters.md))
 
-```json
-{
-  "mcpServers": {
-    "mcp-prompts": {
-      "command": "npx",
-      "args": ["-y", "@sparesparrow/mcp-prompts"],
-      "env": {
-        "STORAGE_TYPE": "memory",
-        "LOG_LEVEL": "debug"
-      }
-    }
-  }
-}
-```
+- **`file`** — JSON prompts on disk (default in schema).
+- **`memory`** — volatile in-memory store.
+- **`convex`** — hosted backend; requires `CONVEX_URL` and Clerk or `CONVEX_DEV_OWNER_USER_ID`.
+- **Anything else** (e.g. `aws`) — legacy AWS DynamoDB/S3/SQS path when those env vars are set.
 
-### **3. PostgreSQL Storage (Production)**
+## More documentation
 
-```json
-{
-  "mcpServers": {
-    "mcp-prompts": {
-      "command": "npx",
-      "args": ["-y", "@sparesparrow/mcp-prompts"],
-      "env": {
-        "STORAGE_TYPE": "postgres",
-        "POSTGRES_URL": "postgres://user:pass@localhost:5432/mcp_prompts",
-        "LOG_LEVEL": "info"
-      }
-    }
-  }
-}
-```
+- [Roster MCP docs index](../docs/index.md)
+- [Configuration reference](../docs/02-configuration.md)
+- [MCP integration](../docs/06-mcp-integration.md)
 
-## 🔧 **Configuration Options**
-
-### **Environment Variables**
-
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `STORAGE_TYPE` | Storage backend type | `file` | No |
-| `PROMPTS_DIR` | Directory for file storage | `./prompts` | For file storage |
-| `POSTGRES_URL` | PostgreSQL connection string | - | For postgres storage |
-| `LOG_LEVEL` | Logging level | `info` | No |
-| `PORT` | HTTP server port | `3003` | No |
-| `HOST` | HTTP server host | `0.0.0.0` | No |
-
-### **Storage Types**
-
-- **`file`**: JSON files in specified directory
-- **`memory`**: In-memory storage (volatile)
-- **`postgres`**: PostgreSQL database
-- **`mdc`**: Markdown Cursor format
-
-## 📱 **Client Integration**
-
-### **Claude Desktop**
-
-```json
-{
-  "mcpServers": {
-    "mcp-prompts": {
-      "command": "npx",
-      "args": ["-y", "@sparesparrow/mcp-prompts"],
-      "env": {
-        "STORAGE_TYPE": "file",
-        "PROMPTS_DIR": "~/Documents/mcp-prompts"
-      }
-    }
-  }
-}
-```
-
-### **Cursor IDE**
-
-```json
-{
-  "mcpServers": {
-    "mcp-prompts": {
-      "command": "npx",
-      "args": ["-y", "@sparesparrow/mcp-prompts"],
-      "env": {
-        "STORAGE_TYPE": "memory"
-      }
-    }
-  }
-}
-```
-
-### **VS Code**
-
-```json
-{
-  "mcp.servers": {
-    "mcp-prompts": {
-      "command": "npx",
-      "args": ["-y", "@sparesparrow/mcp-prompts"],
-      "env": {
-        "STORAGE_TYPE": "file",
-        "PROMPTS_DIR": "./prompts"
-      }
-    }
-  }
-}
-```
-
-## 🔄 **Workflow Examples**
-
-### **Basic Prompt Chain**
-
-```json
-{
-  "id": "code-review-workflow",
-  "name": "Code Review Workflow",
-  "version": 1,
-  "steps": [
-    {
-      "id": "analyze_code",
-      "type": "prompt",
-      "promptId": "code-analyzer",
-      "input": { "code": "{{ context.source_code }}" },
-      "output": "analysis"
-    },
-    {
-      "id": "generate_feedback",
-      "type": "prompt",
-      "promptId": "feedback-generator",
-      "input": { "analysis": "{{ context.analysis }}" },
-      "output": "feedback"
-    }
-  ]
-}
-```
-
-## 📚 **Additional Resources**
-
-- [MCP Prompts Documentation](../docs/)
-- [API Reference](../docs/04-api-reference.md)
-- [Storage Adapters](../docs/03-storage-adapters.md)
-- [Workflow Guide](../docs/09-workflow-guide.md)
-
-## 🤝 **Contributing**
-
-We welcome contributions of:
-- New configuration examples
-- Workflow templates
-- Client integration examples
-- Best practices and use cases
-
----
-
-*These examples demonstrate the flexibility and power of MCP Prompts for various use cases and environments.*
+Contributions welcome: new client examples, workflows, and integration notes.

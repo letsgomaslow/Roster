@@ -36,7 +36,7 @@ This Code of Conduct applies within all project spaces and in public spaces when
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project team at:
 
-- Email: conduct@sparesparrow.dev
+- Email: conduct@maslow.ai
 
 All complaints will be reviewed and investigated promptly and fairly.
 

@@ -1,5 +1,5 @@
 {
-  "name": "mcp-prompts-cdk",
+  "name": "roster-cdk",
   "version": "1.0.0",
   "main": "lib/index.js",
   "scripts": {

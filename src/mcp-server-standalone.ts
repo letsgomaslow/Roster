@@ -14,16 +14,20 @@ const PromptSchema = z.object({
   content: z.string(),
   isTemplate: z.boolean().default(false),
   tags: z.array(z.string()).default([]),
-  variables: z.array(z.union([
-    z.string(),
-    z.object({
-      name: z.string(),
-      description: z.string().optional(),
-      required: z.boolean().default(true),
-      type: z.enum(['string', 'number', 'boolean']).default('string')
-    })
-  ])).optional(),
-  metadata: z.record(z.any()).optional()
+  variables: z
+    .array(
+      z.union([
+        z.string(),
+        z.object({
+          name: z.string(),
+          description: z.string().optional(),
+          required: z.boolean().default(true),
+          type: z.enum(['string', 'number', 'boolean']).default('string'),
+        }),
+      ]),
+    )
+    .optional(),
+  metadata: z.record(z.any()).optional(),
 });
 
 const CreatePromptParams = PromptSchema.omit({ id: true });
@@ -53,7 +57,7 @@ function loadPromptsFromDirectory(dir: string, prompts: Map<string, any>): numbe
             ...promptData,
             createdAt: promptData.createdAt || new Date().toISOString(),
             updatedAt: promptData.updatedAt || new Date().toISOString(),
-            version: promptData.version || 1
+            version: promptData.version || 1,
           });
           count++;
         } catch (err) {
@@ -87,7 +91,7 @@ function loadSamplePrompts() {
             ...prompt,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            version: 1
+            version: 1,
           });
         }
         logger.info(`Loaded ${sampleData.prompts.length} sample prompts`);
@@ -100,7 +104,7 @@ function loadSamplePrompts() {
 
 export async function createMcpServer() {
   const server = new McpServer({
-    name: 'mcp-prompts',
+    name: 'roster',
     version: '3.12.4',
   });
 
@@ -117,7 +121,7 @@ export async function createMcpServer() {
         id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        version: 1
+        version: 1,
       };
       prompts.set(id, prompt);
       logger.info(`Added prompt: ${id}`);
@@ -125,9 +129,9 @@ export async function createMcpServer() {
         content: [
           {
             type: 'text',
-            text: `Prompt "${prompt.name}" added successfully with ID: ${id}`
-          }
-        ]
+            text: `Prompt "${prompt.name}" added successfully with ID: ${id}`,
+          },
+        ],
       };
     } catch (error) {
       logger.error('Error adding prompt:', error);
@@ -147,9 +151,9 @@ export async function createMcpServer() {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(prompt, null, 2)
-          }
-        ]
+            text: JSON.stringify(prompt, null, 2),
+          },
+        ],
       };
     } catch (error) {
       logger.error('Error getting prompt:', error);
@@ -160,49 +164,53 @@ export async function createMcpServer() {
   // Tool: List all prompts
   server.tool('list_prompts', async (params) => {
     try {
-      const validatedParams = z.object({
-        tags: z.array(z.string()).optional(),
-        search: z.string().optional()
-      }).optional().parse(params);
+      const validatedParams = z
+        .object({
+          tags: z.array(z.string()).optional(),
+          search: z.string().optional(),
+        })
+        .optional()
+        .parse(params);
 
       let promptList = Array.from(prompts.values());
 
       // Filter by tags if provided
       if (validatedParams?.tags && validatedParams.tags.length > 0) {
-        promptList = promptList.filter(prompt => 
-          validatedParams.tags!.some(tag => prompt.tags.includes(tag))
+        promptList = promptList.filter((prompt) =>
+          validatedParams.tags!.some((tag) => prompt.tags.includes(tag)),
         );
       }
 
       // Filter by search term if provided
       if (validatedParams?.search) {
         const searchLower = validatedParams.search.toLowerCase();
-        promptList = promptList.filter(prompt => 
-          prompt.name.toLowerCase().includes(searchLower) ||
-          prompt.content.toLowerCase().includes(searchLower)
+        promptList = promptList.filter(
+          (prompt) =>
+            prompt.name.toLowerCase().includes(searchLower) ||
+            prompt.content.toLowerCase().includes(searchLower),
         );
       }
 
       // Return summary format instead of full content to avoid large responses
-      const summaryList = promptList.map(prompt => ({
+      const summaryList = promptList.map((prompt) => ({
         id: prompt.id,
         name: prompt.name,
         description: prompt.description || 'No description',
         tags: prompt.tags,
         isTemplate: prompt.isTemplate || false,
         createdAt: prompt.createdAt,
-        version: prompt.version
+        version: prompt.version,
       }));
 
       return {
         content: [
           {
             type: 'text',
-            text: `Found ${summaryList.length} prompts:\n\n${summaryList.map(p =>
-              `- **${p.name}** (${p.id}): ${p.description} [${p.tags.join(', ')}]`
-            ).join('\n')}`
-          }
-        ]
+            text: `Found ${summaryList.length} prompts:\n\n${summaryList
+              .map((p) => `- **${p.name}** (${p.id}): ${p.description} [${p.tags.join(', ')}]`)
+              .join('\n')}`,
+          },
+        ],
       };
     } catch (error) {
       logger.error('Error listing prompts:', error);
@@ -213,10 +221,12 @@ export async function createMcpServer() {
   // Tool: Update a prompt
   server.tool('update_prompt', async (params) => {
     try {
-      const { id, updates } = z.object({
-        id: z.string(),
-        updates: UpdatePromptParams
-      }).parse(params);
+      const { id, updates } = z
+        .object({
+          id: z.string(),
+          updates: UpdatePromptParams,
+        })
+        .parse(params);
 
       const prompt = prompts.get(id);
       if (!prompt) {
@@ -227,7 +237,7 @@ export async function createMcpServer() {
         ...prompt,
         ...updates,
         updatedAt: new Date().toISOString(),
-        version: prompt.version + 1
+        version: prompt.version + 1,
       };
 
       prompts.set(id, updatedPrompt);
@@ -236,9 +246,9 @@ export async function createMcpServer() {
         content: [
           {
             type: 'text',
-            text: `Prompt "${updatedPrompt.name}" updated successfully`
-          }
-        ]
+            text: `Prompt "${updatedPrompt.name}" updated successfully`,
+          },
+        ],
       };
     } catch (error) {
       logger.error('Error updating prompt:', error);
@@ -260,9 +270,9 @@ export async function createMcpServer() {
         content: [
           {
             type: 'text',
-            text: `Prompt "${prompt.name}" deleted successfully`
-          }
-        ]
+            text: `Prompt "${prompt.name}" deleted successfully`,
+          },
+        ],
       };
     } catch (error) {
       logger.error('Error deleting prompt:', error);
@@ -273,10 +283,12 @@ export async function createMcpServer() {
   // Tool: Apply template variables to a prompt
   server.tool('apply_template', async (params) => {
     try {
-      const { id, variables } = z.object({
-        id: z.string(),
-        variables: z.record(z.any())
-      }).parse(params);
+      const { id, variables } = z
+        .object({
+          id: z.string(),
+          variables: z.record(z.any()),
+        })
+        .parse(params);
 
       const prompt = prompts.get(id);
       if (!prompt) {
@@ -298,9 +310,9 @@ export async function createMcpServer() {
         content: [
           {
             type: 'text',
-            text: result
-          }
-        ]
+            text: result,
+          },
+        ],
       };
     } catch (error) {
       logger.error('Error applying template:', error);
@@ -314,19 +326,21 @@ export async function createMcpServer() {
       const promptList = Array.from(prompts.values());
       const stats = {
         total: promptList.length,
-        templates: promptList.filter(p => p.isTemplate).length,
-        regular: promptList.filter(p => !p.isTemplate).length,
-        tags: Array.from(new Set(promptList.flatMap(p => p.tags || []))),
-        categories: Array.from(new Set(promptList.map(p => p.metadata?.category).filter(Boolean)))
+        templates: promptList.filter((p) => p.isTemplate).length,
+        regular: promptList.filter((p) => !p.isTemplate).length,
+        tags: Array.from(new Set(promptList.flatMap((p) => p.tags || []))),
+        categories: Array.from(
+          new Set(promptList.map((p) => p.metadata?.category).filter(Boolean)),
+        ),
       };
 
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(stats, null, 2)
-          }
-        ]
+            text: JSON.stringify(stats, null, 2),
+          },
+        ],
       };
     } catch (error) {
       logger.error('Error getting stats:', error);

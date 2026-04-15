@@ -9,22 +9,22 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        repo: [mcp-prompts-catalog, mcp-prompts-contracts, mcp-prompts-ts, mcp-prompts-rs]
+        repo: [roster-catalog, roster-contracts, roster-ts, roster-rs]
     steps:
       - name: Skip triggering repo
-        if: github.event.client_payload.repo == format('sparesparrow/{0}', matrix.repo)
+        if: github.event.client_payload.repo == format('{0}/{1}', github.repository_owner, matrix.repo)
         run: echo "Skipping tests for triggering repo ${{ matrix.repo }}"
         continue-on-error: true
 
       - name: Checkout ${{ matrix.repo }}
-        if: github.event.client_payload.repo != format('sparesparrow/{0}', matrix.repo)
+        if: github.event.client_payload.repo != format('{0}/{1}', github.repository_owner, matrix.repo)
         uses: actions/checkout@v4
         with:
-          repository: sparesparrow/${{ matrix.repo }}
+          repository: ${{ github.repository_owner }}/${{ matrix.repo }}
           ref: main
 
       - name: Run integration tests
-        if: github.event.client_payload.repo != format('sparesparrow/{0}', matrix.repo)
+        if: github.event.client_payload.repo != format('{0}/{1}', github.repository_owner, matrix.repo)
         run: |
           if [ -f ./scripts/test-integration.sh ]; then
             bash ./scripts/test-integration.sh
@@ -32,4 +32,4 @@ jobs:
             npm ci
             npm run test:integration || npm test
           else
-            echo "No integration test script found." 
+            echo "No integration test script found."

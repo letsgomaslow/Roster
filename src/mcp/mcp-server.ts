@@ -3,6 +3,7 @@
 import { PromptService } from '../core/services/prompt.service';
 import { SlashCommandsService } from '../core/services/slash-commands.service';
 import { IPromptRepository } from '../core/ports/prompt-repository.interface';
+import { runWithConvexAuth } from '../lib/convex-auth-context.js';
 
 export class McpServer {
   private promptService: PromptService;
@@ -26,11 +27,11 @@ export class McpServer {
     process.stdin.on('data', async (data) => {
       try {
         this.buffer += data.toString();
-        
+
         // Process complete JSON-RPC messages (one per line)
         const lines = this.buffer.split('\n');
         this.buffer = lines.pop() || ''; // Keep incomplete line in buffer
-        
+
         for (const line of lines) {
           if (line.trim()) {
             try {
@@ -80,7 +81,7 @@ export class McpServer {
       // Client disconnected, exit gracefully
       process.exit(0);
     });
-    
+
     // Silent in MCP mode - don't log to stderr as it might confuse clients
   }
 
@@ -93,15 +94,15 @@ export class McpServer {
 
     const response: any = {
       jsonrpc: '2.0',
-      id
+      id,
     };
-    
+
     if (error) {
       response.error = error;
     } else {
       response.result = result;
     }
-    
+
     try {
       const output = JSON.stringify(response) + '\n';
       // Write to stdout - for stdio, this should be synchronous
@@ -117,15 +118,16 @@ export class McpServer {
       // Don't try to send another error if stdout is broken
       if (!process.stdout.destroyed && !process.stdout.closed && id !== undefined && id !== null) {
         try {
-          const errorResponse = JSON.stringify({
-            jsonrpc: '2.0',
-            id,
-            error: {
-              code: -32000,
-              message: 'Server error',
-              data: err instanceof Error ? err.message : 'Failed to send response'
-            }
-          }) + '\n';
+          const errorResponse =
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id,
+              error: {
+                code: -32000,
+                message: 'Server error',
+                data: err instanceof Error ? err.message : 'Failed to send response',
+              },
+            }) + '\n';
           process.stdout.write(errorResponse);
         } catch {
           // Ignore if we can't even send the error
@@ -138,7 +140,7 @@ export class McpServer {
     this.sendResponse(id, undefined, {
       code,
       message,
-      data
+      data,
     });
   }
 
@@ -167,13 +169,13 @@ export class McpServer {
           protocolVersion: params?.protocolVersion || '2024-11-05',
           capabilities: {
             tools: {
-              listChanged: true
-            }
+              listChanged: true,
+            },
           },
           serverInfo: {
-            name: 'mcp-prompts',
-            version: '3.14.0'
-          }
+            name: 'roster',
+            version: '3.14.0',
+          },
         };
 
         this.initialized = true;
@@ -206,19 +208,32 @@ export class McpServer {
       if (request.method === 'tools/call') {
         const response = await this.handleToolsCall(request.params);
         if (response.error) {
-          this.sendError(requestId, response.error.code || -32603, response.error.message || 'Internal error', response.error.data);
+          this.sendError(
+            requestId,
+            response.error.code || -32603,
+            response.error.message || 'Internal error',
+            response.error.data,
+          );
         } else {
           this.sendResponse(requestId, response.result);
         }
         return;
       }
 
-      // Unknown method
+      // Unknown method (notifications must not receive a response)
+      if (isNotification) {
+        return;
+      }
       this.sendError(requestId, -32601, 'Method not found', `Unknown method: ${request.method}`);
     } catch (error) {
       console.error('Error handling request:', error);
       if (!isNotification) {
-        this.sendError(requestId, -32603, 'Internal error', error instanceof Error ? error.message : 'Unknown error');
+        this.sendError(
+          requestId,
+          -32603,
+          'Internal error',
+          error instanceof Error ? error.message : 'Unknown error',
+        );
       }
     }
   }
@@ -233,10 +248,10 @@ export class McpServer {
             type: 'object',
             properties: {
               id: { type: 'string', description: 'Prompt ID' },
-              version: { type: 'string', description: 'Prompt version (optional)' }
+              version: { type: 'string', description: 'Prompt version (optional)' },
             },
-            required: ['id']
-          }
+            required: ['id'],
+          },
         },
         {
           name: 'list_prompts',
@@ -245,9 +260,12 @@ export class McpServer {
             type: 'object',
             properties: {
               category: { type: 'string', description: 'Category to filter by (optional)' },
-              limit: { type: 'number', description: 'Maximum number of prompts to return (default: 50)' }
-            }
-          }
+              limit: {
+                type: 'number',
+                description: 'Maximum number of prompts to return (default: 50)',
+              },
+            },
+          },
         },
         {
           name: 'search_prompts',
@@ -256,10 +274,10 @@ export class McpServer {
             type: 'object',
             properties: {
               query: { type: 'string', description: 'Search query' },
-              category: { type: 'string', description: 'Category to filter by (optional)' }
+              category: { type: 'string', description: 'Category to filter by (optional)' },
             },
-            required: ['query']
-          }
+            required: ['query'],
+          },
         },
         {
           name: 'apply_template',
@@ -268,10 +286,10 @@ export class McpServer {
             type: 'object',
             properties: {
               promptId: { type: 'string', description: 'Prompt ID' },
-              variables: { type: 'object', description: 'Variables to apply' }
+              variables: { type: 'object', description: 'Variables to apply' },
             },
-            required: ['promptId', 'variables']
-          }
+            required: ['promptId', 'variables'],
+          },
         },
         {
           name: 'create_prompt',
@@ -284,10 +302,14 @@ export class McpServer {
               category: { type: 'string', description: 'Prompt category' },
               tags: { type: 'array', items: { type: 'string' }, description: 'Prompt tags' },
               isTemplate: { type: 'boolean', description: 'Whether this is a template' },
-              variables: { type: 'array', items: { type: 'string' }, description: 'Template variables' }
+              variables: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Template variables',
+              },
             },
-            required: ['name', 'content']
-          }
+            required: ['name', 'content'],
+          },
         },
         {
           name: 'update_prompt',
@@ -301,10 +323,14 @@ export class McpServer {
               category: { type: 'string', description: 'Prompt category' },
               tags: { type: 'array', items: { type: 'string' }, description: 'Prompt tags' },
               isTemplate: { type: 'boolean', description: 'Whether this is a template' },
-              variables: { type: 'array', items: { type: 'string' }, description: 'Template variables' }
+              variables: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Template variables',
+              },
             },
-            required: ['id']
-          }
+            required: ['id'],
+          },
         },
         {
           name: 'slash_command',
@@ -312,11 +338,17 @@ export class McpServer {
           inputSchema: {
             type: 'object',
             properties: {
-              command: { type: 'string', description: 'Slash command (e.g., "/code-review", "/bug-analyzer")' },
-              variables: { type: 'object', description: 'Variables to apply to the command template' }
+              command: {
+                type: 'string',
+                description: 'Slash command (e.g., "/code-review", "/bug-analyzer")',
+              },
+              variables: {
+                type: 'object',
+                description: 'Variables to apply to the command template',
+              },
             },
-            required: ['command']
-          }
+            required: ['command'],
+          },
         },
         {
           name: 'list_slash_commands',
@@ -325,9 +357,12 @@ export class McpServer {
             type: 'object',
             properties: {
               category: { type: 'string', description: 'Filter by category (optional)' },
-              limit: { type: 'number', description: 'Maximum number of commands to return (default: 20)' }
-            }
-          }
+              limit: {
+                type: 'number',
+                description: 'Maximum number of commands to return (default: 20)',
+              },
+            },
+          },
         },
         {
           name: 'suggest_slash_commands',
@@ -336,10 +371,13 @@ export class McpServer {
             type: 'object',
             properties: {
               query: { type: 'string', description: 'Search query for command suggestions' },
-              limit: { type: 'number', description: 'Maximum number of suggestions to return (default: 10)' }
+              limit: {
+                type: 'number',
+                description: 'Maximum number of suggestions to return (default: 10)',
+              },
             },
-            required: ['query']
-          }
+            required: ['query'],
+          },
         },
         {
           name: 'delete_prompt',
@@ -347,12 +385,25 @@ export class McpServer {
           inputSchema: {
             type: 'object',
             properties: {
-              id: { type: 'string', description: 'Prompt ID' }
+              id: { type: 'string', description: 'Prompt ID' },
             },
-            required: ['id']
-          }
-        }
-      ]
+            required: ['id'],
+          },
+        },
+        {
+          name: 'get_stats',
+          description: 'Get aggregate statistics for prompts in storage',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              limit: {
+                type: 'number',
+                description: 'Max prompts to scan (default 2000)',
+              },
+            },
+          },
+        },
+      ],
     };
   }
 
@@ -364,132 +415,144 @@ export class McpServer {
         error: {
           code: -32602,
           message: 'Invalid params',
-          data: 'Tool name is required'
-        }
+          data: 'Tool name is required',
+        },
       };
     }
 
-    try {
-      let result: any;
-      switch (name) {
-        case 'get_prompt':
-          const prompt = await this.promptService.getPrompt(args?.id, args?.version);
-          result = prompt ? prompt.toJSON() : null;
-          break;
-        
-        case 'list_prompts':
-          const prompts = args?.category
-            ? await this.promptService.getPromptsByCategory(args.category, args.limit || 50)
-            : await this.promptService.getLatestPrompts(args?.limit || 50);
-          result = prompts.map(p => p.toJSON());
-          break;
-        
-        case 'search_prompts':
-          if (!args?.query) {
-            throw new Error('Query parameter is required');
-          }
-          const searchResults = await this.promptService.searchPrompts(args.query, args.category);
-          result = searchResults.map(p => p.toJSON());
-          break;
-        
-        case 'apply_template':
-          if (!args?.promptId || !args?.variables) {
-            throw new Error('promptId and variables are required');
-          }
-          result = await this.promptService.applyTemplate(args.promptId, args.variables);
-          break;
-        
-        case 'create_prompt':
-          if (!args?.name || !args?.content) {
-            throw new Error('name and content are required');
-          }
-          // Map content to template for the service
-          const createData = { ...args, template: args.content };
-          const newPrompt = await this.promptService.createPrompt(createData);
-          result = newPrompt.toJSON();
-          break;
+    return runWithConvexAuth(async () => {
+      try {
+        let result: any;
+        switch (name) {
+          case 'get_prompt':
+            const prompt = await this.promptService.getPrompt(args?.id, args?.version);
+            result = prompt ? prompt.toJSON() : null;
+            break;
 
-        case 'update_prompt':
-          if (!args?.id) {
-            throw new Error('id is required');
-          }
-          const updatedPrompt = await this.promptService.updatePrompt(args.id, args);
-          result = updatedPrompt.toJSON();
-          break;
+          case 'list_prompts':
+            const prompts = args?.category
+              ? await this.promptService.getPromptsByCategory(args.category, args.limit || 50)
+              : await this.promptService.getLatestPrompts(args?.limit || 50);
+            result = prompts.map((p) => p.toJSON());
+            break;
 
-        case 'delete_prompt':
-          if (!args?.id) {
-            throw new Error('id is required');
-          }
-          await this.promptService.deletePrompt(args.id);
-          result = 'Prompt deleted successfully';
-          break;
-
-        case 'slash_command':
-          if (!this.slashCommandsService) {
-            throw new Error('Slash commands not available');
-          }
-          if (!args?.command) {
-            throw new Error('command is required');
-          }
-          result = await this.slashCommandsService.executeCommand(args.command, args.variables || {});
-          break;
-
-        case 'list_slash_commands':
-          if (!this.slashCommandsService) {
-            throw new Error('Slash commands not available');
-          }
-          const commands = args?.category
-            ? await this.slashCommandsService.getCommandsByCategory(args.category)
-            : await this.slashCommandsService.getAvailableCommands();
-          result = commands.slice(0, args?.limit || 20);
-          break;
-
-        case 'suggest_slash_commands':
-          if (!this.slashCommandsService) {
-            throw new Error('Slash commands not available');
-          }
-          if (!args?.query) {
-            throw new Error('query is required');
-          }
-          result = await this.slashCommandsService.getCommandSuggestions(args.query, args.limit || 10);
-          break;
-
-        default:
-          return {
-            error: {
-              code: -32601,
-              message: 'Method not found',
-              data: `Unknown tool: ${name}`
+          case 'search_prompts':
+            if (!args?.query) {
+              throw new Error('Query parameter is required');
             }
-          };
+            const searchResults = await this.promptService.searchPrompts(args.query, args.category);
+            result = searchResults.map((p) => p.toJSON());
+            break;
+
+          case 'apply_template':
+            if (!args?.promptId || !args?.variables) {
+              throw new Error('promptId and variables are required');
+            }
+            result = await this.promptService.applyTemplate(args.promptId, args.variables);
+            break;
+
+          case 'create_prompt':
+            if (!args?.name || !args?.content) {
+              throw new Error('name and content are required');
+            }
+            // Map content to template for the service
+            const createData = { ...args, template: args.content };
+            const newPrompt = await this.promptService.createPrompt(createData);
+            result = newPrompt.toJSON();
+            break;
+
+          case 'update_prompt':
+            if (!args?.id) {
+              throw new Error('id is required');
+            }
+            const updatedPrompt = await this.promptService.updatePrompt(args.id, args);
+            result = updatedPrompt.toJSON();
+            break;
+
+          case 'delete_prompt':
+            if (!args?.id) {
+              throw new Error('id is required');
+            }
+            await this.promptService.deletePrompt(args.id);
+            result = 'Prompt deleted successfully';
+            break;
+
+          case 'get_stats':
+            result = await this.promptService.getPromptStats(args?.limit ?? 2000);
+            break;
+
+          case 'slash_command':
+            if (!this.slashCommandsService) {
+              throw new Error('Slash commands not available');
+            }
+            if (!args?.command) {
+              throw new Error('command is required');
+            }
+            result = await this.slashCommandsService.executeCommand(
+              args.command,
+              args.variables || {},
+            );
+            break;
+
+          case 'list_slash_commands':
+            if (!this.slashCommandsService) {
+              throw new Error('Slash commands not available');
+            }
+            const commands = args?.category
+              ? await this.slashCommandsService.getCommandsByCategory(args.category)
+              : await this.slashCommandsService.getAvailableCommands();
+            result = commands.slice(0, args?.limit || 20);
+            break;
+
+          case 'suggest_slash_commands':
+            if (!this.slashCommandsService) {
+              throw new Error('Slash commands not available');
+            }
+            if (!args?.query) {
+              throw new Error('query is required');
+            }
+            result = (await this.slashCommandsService.getCommandSuggestions(args.query)).slice(
+              0,
+              args.limit || 10,
+            );
+            break;
+
+          default:
+            return {
+              error: {
+                code: -32601,
+                message: 'Method not found',
+                data: `Unknown tool: ${name}`,
+              },
+            };
+        }
+
+        return {
+          result: {
+            content: [
+              {
+                type: 'text',
+                text: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
+              },
+            ],
+          },
+        };
+      } catch (error) {
+        return {
+          error: {
+            code: -32603,
+            message: 'Internal error',
+            data: error instanceof Error ? error.message : 'Unknown error',
+          },
+        };
       }
-
-      return {
-        result: {
-          content: [
-            {
-              type: 'text',
-              text: typeof result === 'string' ? result : JSON.stringify(result, null, 2)
-            }
-          ]
-        }
-      };
-    } catch (error) {
-      return {
-        error: {
-          code: -32603,
-          message: 'Internal error',
-          data: error instanceof Error ? error.message : 'Unknown error'
-        }
-      };
-    }
+    });
   }
 
   // Legacy methods for HTTP compatibility
   public getCapabilities(): any {
     return {
-      name: 'mcp-prompts',
+      name: 'roster',
       version: '1.0.0',
       capabilities: {
         tools: {},
@@ -528,6 +591,10 @@ export class McpServer {
         name: 'delete_prompt',
         description: 'Delete a prompt',
       },
+      {
+        name: 'get_stats',
+        description: 'Get aggregate statistics for prompts in storage',
+      },
     ];
   }
 
@@ -538,23 +605,27 @@ export class McpServer {
         case 'get_prompt':
           const prompt = await this.promptService.getPrompt(args.id, args.version);
           return { result: prompt ? prompt.toJSON() : null };
-        
+
         case 'list_prompts':
           const prompts = args.category
             ? await this.promptService.getPromptsByCategory(args.category, args.limit || 50)
             : await this.promptService.getLatestPrompts(args.limit || 50);
-          return { result: prompts.map(p => p.toJSON()) };
-        
+          return { result: prompts.map((p) => p.toJSON()) };
+
         case 'search_prompts':
           const searchResults = await this.promptService.searchPrompts(args.query, args.category);
-          return { result: searchResults.map(p => p.toJSON()) };
-        
+          return { result: searchResults.map((p) => p.toJSON()) };
+
         case 'apply_template':
           const result = await this.promptService.applyTemplate(args.promptId, args.variables);
           return { result };
-        
+
         case 'create_prompt':
-          const newPrompt = await this.promptService.createPrompt(args);
+          const createArgs =
+            args.template === undefined && args.content !== undefined
+              ? { ...args, template: args.content }
+              : args;
+          const newPrompt = await this.promptService.createPrompt(createArgs);
           return { result: newPrompt.toJSON() };
 
         case 'update_prompt':
@@ -564,7 +635,10 @@ export class McpServer {
         case 'delete_prompt':
           await this.promptService.deletePrompt(args.id);
           return { result: 'Prompt deleted successfully' };
-        
+
+        case 'get_stats':
+          return { result: await this.promptService.getPromptStats(args?.limit ?? 2000) };
+
         default:
           throw new Error(`Unknown tool: ${toolName}`);
       }

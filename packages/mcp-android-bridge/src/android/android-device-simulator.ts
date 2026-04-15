@@ -12,17 +12,20 @@ import {
   LocationData,
   BatteryStats,
   NetworkStats,
-  NotificationData
-} from '@sparesparrow/mcp-fbs';
+  NotificationData,
+} from '@maslowai/fbs';
 
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  transport: process.env.NODE_ENV === 'development' ? {
-    target: 'pino-pretty',
-    options: {
-      colorize: true
-    }
-  } : undefined
+  transport:
+    process.env.NODE_ENV === 'development'
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+          },
+        }
+      : undefined,
 });
 
 export interface AndroidDeviceConfig {
@@ -71,7 +74,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
       batteryLevel: 85,
       isCharging: false,
       networkType: 'wifi',
-      timestamp: this.createTimestamp()
+      timestamp: this.createTimestamp(),
     };
 
     // Initialize battery stats
@@ -85,7 +88,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
       health: 'good',
       technology: 'Li-ion',
       timestamp: this.createTimestamp(),
-      deviceId: config.deviceId
+      deviceId: config.deviceId,
     };
 
     // Initialize network stats
@@ -100,7 +103,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
       mobileNetworkType: undefined,
       carrierName: undefined,
       timestamp: this.createTimestamp(),
-      deviceId: config.deviceId
+      deviceId: config.deviceId,
     };
 
     // Initialize location data
@@ -113,7 +116,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
       bearing: 0,
       provider: 'gps',
       timestamp: this.createTimestamp(),
-      deviceId: config.deviceId
+      deviceId: config.deviceId,
     };
 
     // Initialize with some sample clipboard items
@@ -192,7 +195,10 @@ export class AndroidDeviceSimulator extends EventEmitter {
   /**
    * Add a clipboard item
    */
-  addClipboardItem(content: string, contentType: ClipboardContentType = ClipboardContentType.TEXT): void {
+  addClipboardItem(
+    content: string,
+    contentType: ClipboardContentType = ClipboardContentType.TEXT,
+  ): void {
     const item: ClipboardItem = {
       id: this.generateUUID(),
       deviceId: this.config.deviceId,
@@ -202,7 +208,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
       label: `Item ${this.clipboardItems.length + 1}`,
       sourceApp: 'TestApp',
       sizeBytes: content.length,
-      metadata: []
+      metadata: [],
     };
 
     this.clipboardItems.unshift(item); // Add to beginning
@@ -249,10 +255,13 @@ export class AndroidDeviceSimulator extends EventEmitter {
    */
   async takeScreenshot(): Promise<string> {
     // Simulate screenshot delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Return base64-encoded mock image data
-    const mockImageData = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jzyr5AAAAABJRU5ErkJggg==', 'base64');
+    const mockImageData = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jzyr5AAAAABJRU5ErkJggg==',
+      'base64',
+    );
     return mockImageData.toString('base64');
   }
 
@@ -261,7 +270,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
    */
   async playSound(soundType: string = 'notification'): Promise<void> {
     logger.info(`Playing sound: ${soundType}`);
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 
   /**
@@ -277,13 +286,14 @@ export class AndroidDeviceSimulator extends EventEmitter {
    */
   async launchApp(packageName: string): Promise<void> {
     logger.info(`Launching app: ${packageName}`);
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
   }
 
   private startClipboardSimulation(): void {
     this.clipboardTimer = setInterval(() => {
       // Randomly add clipboard items
-      if (Math.random() < 0.3) { // 30% chance every interval
+      if (Math.random() < 0.3) {
+        // 30% chance every interval
         const sampleTexts = [
           'Hello from Android!',
           'This is a test clipboard item',
@@ -292,7 +302,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
           'Shopping list: milk, bread, eggs',
           'Meeting notes from standup',
           'Important: Update dependencies',
-          'TODO: Fix the bug in component X'
+          'TODO: Fix the bug in component X',
         ];
 
         const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
@@ -311,10 +321,10 @@ export class AndroidDeviceSimulator extends EventEmitter {
         values: [
           (Math.random() - 0.5) * 2, // X: -1 to 1
           (Math.random() - 0.5) * 2, // Y: -1 to 1
-          9.8 + (Math.random() - 0.5) * 0.2 // Z: around 9.8 m/s²
+          9.8 + (Math.random() - 0.5) * 0.2, // Z: around 9.8 m/s²
         ],
         accuracy: 3, // High accuracy
-        deviceId: this.config.deviceId
+        deviceId: this.config.deviceId,
       };
 
       this.emit('sensor-data', accelData);
@@ -327,7 +337,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
           timestamp: this.createTimestamp(),
           values: [Math.random() * 1000], // 0-1000 lux
           accuracy: 3,
-          deviceId: this.config.deviceId
+          deviceId: this.config.deviceId,
         };
 
         this.emit('sensor-data', lightData);
@@ -382,7 +392,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
       'This is a sample clipboard item',
       'You can copy text, images, and more',
       'Cross-device synchronization enabled',
-      'Real-time clipboard sharing'
+      'Real-time clipboard sharing',
     ];
 
     sampleItems.forEach((text, index) => {
@@ -403,7 +413,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
       '12.0': 31,
       '12.1': 32,
       '13.0': 33,
-      '14.0': 34
+      '14.0': 34,
     };
 
     return versionMap[androidVersion] || 30; // Default to Android 11
@@ -413,7 +423,7 @@ export class AndroidDeviceSimulator extends EventEmitter {
     const now = Date.now();
     return {
       seconds: Math.floor(now / 1000),
-      nanoseconds: (now % 1000) * 1000000
+      nanoseconds: (now % 1000) * 1000000,
     };
   }
 

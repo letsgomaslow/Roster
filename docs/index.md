@@ -1,109 +1,81 @@
-# MCP Prompts Documentation
+# Roster MCP documentation
 
-Welcome to the MCP Prompts documentation. This guide provides comprehensive information about the MCP Prompts server, its architecture, and usage.
+**Roster MCP** is a [Model Context Protocol](https://modelcontextprotocol.io/) server by **Maslow AI** for managing, versioning, and serving prompts and templates. Install the published package as **`@maslowai/roster`**.
 
-## 📚 **Documentation Index**
+This site indexes the docs in this repository. For **Convex** (hosted database), environment variables, and imports, see **[OPERATIONS.md](../OPERATIONS.md)** at the repo root.
 
-### **Getting Started**
-- [Quick Start Guide](01-quickstart.md) - Get up and running quickly
-- [Configuration](02-configuration.md) - Server configuration options
-- [Overview](00-overview.md) - High-level architecture overview
+## Documentation index
 
-### **Core Features**
-- [Storage Adapters](03-storage-adapters.md) - File, memory, and database storage
-- [API Reference](04-api-reference.md) - Complete API documentation
-- [Templates Guide](05-templates-guide.md) - Working with prompt templates
-- [MCP Integration](06-mcp-integration.md) - Model Context Protocol integration
+### Getting started
 
-### **Development & Deployment**
-- [Developer Guide](07-developer-guide.md) - Development setup and guidelines
-- [Roadmap](08-roadmap.md) - Future development plans
-- [Workflow Guide](09-workflow-guide.md) - Development workflows
+- [Quick start](01-quickstart.md) — Run locally with `npx`, Docker, or Convex
+- [Configuration](02-configuration.md) — Environment variables (aligned with `src/config.ts`)
+- [Overview](00-overview.md) — Architecture overview
 
-## 🚀 **Quick Start**
+### Core features
 
-### **Run with NPX (Recommended)**
+- [Storage adapters](03-storage-adapters.md) — `file`, `memory`, `postgres`, `convex`, AWS path
+- [API reference](04-api-reference.md) — HTTP API (when `MODE=http`)
+- [Templates](05-templates-guide.md) — Variables and templating
+- [MCP integration](06-mcp-integration.md) — Client configuration for Roster MCP
+
+### Development and deployment
+
+- [Developer guide](07-developer-guide.md)
+- [Roadmap](08-roadmap.md)
+- [Workflow guide](09-workflow-guide.md)
+
+## Quick start
+
+### npm / npx
+
 ```bash
-npx -y @sparesparrow/mcp-prompts
+npx -y @maslowai/roster
 ```
 
-### **Run with Docker**
+### Docker
+
 ```bash
-docker run -d --name mcp-server -p 3003:3003 \
+docker run -d --name roster-mcp -p 3003:3003 \
   -v $(pwd)/data:/app/data \
-  ghcr.io/sparesparrow/mcp-prompts:latest
+  ghcr.io/roster/roster:latest
 ```
 
-### **Build from Source**
+### Convex (hosted)
+
+Set `STORAGE_TYPE=convex`, `CONVEX_URL`, and auth per **[OPERATIONS.md](../OPERATIONS.md)**.
+
+### Build from source
+
 ```bash
-git clone https://github.com/sparesparrow/mcp-prompts.git
-cd mcp-prompts
+git clone <your-repo-url>
+cd <repo-directory>
 pnpm install
 pnpm run build
+pnpm test
 ```
 
-## 🏗️ **Architecture**
+## Architecture
 
-MCP Prompts follows a clean hexagonal architecture pattern:
+Roster MCP uses **hexagonal architecture**: core domain logic in `src/core/`, ports (interfaces), and adapters under `src/adapters/` (file, memory, Convex, AWS).
 
-- **Core**: Pure domain logic without infrastructure dependencies
-- **Ports**: Interfaces defined in core package
-- **Adapters**: Infrastructure implementations in adapter packages
-- **Apps**: Composition and configuration in apps folder
+## Development commands
 
-## 📦 **Features**
+| Command               | Description      |
+| --------------------- | ---------------- |
+| `pnpm run build`      | Compile with SWC |
+| `pnpm run type-check` | TypeScript check |
+| `pnpm test`           | Unit tests       |
+| `pnpm run dev:http`   | HTTP dev mode    |
+| `pnpm run dev:mcp`    | MCP stdio dev    |
 
-- **Full MCP Prompt API**: Create, read, update, delete, list, and apply prompts
-- **Multiple Storage Backends**: File, in-memory, PostgreSQL, and pluggable adapters
-- **Template System**: Apply variables to prompts with validation
-- **OpenAPI & Type Safety**: Auto-generated docs and strict TypeScript types
-- **Docker & Compose Support**: Production-ready images and orchestration
-- **Extensible**: Add new adapters, tools, or integrations easily
+## Contributing and license
 
-## 🔧 **Development**
+- [CONTRIBUTING.md](../CONTRIBUTING.md)
+- MIT License — see [LICENSE](../LICENSE). Copyright Maslow AI and contributors.
 
-### **Build Commands**
-```bash
-# Build entire workspace
-pnpm run build
+## Support
 
-# Development with watch mode
-pnpm run build:watch
-
-# Type checking
-pnpm run typecheck
-
-# Clean build artifacts
-pnpm run clean
-```
-
-### **Testing**
-```bash
-# Run all tests
-pnpm run test
-
-# Run tests for specific package
-pnpm -F @sparesparrow/mcp-prompts-core test
-```
-
-## 📖 **Additional Resources**
-
-- [Main Repository](https://github.com/sparesparrow/mcp-prompts)
-- [TypeScript Implementation](https://github.com/sparesparrow/mcp-prompts-ts)
-- [Prompt Catalog](https://github.com/sparesparrow/mcp-prompts-catalog)
-- [Contracts](https://github.com/sparesparrow/mcp-prompts-contracts)
-- [Rust Implementation](https://github.com/sparesparrow/mcp-prompts-rs)
-
-## 🤝 **Contributing**
-
-We welcome contributions! Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
-
-## 📄 **License**
-
-MIT License. © sparesparrow
-
-## 🆘 **Support**
-
-- **Bugs & Issues**: [GitHub Issues](https://github.com/sparesparrow/mcp-prompts/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/sparesparrow/mcp-prompts/discussions)
-- **Documentation**: [GitHub Wiki](https://github.com/sparesparrow/mcp-prompts/wiki) 
+- **npm**: [@maslowai/roster](https://www.npmjs.com/package/@maslowai/roster)
+- **Convex operations**: [OPERATIONS.md](../OPERATIONS.md)
+- Use your team’s issue tracker when the GitHub repository is published.

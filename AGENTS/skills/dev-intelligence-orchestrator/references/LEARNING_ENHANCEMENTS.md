@@ -11,9 +11,11 @@ All skill scripts have been enhanced with **mcp-prompts integration** to enable 
 ## Enhanced Scripts
 
 ### 1. `mcp_query.sh` (NEW)
-**Purpose**: HTTP API wrapper for querying mcp-prompts server
+
+**Purpose**: HTTP API wrapper for querying the Roster MCP server
 
 **Usage**:
+
 ```bash
 # List prompts
 ./scripts/mcp_query.sh list [category] [limit]
@@ -32,18 +34,22 @@ All skill scripts have been enhanced with **mcp-prompts integration** to enable 
 ```
 
 **Features**:
+
 - Graceful degradation if server unavailable
 - Health check before operations
 - Supports all mcp-prompts HTTP API endpoints
 
 ### 2. `analyze_cpp.sh` (ENHANCED)
+
 **Learning Behavior**:
+
 - Queries for `cppcheck` configurations matching project type and focus
 - Uses learned flags if available
 - Captures successful configurations with metrics
 - Updates existing prompts with validation data
 
 **Example Output**:
+
 ```
 🔍 Checking for accumulated knowledge...
 ✓ Found 1 relevant knowledge item(s)
@@ -54,19 +60,25 @@ All skill scripts have been enhanced with **mcp-prompts integration** to enable 
 ```
 
 ### 3. `analyze_python.sh` (ENHANCED)
+
 **Learning Behavior**:
+
 - Queries for `pylint` configurations
 - Applies learned options
 - Captures successful configurations
 
 ### 4. `run_tests.sh` (ENHANCED)
+
 **Learning Behavior**:
+
 - Queries for test framework configurations (pytest, platformio, etc.)
 - Uses learned test options
 - Captures successful test execution patterns
 
 ### 5. `parse_build_errors.py` (ENHANCED)
+
 **Learning Behavior**:
+
 - Queries for similar error patterns based on error signature
 - Uses learned diagnosis if available
 - Captures novel error patterns for future reference
@@ -89,6 +101,7 @@ These provide starting points that the learning system will validate and improve
 ## Learning Flow
 
 ### First Execution (No Knowledge)
+
 ```
 1. Query mcp-prompts → No results found
 2. Use default configuration
@@ -98,6 +111,7 @@ These provide starting points that the learning system will validate and improve
 ```
 
 ### Subsequent Executions (With Knowledge)
+
 ```
 1. Query mcp-prompts → Found matching configuration
 2. Use learned configuration
@@ -109,6 +123,7 @@ These provide starting points that the learning system will validate and improve
 ```
 
 ### Confidence Levels
+
 - **low**: 1 successful use
 - **medium**: 2-3 successful uses
 - **high**: 4+ successful uses
@@ -142,18 +157,21 @@ All scripts handle mcp-prompts unavailability gracefully:
 ## Testing the Learning Loop
 
 ### Test 1: First Run (No Knowledge)
+
 ```bash
 ./scripts/analyze_cpp.sh src/main.cpp memory .
 # Should: Use defaults, capture configuration
 ```
 
 ### Test 2: Second Run (With Knowledge)
+
 ```bash
 ./scripts/analyze_cpp.sh src/main.cpp memory .
 # Should: Use learned configuration, update success_count
 ```
 
 ### Test 3: Verify Learning
+
 ```bash
 ./scripts/mcp_query.sh search "cppcheck memory embedded-esp32"
 # Should: Show captured configuration with success_count > 0
@@ -194,7 +212,7 @@ MODE=http STORAGE_TYPE=file pnpm start:http
 ## Success Criteria
 
 ✅ **Learning is visible**: Scripts report when knowledge is found/used/captured  
-✅ **Graceful degradation**: Works without mcp-prompts server  
+✅ **Graceful degradation**: Works without the Roster MCP server  
 ✅ **Knowledge accumulation**: Second run uses learned configuration  
 ✅ **Confidence increases**: Success count and confidence tracked  
 ✅ **Cross-project sharing**: Learned configs available to all projects

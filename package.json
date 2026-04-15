@@ -1,10 +1,14 @@
 {
-  "name": "@sparesparrow/mcp-prompts",
+  "name": "@maslowai/roster",
   "version": "3.14.0",
-  "description": "A robust, extensible server for managing, versioning, and serving prompts and templates for LLM applications, built on the Model Context Protocol (MCP) with AWS integration",
+  "packageManager": "pnpm@10.30.3",
+  "description": "Roster — MCP server for managing, versioning, and serving prompts and templates for LLM applications, with optional AWS integration",
   "main": "dist/mcp-server-standalone.js",
   "types": "dist/mcp-server-standalone.d.ts",
   "bin": {
+    "roster": "dist/cli.js",
+    "roster-mcp": "dist/mcp-server-standalone.js",
+    "roster-http": "dist/index.js",
     "mcp-prompts": "dist/cli.js",
     "mcp-prompts-server": "dist/mcp-server-standalone.js",
     "mcp-prompts-http": "dist/index.js"
@@ -21,6 +25,7 @@
     "mcp",
     "model-context-protocol",
     "prompts",
+    "roster",
     "templates",
     "llm",
     "ai",
@@ -31,18 +36,10 @@
     "s3",
     "lambda"
   ],
-  "author": "sparesparrow",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sparesparrow/mcp-prompts.git"
-  },
-  "bugs": {
-    "url": "https://github.com/sparesparrow/mcp-prompts/issues"
-  },
-  "homepage": "https://github.com/sparesparrow/mcp-prompts#readme",
   "scripts": {
-    "build": "tsc && swc src -d dist",
+    "build": "swc src -d dist",
+    "build:declarations": "tsc --emitDeclarationOnly",
     "build:clean": "pnpm run clean && pnpm run build",
     "clean": "rm -rf dist",
     "dev": "nodemon --exec ts-node src/index.ts",
@@ -62,29 +59,36 @@
     "start": "node dist/index.js",
     "start:http": "MODE=http node dist/index.js",
     "start:mcp": "MODE=mcp node dist/index.js",
-    "docker:build": "docker build -t sparesparrow/mcp-prompts:latest .",
-    "docker:build:mcp": "docker build -f Dockerfile.mcp -t sparesparrow/mcp-prompts:latest .",
-    "docker:build:aws": "docker build -f Dockerfile.aws -t sparesparrow/mcp-prompts:aws .",
-    "docker:build:simple": "docker build -f Dockerfile.simple -t sparesparrow/mcp-prompts:simple .",
-    "docker:build:file": "docker build -f Dockerfile.file -t sparesparrow/mcp-prompts:file .",
-    "docker:build:postgres": "docker build -f Dockerfile.postgres -t sparesparrow/mcp-prompts:postgres .",
-    "docker:build:memory": "docker build -f Dockerfile.memory -t sparesparrow/mcp-prompts:memory .",
+    "convex:dev": "convex dev",
+    "convex:login": "convex login",
+    "convex:configure": "convex dev --once --configure existing",
+    "convex:deploy": "convex deploy --typecheck try",
+    "convex:export": "convex export --path ./convex-snapshot.zip",
+    "convex:import:prod": "convex import --prod -y ./convex-snapshot.zip",
+    "convex:codegen": "convex codegen",
+    "import:convex": "ts-node scripts/import-prompts-to-convex.ts",
+    "add:convex": "pnpm add convex@latest -w",
+    "docker:build": "docker build -t roster/roster:latest .",
+    "docker:build:mcp": "docker build -f Dockerfile.mcp -t roster/roster:latest .",
+    "docker:build:aws": "docker build -f Dockerfile.aws -t roster/roster:aws .",
+    "docker:build:simple": "docker build -f Dockerfile.simple -t roster/roster:simple .",
+    "docker:build:file": "docker build -f Dockerfile.file -t roster/roster:file .",
+    "docker:build:postgres": "docker build -f Dockerfile.postgres -t roster/roster:postgres .",
+    "docker:build:memory": "docker build -f Dockerfile.memory -t roster/roster:memory .",
     "docker:build:all": "pnpm run docker:build:file && pnpm run docker:build:postgres && pnpm run docker:build:memory && pnpm run docker:build:aws && pnpm run docker:build:mcp",
-    "publish:dry": "npm publish --dry-run",
+    "publish:dry": "npm publish --dry-run --access public",
     "publish:npm": "npm publish --access public",
     "publish:gh": "npm publish --registry https://npm.pkg.github.com",
     "publish:patch": "npm version patch && npm publish --access public",
     "publish:minor": "npm version minor && npm publish --access public",
     "publish:major": "npm version major && npm publish --access public",
-    "docker:tag:ghcr": "docker tag sparesparrow/mcp-prompts:latest ghcr.io/sparesparrow/mcp-prompts:latest",
-    "docker:push:dockerhub": "docker push sparesparrow/mcp-prompts:latest",
-    "docker:push:ghcr": "docker push ghcr.io/sparesparrow/mcp-prompts:latest",
+    "docker:tag:ghcr": "docker tag roster/roster:latest ghcr.io/roster/roster:latest",
+    "docker:push:dockerhub": "docker push roster/roster:latest",
+    "docker:push:ghcr": "docker push ghcr.io/roster/roster:latest",
     "prepublishOnly": "pnpm run build",
-    "postinstall": "echo 'MCP Prompts installed successfully!'"
+    "postinstall": "echo 'Roster (@maslowai/roster) installed successfully!'"
   },
   "dependencies": {
-    "@sparesparrow/mcp-fbs": "workspace:*",
-    "@sparesparrow/mcp-devtools-unified": "workspace:*",
     "@aws-sdk/client-cloudwatch": "^3.899.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.899.0",
     "@aws-sdk/client-dynamodb": "^3.899.0",
@@ -93,8 +97,11 @@
     "@aws-sdk/credential-providers": "^3.899.0",
     "@aws-sdk/lib-dynamodb": "^3.899.0",
     "@aws-sdk/util-dynamodb": "^3.899.0",
+    "@clerk/backend": "3.2.4",
+    "@clerk/express": "2.0.8",
     "@modelcontextprotocol/sdk": "^1.25.1",
     "commander": "^12.0.0",
+    "convex": "1.34.1",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "flatbuffers": "25.9.23",
@@ -132,6 +139,11 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./client": {
+      "import": "./dist/client.js",
+      "require": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
     "./mcp": {
       "import": "./dist/mcp-server-standalone.js",
       "require": "./dist/mcp-server-standalone.js",
@@ -143,10 +155,6 @@
       "types": "./dist/cli.d.ts"
     },
     "./package.json": "./package.json"
-  },
-  "funding": {
-    "type": "github",
-    "url": "https://github.com/sponsors/sparesparrow"
   },
   "os": [
     "linux",

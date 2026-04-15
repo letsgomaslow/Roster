@@ -1,9 +1,11 @@
+import type { PromptEventType } from './prompt-event-type';
+
 export class PromptEvent {
   constructor(
-    public readonly type: 'prompt_created' | 'prompt_updated' | 'prompt_deleted' | 'prompt_accessed',
+    public readonly type: PromptEventType,
     public readonly promptId: string,
     public readonly timestamp: Date = new Date(),
-    public readonly metadata: Record<string, any> = {}
+    public readonly metadata: Record<string, any> = {},
   ) {}
 
   public toJSON(): any {
@@ -11,16 +13,11 @@ export class PromptEvent {
       type: this.type,
       promptId: this.promptId,
       timestamp: this.timestamp.toISOString(),
-      metadata: this.metadata
+      metadata: this.metadata,
     };
   }
 
   public static fromJSON(data: any): PromptEvent {
-    return new PromptEvent(
-      data.type,
-      data.promptId,
-      new Date(data.timestamp),
-      data.metadata || {}
-    );
+    return new PromptEvent(data.type, data.promptId, new Date(data.timestamp), data.metadata || {});
   }
 }

@@ -30,7 +30,7 @@ export interface ScaffoldResult {
 export class ProjectScaffoldService {
   constructor(
     private promptRepository: IPromptRepository,
-    private eventBus: IEventBus
+    private eventBus: IEventBus,
   ) {}
 
   /**
@@ -39,7 +39,7 @@ export class ProjectScaffoldService {
   async scaffoldProject(
     templateId: string,
     variables: Record<string, any>,
-    outputPath: string
+    outputPath: string,
   ): Promise<ScaffoldResult> {
     try {
       // Validate template exists
@@ -49,7 +49,7 @@ export class ProjectScaffoldService {
       }
 
       // Validate template content exists
-      const templateContent = template.content || '';
+      const templateContent = template.template || '';
       if (!templateContent) {
         throw new ValidationError(`Template ${templateId} has no content`);
       }
@@ -95,21 +95,25 @@ export class ProjectScaffoldService {
         createdFiles,
         createdDirectories,
         variablesApplied: variables,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
-      await this.eventBus.publish(new PromptEvent('project_scaffolded', projectId, new Date(), {
-        templateId,
-        fileCount: createdFiles.length,
-        directoryCount: createdDirectories.length
-      }));
+      await this.eventBus.publish(
+        new PromptEvent('project_scaffolded', projectId, new Date(), {
+          templateId,
+          fileCount: createdFiles.length,
+          directoryCount: createdDirectories.length,
+        }),
+      );
 
       return result;
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;
       }
-      throw new ValidationError(`Failed to scaffold project: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new ValidationError(
+        `Failed to scaffold project: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -133,7 +137,7 @@ export class ProjectScaffoldService {
    */
   async validateVariables(
     templateId: string,
-    variables: Record<string, any>
+    variables: Record<string, any>,
   ): Promise<{ valid: boolean; errors: string[] }> {
     const errors: string[] = [];
 
@@ -145,7 +149,7 @@ export class ProjectScaffoldService {
     }
 
     // Extract required variables from template content
-    const requiredVars = this.extractRequiredVariables(template.content || '');
+    const requiredVars = this.extractRequiredVariables(template.template || '');
 
     // Check if all required variables are provided
     for (const requiredVar of requiredVars) {
@@ -169,7 +173,7 @@ export class ProjectScaffoldService {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -179,7 +183,7 @@ export class ProjectScaffoldService {
   private extractRequiredVariables(content: string): string[] {
     const variablePattern = /\{\{(\w+)\}\}/g;
     const matches = content.match(variablePattern) || [];
-    return Array.from(new Set(matches.map(m => m.replace(/\{\{|\}\}/g, ''))));
+    return Array.from(new Set(matches.map((m) => m.replace(/\{\{|\}\}/g, ''))));
   }
 
   /**
@@ -191,27 +195,23 @@ export class ProjectScaffoldService {
   } {
     // Parse YAML or JSON structure from template
     // For now, this is a simplified implementation
-    const directories: string[] = [
-      'src',
-      'src/components',
-      'src/services',
-      'tests',
-      'docs'
-    ];
+    const directories: string[] = ['src', 'src/components', 'src/services', 'tests', 'docs'];
 
     const files: Array<{ path: string; content: string }> = [
       {
         path: 'README.md',
-        content: '# {{projectName}}\n\n{{description}}\n\n## Installation\n\n```bash\nnpm install\n```\n\n## Usage\n\n```bash\nnpm start\n```'
+        content:
+          '# {{projectName}}\n\n{{description}}\n\n## Installation\n\n```bash\nnpm install\n```\n\n## Usage\n\n```bash\nnpm start\n```',
       },
       {
         path: 'package.json',
-        content: '{\n  "name": "{{projectName}}",\n  "version": "1.0.0",\n  "description": "{{description}}",\n  "scripts": {\n    "start": "node index.js",\n    "test": "jest"\n  }\n}'
+        content:
+          '{\n  "name": "{{projectName}}",\n  "version": "1.0.0",\n  "description": "{{description}}",\n  "scripts": {\n    "start": "node index.js",\n    "test": "jest"\n  }\n}',
       },
       {
         path: '.gitignore',
-        content: 'node_modules/\ndist/\n.env\n.DS_Store\n*.log'
-      }
+        content: 'node_modules/\ndist/\n.env\n.DS_Store\n*.log',
+      },
     ];
 
     return { directories, files };

@@ -1,96 +1,107 @@
-# Configuration
+# Configuration — Roster MCP
 
-All configuration for MCP-Prompts is handled via environment variables. This enables flexible deployment across local, Docker, and cloud environments.
+**Roster MCP** (Maslow AI, npm `@maslowai/roster`) reads configuration from **environment variables**. The HTTP/MCP entrypoint in `src/index.ts` loads a subset through **`src/config.ts`** ([Zod](https://github.com/colinhacks/zod) schema). Additional variables (for example `MODE`, AWS resource names) are read directly where used.
 
-> **MCP-Prompts** is built with hexagonal architecture: configuration is validated at the boundary, keeping core logic portable and testable. See [Overview](00-overview.md) for architecture and [Quickstart](01-quickstart.md) for setup.
-
-MCP-Prompts validates all variables at startup using [Zod](https://github.com/colinhacks/zod). If any required variable is missing or invalid, the server prints a clear error and exits.
-
-Below is a complete list of supported environment variables, grouped by section. Types and defaults are shown where applicable.
+For **Convex** deployments, Clerk vs dev-owner mode, and bulk import, use the runbook: **[OPERATIONS.md](../OPERATIONS.md)**.
 
 ---
 
-## Core Server Settings
+## Runtime mode
 
-| Variable     | Type    | Default        | Description                                                 |
-| ------------ | ------- | -------------- | ----------------------------------------------------------- |
-| NAME         | string  | mcp-prompts    | Name of the server                                          |
-| VERSION      | string  | 1.0.0          | Version string                                              |
-| STORAGE_TYPE | enum    | file           | Storage backend: file, postgres, memory, mdc, elasticsearch |
-| PROMPTS_DIR  | string  | ./data/prompts | Directory for prompt files                                  |
-| BACKUPS_DIR  | string  | ./data/backups | Directory for backups                                       |
-| PORT         | number  | 3003           | HTTP port                                                   |
-| LOG_LEVEL    | enum    | info           | Log level: debug, info, warn, error                         |
-| HTTP_SERVER  | boolean | true           | Enable HTTP server                                          |
-| MCP_SERVER   | boolean | false          | Enable MCP server                                           |
-| HOST         | string  | localhost      | Hostname                                                    |
-| ENABLE_SSE   | boolean |                | Enable SSE (optional)                                       |
-| SSE_PATH     | string  |                | SSE endpoint path (optional)                                |
-| CORS_ORIGIN  | string  |                | CORS allowed origin (optional)                              |
-
-## Streaming
-
-| Variable             | Type    | Default | Description                         |
-| -------------------- | ------- | ------- | ----------------------------------- |
-| STREAMING_ENABLED    | boolean |         | Enable streaming (optional)         |
-| STREAMING_CHUNK_SIZE | number  |         | Streaming chunk size (optional)     |
-| STREAMING_MAX_TOKENS | number  |         | Max tokens for streaming (optional) |
-
-## Sequences
-
-| Variable                 | Type   | Default | Description                        |
-| ------------------------ | ------ | ------- | ---------------------------------- |
-| SEQUENCES_MAX_STEPS      | number |         | Max steps in a sequence (optional) |
-| SEQUENCES_TIMEOUT        | number |         | Sequence timeout in ms (optional)  |
-| SEQUENCES_RETRY_ATTEMPTS | number |         | Sequence retry attempts (optional) |
-
-## PostgreSQL
-
-| Variable                 | Type    | Default     | Description                                       |
-| ------------------------ | ------- | ----------- | ------------------------------------------------- |
-| POSTGRES_HOST            | string  |             | Postgres host (required if STORAGE_TYPE=postgres) |
-| POSTGRES_PORT            | number  | 5432        | Postgres port                                     |
-| POSTGRES_DATABASE        | string  | mcp_prompts | Postgres database name                            |
-| POSTGRES_USER            | string  | postgres    | Postgres user                                     |
-| POSTGRES_PASSWORD        | string  |             | Postgres password                                 |
-| POSTGRES_SSL             | boolean |             | Use SSL for Postgres (optional)                   |
-| POSTGRES_MAX_CONNECTIONS | number  |             | Max Postgres connections (optional)               |
-
-## MDC (Markdown Cursor Rules)
-
-| Variable            | Type    | Default | Description                                            |
-| ------------------- | ------- | ------- | ------------------------------------------------------ |
-| MDC_RULES_DIR       | string  |         | Directory for MDC rules (required if STORAGE_TYPE=mdc) |
-| MDC_BACKUP_ENABLED  | boolean |         | Enable MDC backup (optional)                           |
-| MDC_BACKUP_INTERVAL | number  |         | MDC backup interval in ms (optional)                   |
-
-## ElasticSearch
-
-| Variable                     | Type   | Default | Description                                                     |
-| ---------------------------- | ------ | ------- | --------------------------------------------------------------- |
-| ELASTICSEARCH_NODE           | string |         | ElasticSearch node URL (required if STORAGE_TYPE=elasticsearch) |
-| ELASTICSEARCH_USERNAME       | string |         | ElasticSearch username (optional)                               |
-| ELASTICSEARCH_PASSWORD       | string |         | ElasticSearch password (optional)                               |
-| ELASTICSEARCH_INDEX          | string |         | ElasticSearch index (optional)                                  |
-| ELASTICSEARCH_SEQUENCE_INDEX | string |         | ElasticSearch sequence index (optional)                         |
-
-## ElevenLabs (Text-to-Speech)
-
-| Variable                      | Type    | Default | Description                                             |
-| ----------------------------- | ------- | ------- | ------------------------------------------------------- |
-| ELEVENLABS_API_KEY            | string  |         | ElevenLabs API key (optional)                           |
-| ELEVENLABS_MODEL_ID           | string  |         | ElevenLabs model ID (optional)                          |
-| ELEVENLABS_VOICE_ID           | string  |         | ElevenLabs voice ID (optional)                          |
-| ELEVENLABS_OPTIMIZATION_LEVEL | enum    |         | Optimization level: speed, quality, balanced (optional) |
-| ELEVENLABS_STABILITY          | number  |         | Stability (0-1, optional)                               |
-| ELEVENLABS_SIMILARITY_BOOST   | number  |         | Similarity boost (0-1, optional)                        |
-| ELEVENLABS_SPEAKER_BOOST      | boolean |         | Speaker boost (optional)                                |
-| ELEVENLABS_STYLE              | number  |         | Style (0-1, optional)                                   |
-| ELEVENLABS_USE_CACHING        | boolean |         | Enable audio caching (optional)                         |
-| ELEVENLABS_CACHE_DIR          | string  |         | Audio cache directory (optional)                        |
+| Variable | Values        | Default | Description                                                       |
+| -------- | ------------- | ------- | ----------------------------------------------------------------- |
+| `MODE`   | `mcp`, `http` | `mcp`   | `mcp` = stdio MCP server; `http` = Express REST API + MCP routes. |
 
 ---
 
-**Note:** All variables are validated at startup using Zod. If any required variable is missing or invalid, the server will print a clear error and exit. See `src/config.ts` for the authoritative schema.
+## Core (Zod schema in `src/config.ts`)
 
-For now see the `src/http-server.ts` and `src/index.ts` files for defaults and `tests/` for examples.
+| Variable       | Type   | Default     | Description                                   |
+| -------------- | ------ | ----------- | --------------------------------------------- |
+| `HOST`         | string | `0.0.0.0`   | HTTP bind host                                |
+| `PORT`         | number | `3003`      | HTTP port                                     |
+| `LOG_LEVEL`    | enum   | `info`      | `debug`, `info`, `warn`, `error`              |
+| `STORAGE_TYPE` | enum   | `file`      | `file`, `memory`, `postgres`, `convex`        |
+| `PROMPTS_DIR`  | string | `/app/data` | Prompt files root (file/memory catalog paths) |
+
+### Optional HTTP / CORS / SSE
+
+| Variable      | Description           |
+| ------------- | --------------------- |
+| `ENABLE_SSE`  | Enable SSE (optional) |
+| `CORS_ORIGIN` | CORS allowed origin   |
+| `SSE_PATH`    | SSE path              |
+
+### Convex (`STORAGE_TYPE=convex`)
+
+| Variable                    | Description                                                                 |
+| --------------------------- | --------------------------------------------------------------------------- |
+| `CONVEX_URL`                | Deployment URL, e.g. `https://xxx.convex.cloud`                             |
+| `CONVEX_DEV_OWNER_USER_ID`  | Dev/single-tenant owner id (must match Convex dashboard); see OPERATIONS.md |
+| `CLERK_PUBLISHABLE_KEY`     | Clerk (with `CLERK_SECRET_KEY`) for JWT auth                                |
+| `CLERK_SECRET_KEY`          | Clerk secret                                                                |
+| `CLERK_CONVEX_JWT_TEMPLATE` | Optional; default template name `convex`                                    |
+
+**Startup rules** (see `src/index.ts`): `CONVEX_URL` is required. You need **either** Clerk keys **or** `CONVEX_DEV_OWNER_USER_ID` (dev only).
+
+### PostgreSQL (`STORAGE_TYPE=postgres`)
+
+Postgres-related keys exist in the schema for future use. The current `src/index.ts` **throws** if `STORAGE_TYPE=postgres` is selected—use `file`, `memory`, or `convex` until Postgres is re-enabled.
+
+| Variable                   | Description          |
+| -------------------------- | -------------------- |
+| `POSTGRES_HOST`            | Host                 |
+| `POSTGRES_PORT`            | Port                 |
+| `POSTGRES_DATABASE`        | Database name        |
+| `POSTGRES_USER`            | User                 |
+| `POSTGRES_PASSWORD`        | Password             |
+| `POSTGRES_MAX_CONNECTIONS` | Pool size (optional) |
+| `POSTGRES_SSL`             | Use SSL (optional)   |
+
+### ElevenLabs (optional)
+
+| Variable               | Description     |
+| ---------------------- | --------------- |
+| `ELEVENLABS_API_KEY`   | API key         |
+| `ELEVENLABS_MODEL_ID`  | Model           |
+| `ELEVENLABS_VOICE_ID`  | Voice           |
+| `ELEVENLABS_CACHE_DIR` | Cache directory |
+
+### Local HTTPS (optional, `MODE=http`)
+
+| Variable               | Description                                          |
+| ---------------------- | ---------------------------------------------------- |
+| `HTTPS_KEY_PATH`       | PEM key path                                         |
+| `HTTPS_CERT_PATH`      | PEM cert path                                        |
+| `HTTPS_CA_PATH`        | Optional CA                                          |
+| `HTTPS_KEY_PASSPHRASE` | Optional                                             |
+| `DEV_LOCAL_HTTPS`      | Must be true with HTTPS paths when not in production |
+
+---
+
+## AWS (DynamoDB / S3 / SQS path)
+
+When `STORAGE_TYPE` is **not** one of `file`, `memory`, `postgres`, or `convex`, `src/index.ts` uses the **AWS adapters** (legacy default branch). Typical variables:
+
+| Variable           | Default (example)        | Description                                              |
+| ------------------ | ------------------------ | -------------------------------------------------------- |
+| `PROMPTS_TABLE`    | `mcp-prompts`            | DynamoDB table (**resource name**, not product branding) |
+| `PROMPTS_BUCKET`   | `mcp-prompts-catalog`    | S3 catalog bucket                                        |
+| `PROCESSING_QUEUE` | `mcp-prompts-processing` | SQS queue                                                |
+| `AWS_REGION`       | —                        | AWS region                                               |
+
+Use IAM roles in production; avoid long-lived keys.
+
+---
+
+## Not in `src/config.ts`
+
+Older docs listed `NAME`, `HTTP_SERVER`, `MCP_SERVER`, `mdc`, `elasticsearch`, streaming, and sequence toggles. Those are **not** part of the current Zod schema. If you need them, confirm in source (`rg process.env` / `src/http-server.ts`) before relying on them.
+
+---
+
+## References
+
+- Authoritative env schema: [`src/config.ts`](../src/config.ts)
+- Convex operations: [`OPERATIONS.md`](../OPERATIONS.md)
+- Storage overview: [Storage adapters](03-storage-adapters.md)

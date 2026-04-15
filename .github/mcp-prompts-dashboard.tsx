@@ -1,5 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Trash2, History, Server, Users, BarChart3, Settings, Upload, Download, Play, Copy, CheckCircle, AlertCircle, Clock, Database, FileText, GitBranch, Filter, RefreshCw, Eye, Code, Save, X, ChevronDown, ChevronRight, Globe, Shield, Zap, Activity } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  History,
+  Server,
+  Users,
+  BarChart3,
+  Settings,
+  Upload,
+  Download,
+  Play,
+  Copy,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Database,
+  FileText,
+  GitBranch,
+  Filter,
+  RefreshCw,
+  Eye,
+  Code,
+  Save,
+  X,
+  ChevronDown,
+  ChevronRight,
+  Globe,
+  Shield,
+  Zap,
+  Activity,
+} from 'lucide-react';
 
 const MCPPromptsDashboard = () => {
   const [activeTab, setActiveTab] = useState('prompts');
@@ -8,16 +40,18 @@ const MCPPromptsDashboard = () => {
     {
       id: 'prompt-1',
       name: 'Code Review Assistant',
-      description: 'Analyzes code for best practices, security issues, and optimization opportunities',
+      description:
+        'Analyzes code for best practices, security issues, and optimization opportunities',
       category: 'Development',
       version: '2.1.0',
       lastModified: '2024-07-03T14:30:00Z',
       author: 'dev-team',
       tags: ['code', 'review', 'security'],
-      template: 'Review the following code for:\n1. Security vulnerabilities\n2. Performance optimizations\n3. Best practices\n\nCode:\n```{{language}}\n{{code}}\n```\n\nProvide specific recommendations.',
+      template:
+        'Review the following code for:\n1. Security vulnerabilities\n2. Performance optimizations\n3. Best practices\n\nCode:\n```{{language}}\n{{code}}\n```\n\nProvide specific recommendations.',
       variables: ['language', 'code'],
       usage: 342,
-      status: 'active'
+      status: 'active',
     },
     {
       id: 'prompt-2',
@@ -28,10 +62,11 @@ const MCPPromptsDashboard = () => {
       lastModified: '2024-07-02T09:15:00Z',
       author: 'docs-team',
       tags: ['api', 'documentation', 'swagger'],
-      template: 'Generate API documentation for:\n\nEndpoint: {{endpoint}}\nMethod: {{method}}\nParameters: {{parameters}}\n\nInclude:\n- Description\n- Request/Response examples\n- Error codes\n- Authentication requirements',
+      template:
+        'Generate API documentation for:\n\nEndpoint: {{endpoint}}\nMethod: {{method}}\nParameters: {{parameters}}\n\nInclude:\n- Description\n- Request/Response examples\n- Error codes\n- Authentication requirements',
       variables: ['endpoint', 'method', 'parameters'],
       usage: 189,
-      status: 'active'
+      status: 'active',
     },
     {
       id: 'prompt-3',
@@ -42,18 +77,19 @@ const MCPPromptsDashboard = () => {
       lastModified: '2024-07-01T16:45:00Z',
       author: 'db-team',
       tags: ['sql', 'optimization', 'database'],
-      template: 'Optimize this SQL query:\n\n```sql\n{{query}}\n```\n\nDatabase: {{database_type}}\nTable size: {{table_size}}\n\nProvide:\n1. Optimized query\n2. Explanation of changes\n3. Performance impact estimate',
+      template:
+        'Optimize this SQL query:\n\n```sql\n{{query}}\n```\n\nDatabase: {{database_type}}\nTable size: {{table_size}}\n\nProvide:\n1. Optimized query\n2. Explanation of changes\n3. Performance impact estimate',
       variables: ['query', 'database_type', 'table_size'],
       usage: 76,
-      status: 'draft'
-    }
+      status: 'draft',
+    },
   ]);
 
   const [servers, setServers] = useState([
-    { id: 'mcp-prompts', name: 'MCP Prompts', status: 'healthy', uptime: '99.9%', requests: 1234 },
+    { id: 'roster', name: 'Roster', status: 'healthy', uptime: '99.9%', requests: 1234 },
     { id: 'filesystem', name: 'Filesystem', status: 'healthy', uptime: '99.8%', requests: 567 },
     { id: 'memory', name: 'Memory', status: 'healthy', uptime: '100%', requests: 890 },
-    { id: 'github', name: 'GitHub', status: 'degraded', uptime: '95.2%', requests: 234 }
+    { id: 'github', name: 'GitHub', status: 'degraded', uptime: '95.2%', requests: 234 },
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,10 +100,11 @@ const MCPPromptsDashboard = () => {
 
   const categories = ['all', 'Development', 'Documentation', 'Database', 'Analysis', 'Content'];
 
-  const filteredPrompts = prompts.filter(prompt => {
-    const matchesSearch = prompt.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         prompt.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         prompt.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredPrompts = prompts.filter((prompt) => {
+    const matchesSearch =
+      prompt.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      prompt.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      prompt.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === 'all' || prompt.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -79,14 +116,14 @@ const MCPPromptsDashboard = () => {
   };
 
   const handleEditPrompt = (prompt) => {
-    setEditingPrompt({...prompt});
+    setEditingPrompt({ ...prompt });
     setShowEditor(true);
     setShowVersionHistory(false);
   };
 
   const handleSavePrompt = () => {
     if (editingPrompt.id) {
-      setPrompts(prompts.map(p => p.id === editingPrompt.id ? editingPrompt : p));
+      setPrompts(prompts.map((p) => (p.id === editingPrompt.id ? editingPrompt : p)));
     } else {
       setPrompts([...prompts, { ...editingPrompt, id: `prompt-${Date.now()}`, version: '1.0.0' }]);
     }
@@ -112,7 +149,7 @@ const MCPPromptsDashboard = () => {
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <option key={cat} value={cat}>
               {cat === 'all' ? 'All Categories' : cat}
             </option>
@@ -126,7 +163,7 @@ const MCPPromptsDashboard = () => {
               category: 'Development',
               template: '',
               variables: [],
-              tags: []
+              tags: [],
             });
             setShowEditor(true);
           }}
@@ -138,26 +175,35 @@ const MCPPromptsDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredPrompts.map(prompt => (
+        {filteredPrompts.map((prompt) => (
           <div
             key={prompt.id}
             onClick={() => handlePromptClick(prompt)}
             className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-              selectedPrompt?.id === prompt.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+              selectedPrompt?.id === prompt.id
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-200 hover:border-gray-300'
             }`}
           >
             <div className="flex justify-between items-start mb-2">
               <h3 className="font-semibold text-gray-900 line-clamp-1">{prompt.name}</h3>
-              <span className={`px-2 py-1 rounded-full text-xs ${
-                prompt.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-              }`}>
+              <span
+                className={`px-2 py-1 rounded-full text-xs ${
+                  prompt.status === 'active'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}
+              >
                 {prompt.status}
               </span>
             </div>
             <p className="text-sm text-gray-600 mb-3 line-clamp-2">{prompt.description}</p>
             <div className="flex flex-wrap gap-1 mb-3">
-              {prompt.tags.slice(0, 3).map(tag => (
-                <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+              {prompt.tags.slice(0, 3).map((tag) => (
+                <span
+                  key={tag}
+                  className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
+                >
                   {tag}
                 </span>
               ))}
@@ -244,7 +290,9 @@ const MCPPromptsDashboard = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Modified:</span>
-                <span className="font-medium">{new Date(selectedPrompt.lastModified).toLocaleDateString()}</span>
+                <span className="font-medium">
+                  {new Date(selectedPrompt.lastModified).toLocaleDateString()}
+                </span>
               </div>
             </div>
           </div>
@@ -252,7 +300,7 @@ const MCPPromptsDashboard = () => {
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <h3 className="font-semibold mb-3">Variables</h3>
             <div className="space-y-2">
-              {selectedPrompt.variables.map(variable => (
+              {selectedPrompt.variables.map((variable) => (
                 <div key={variable} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                   <Code className="h-4 w-4 text-gray-500" />
                   <span className="text-sm font-mono">{variable}</span>
@@ -264,8 +312,11 @@ const MCPPromptsDashboard = () => {
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <h3 className="font-semibold mb-3">Tags</h3>
             <div className="flex flex-wrap gap-2">
-              {selectedPrompt.tags.map(tag => (
-                <span key={tag} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+              {selectedPrompt.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                >
                   {tag}
                 </span>
               ))}
@@ -307,7 +358,7 @@ const MCPPromptsDashboard = () => {
             <input
               type="text"
               value={editingPrompt?.name || ''}
-              onChange={(e) => setEditingPrompt({...editingPrompt, name: e.target.value})}
+              onChange={(e) => setEditingPrompt({ ...editingPrompt, name: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter prompt name"
             />
@@ -316,7 +367,7 @@ const MCPPromptsDashboard = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               value={editingPrompt?.description || ''}
-              onChange={(e) => setEditingPrompt({...editingPrompt, description: e.target.value})}
+              onChange={(e) => setEditingPrompt({ ...editingPrompt, description: e.target.value })}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter prompt description"
@@ -326,11 +377,13 @@ const MCPPromptsDashboard = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
             <select
               value={editingPrompt?.category || ''}
-              onChange={(e) => setEditingPrompt({...editingPrompt, category: e.target.value})}
+              onChange={(e) => setEditingPrompt({ ...editingPrompt, category: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              {categories.slice(1).map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              {categories.slice(1).map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
           </div>
@@ -339,7 +392,12 @@ const MCPPromptsDashboard = () => {
             <input
               type="text"
               value={editingPrompt?.tags?.join(', ') || ''}
-              onChange={(e) => setEditingPrompt({...editingPrompt, tags: e.target.value.split(', ').filter(t => t)})}
+              onChange={(e) =>
+                setEditingPrompt({
+                  ...editingPrompt,
+                  tags: e.target.value.split(', ').filter((t) => t),
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter tags separated by commas"
             />
@@ -350,13 +408,13 @@ const MCPPromptsDashboard = () => {
           <label className="block text-sm font-medium text-gray-700 mb-2">Template</label>
           <textarea
             value={editingPrompt?.template || ''}
-            onChange={(e) => setEditingPrompt({...editingPrompt, template: e.target.value})}
+            onChange={(e) => setEditingPrompt({ ...editingPrompt, template: e.target.value })}
             rows={12}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
             placeholder="Enter prompt template with {{variables}}"
           />
           <p className="text-xs text-gray-500 mt-2">
-            Use {{variable_name}} syntax for template variables
+            Use {{ variable_name }} syntax for template variables
           </p>
         </div>
       </div>
@@ -374,15 +432,24 @@ const MCPPromptsDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {servers.map(server => (
+        {servers.map((server) => (
           <div key={server.id} className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-gray-900">{server.name}</h3>
-              <div className={`flex items-center gap-2 ${
-                server.status === 'healthy' ? 'text-green-600' : 
-                server.status === 'degraded' ? 'text-yellow-600' : 'text-red-600'
-              }`}>
-                {server.status === 'healthy' ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+              <div
+                className={`flex items-center gap-2 ${
+                  server.status === 'healthy'
+                    ? 'text-green-600'
+                    : server.status === 'degraded'
+                      ? 'text-yellow-600'
+                      : 'text-red-600'
+                }`}
+              >
+                {server.status === 'healthy' ? (
+                  <CheckCircle className="h-4 w-4" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )}
                 <span className="text-sm font-medium capitalize">{server.status}</span>
               </div>
             </div>
@@ -403,11 +470,11 @@ const MCPPromptsDashboard = () => {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold mb-4">Federation Configuration</h3>
         <pre className="bg-gray-50 p-4 rounded-lg text-sm overflow-x-auto">
-{`{
+          {`{
   "mcpServers": {
     "mcp-prompts": {
       "command": "npx",
-      "args": ["-y", "@sparesparrow/mcp-prompts"]
+      "args": ["-y", "@maslowai/roster"]
     },
     "filesystem": {
       "command": "npx",
@@ -431,7 +498,7 @@ const MCPPromptsDashboard = () => {
   const renderAnalytics = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Analytics & Usage</h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
@@ -442,32 +509,38 @@ const MCPPromptsDashboard = () => {
             <FileText className="h-8 w-8 text-blue-600" />
           </div>
         </div>
-        
+
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Usage</p>
-              <p className="text-2xl font-bold text-gray-900">{prompts.reduce((sum, p) => sum + p.usage, 0)}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {prompts.reduce((sum, p) => sum + p.usage, 0)}
+              </p>
             </div>
             <Activity className="h-8 w-8 text-green-600" />
           </div>
         </div>
-        
+
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Active Servers</p>
-              <p className="text-2xl font-bold text-gray-900">{servers.filter(s => s.status === 'healthy').length}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {servers.filter((s) => s.status === 'healthy').length}
+              </p>
             </div>
             <Server className="h-8 w-8 text-purple-600" />
           </div>
         </div>
-        
+
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">API Requests</p>
-              <p className="text-2xl font-bold text-gray-900">{servers.reduce((sum, s) => sum + s.requests, 0)}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {servers.reduce((sum, s) => sum + s.requests, 0)}
+              </p>
             </div>
             <Zap className="h-8 w-8 text-orange-600" />
           </div>
@@ -477,18 +550,24 @@ const MCPPromptsDashboard = () => {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold mb-4">Most Used Prompts</h3>
         <div className="space-y-3">
-          {prompts.sort((a, b) => b.usage - a.usage).slice(0, 5).map(prompt => (
-            <div key={prompt.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
-              <div>
-                <p className="font-medium text-gray-900">{prompt.name}</p>
-                <p className="text-sm text-gray-600">{prompt.category}</p>
+          {prompts
+            .sort((a, b) => b.usage - a.usage)
+            .slice(0, 5)
+            .map((prompt) => (
+              <div
+                key={prompt.id}
+                className="flex items-center justify-between py-2 border-b last:border-b-0"
+              >
+                <div>
+                  <p className="font-medium text-gray-900">{prompt.name}</p>
+                  <p className="text-sm text-gray-600">{prompt.category}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium text-gray-900">{prompt.usage} uses</p>
+                  <p className="text-sm text-gray-600">v{prompt.version}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="font-medium text-gray-900">{prompt.usage} uses</p>
-                <p className="text-sm text-gray-600">v{prompt.version}</p>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </div>
@@ -535,8 +614,8 @@ const MCPPromptsDashboard = () => {
               { id: 'prompts', label: 'Prompts', icon: FileText },
               { id: 'servers', label: 'Servers', icon: Server },
               { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-              { id: 'users', label: 'Users', icon: Users }
-            ].map(tab => {
+              { id: 'users', label: 'Users', icon: Users },
+            ].map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
@@ -559,14 +638,18 @@ const MCPPromptsDashboard = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {activeTab === 'prompts' && (
-          showEditor ? renderEditor() : 
-          showVersionHistory ? (
+        {activeTab === 'prompts' &&
+          (showEditor ? (
+            renderEditor()
+          ) : showVersionHistory ? (
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold mb-4">Version History</h3>
               <div className="space-y-3">
-                {['2.1.0', '2.0.1', '2.0.0', '1.9.3'].map(version => (
-                  <div key={version} className="flex items-center justify-between p-3 border rounded-lg">
+                {['2.1.0', '2.0.1', '2.0.0', '1.9.3'].map((version) => (
+                  <div
+                    key={version}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
                       <GitBranch className="h-4 w-4 text-gray-500" />
                       <span className="font-medium">v{version}</span>
@@ -580,9 +663,11 @@ const MCPPromptsDashboard = () => {
                 ))}
               </div>
             </div>
-          ) : 
-          selectedPrompt ? renderPromptDetail() : renderPromptsList()
-        )}
+          ) : selectedPrompt ? (
+            renderPromptDetail()
+          ) : (
+            renderPromptsList()
+          ))}
         {activeTab === 'servers' && renderServers()}
         {activeTab === 'analytics' && renderAnalytics()}
         {activeTab === 'users' && (

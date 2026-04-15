@@ -1,9 +1,11 @@
 # Quick Reference: Key Files to Extract & Adapt
 
 ## From: mcp-project-orchestrator
-**Repository**: https://github.com/sparesparrow/mcp-project-orchestrator
+
+**Repository**: Use your org’s fork of the orchestrator template (or GitHub search for `mcp-project-orchestrator`).
 
 ### Files to Study & Copy
+
 ```
 mcp-project-orchestrator/
 ├── src/
@@ -25,9 +27,10 @@ mcp-project-orchestrator/
 ```
 
 ### What to Copy
+
 1. **Entity patterns**:
    - `Project` entity with properties, validation
-   - `Component` entity 
+   - `Component` entity
    - `Template` entity with variables/placeholders
    - Adapt: Make these `Subagent`, `MainAgentTemplate`, `ProjectOrchestrationTemplate`
 
@@ -48,7 +51,9 @@ mcp-project-orchestrator/
    - Adapt: Add new methods for subagent/template queries
 
 ### Schema & Config to Study
+
 - **`project_orchestration.json`** structure:
+
   ```json
   {
     "project_type": "mcp_server|python_backend|cpp_app|iot_firmware",
@@ -57,14 +62,17 @@ mcp-project-orchestrator/
     "variables": {...}
   }
   ```
+
   - Adapt this for your `project_orchestration_template` Prompt type
 
 ---
 
 ## From: VoltAgent/awesome-claude-code-subagents
+
 **Repository**: https://github.com/VoltAgent/awesome-claude-code-subagents
 
 ### Files to Study & Copy
+
 ```
 awesome-claude-code-subagents/
 ├── README.md                           ← Categories list (STUDY)
@@ -86,6 +94,7 @@ awesome-claude-code-subagents/
 ```
 
 ### What to Copy
+
 1. **Subagent categories** (read README.md):
    - `dev/*` → dev/backend-developer, dev/typescript-pro, dev/python-pro, etc.
    - `infra/*` → infra/devops-engineer, infra/kubernetes-specialist, etc.
@@ -119,6 +128,7 @@ awesome-claude-code-subagents/
    - Use as reference for your main orchestrator logic
 
 ### Subagents to Prioritize (Minimum Set)
+
 ```
 ✅ dev/backend-developer      (Core analyzer pattern)
 ✅ dev/typescript-pro         (For mcp-prompts web UI)
@@ -136,6 +146,7 @@ awesome-claude-code-subagents/
 ## From: Your Existing Work
 
 ### Files to Reference & Integrate
+
 ```
 Your Projects/
 ├── improved-agents.json       ← Main agent templates (PORT INTO mcp-prompts)
@@ -146,6 +157,7 @@ Your Projects/
 ```
 
 ### What to Port
+
 1. **improved-agents.json**:
    - Main agent templates (cpp_backend, python_backend, multiplatform_iot, etc.)
    - Global subagents definitions
@@ -174,13 +186,15 @@ Your Projects/
 ## Quick Copy-Paste Checklist
 
 ### 1. Clone Repositories (locally, reference only - no submodules)
+
 ```bash
 # Study & reference only (DO NOT add as submodules)
-git clone https://github.com/sparesparrow/mcp-project-orchestrator /tmp/mcp-project-orchestrator
+git clone <your-fork-of-mcp-project-orchestrator> /tmp/mcp-project-orchestrator
 git clone https://github.com/VoltAgent/awesome-claude-code-subagents /tmp/awesome-claude-code-subagents
 ```
 
 ### 2. Extract from mcp-project-orchestrator
+
 ```bash
 # Copy all templates
 cp -r /tmp/mcp-project-orchestrator/templates/* \
@@ -194,6 +208,7 @@ less /tmp/mcp-project-orchestrator/src/domain/use-cases/*.ts
 ```
 
 ### 3. Extract from VoltAgent
+
 ```bash
 # List all subagent markdown files
 find /tmp/awesome-claude-code-subagents/subagents -name "*.md" \
@@ -203,6 +218,7 @@ find /tmp/awesome-claude-code-subagents/subagents -name "*.md" \
 ```
 
 ### 4. Files to Create in mcp-prompts
+
 ```bash
 # New directory structure
 mcp-prompts/
@@ -251,37 +267,41 @@ mcp-prompts/
 ## Key Adaptation Points
 
 ### From mcp-project-orchestrator → mcp-prompts
-| Concept | mcp-project-orchestrator | → | mcp-prompts |
-|---------|--------------------------|---|------------|
-| **Entity** | `Project`, `Component`, `Template` | → | `Subagent`, `MainAgentTemplate`, `ProjectOrchestrationTemplate` |
-| **Storage** | File-based in `templates/` | → | Prompt entries (PostgreSQL/DynamoDB/File) |
-| **Generation** | Hexagonal architecture scaffolding | → | Project structure + agent config scaffolding |
-| **Variables** | Handlebars/mustache placeholders | → | Same system, reuse |
-| **API** | REST endpoints for project generation | → | Extend with `/v1/orchestrate` endpoint |
+
+| Concept        | mcp-project-orchestrator              | →   | mcp-prompts                                                     |
+| -------------- | ------------------------------------- | --- | --------------------------------------------------------------- |
+| **Entity**     | `Project`, `Component`, `Template`    | →   | `Subagent`, `MainAgentTemplate`, `ProjectOrchestrationTemplate` |
+| **Storage**    | File-based in `templates/`            | →   | Prompt entries (PostgreSQL/DynamoDB/File)                       |
+| **Generation** | Hexagonal architecture scaffolding    | →   | Project structure + agent config scaffolding                    |
+| **Variables**  | Handlebars/mustache placeholders      | →   | Same system, reuse                                              |
+| **API**        | REST endpoints for project generation | →   | Extend with `/v1/orchestrate` endpoint                          |
 
 ### From VoltAgent → mcp-prompts
-| Concept | VoltAgent | → | mcp-prompts |
-|---------|-----------|---|------------|
-| **Structure** | Markdown `.md` files per subagent | → | JSON Prompt entries (searchable, versionable) |
-| **Categories** | dev/, infra/, quality/, meta/ | → | Same categories, extended for iot/, dx/ |
-| **Prompts** | Plain text system prompts | → | Stored in Prompt.system_prompt field |
-| **Tools** | Listed in markdown | → | Structured as JSON arrays in Prompt.tools |
-| **Reuse** | Manual copy-paste | → | Programmatic via API, MCP tools |
+
+| Concept        | VoltAgent                         | →   | mcp-prompts                                   |
+| -------------- | --------------------------------- | --- | --------------------------------------------- |
+| **Structure**  | Markdown `.md` files per subagent | →   | JSON Prompt entries (searchable, versionable) |
+| **Categories** | dev/, infra/, quality/, meta/     | →   | Same categories, extended for iot/, dx/       |
+| **Prompts**    | Plain text system prompts         | →   | Stored in Prompt.system_prompt field          |
+| **Tools**      | Listed in markdown                | →   | Structured as JSON arrays in Prompt.tools     |
+| **Reuse**      | Manual copy-paste                 | →   | Programmatic via API, MCP tools               |
 
 ### From your v3 design → v4 implementation
-| Component | v3 | → | v4 |
-|-----------|----|----|-----|
-| **Agent configs** | hardcoded in improved-agents.json | → | Stored in mcp-prompts, fetched via API |
-| **Project detection** | Shell script logic | → | Same logic, but can also call mcp-prompts endpoint |
-| **Subagent spawn** | Hardcoded in agents.json template | → | Dynamically built from mcp-prompts response |
-| **Main agent select** | Hardcoded template per project type | → | Fetched from `/v1/main-agents/{project_type}` |
+
+| Component             | v3                                  | →   | v4                                                 |
+| --------------------- | ----------------------------------- | --- | -------------------------------------------------- |
+| **Agent configs**     | hardcoded in improved-agents.json   | →   | Stored in mcp-prompts, fetched via API             |
+| **Project detection** | Shell script logic                  | →   | Same logic, but can also call mcp-prompts endpoint |
+| **Subagent spawn**    | Hardcoded in agents.json template   | →   | Dynamically built from mcp-prompts response        |
+| **Main agent select** | Hardcoded template per project type | →   | Fetched from `/v1/main-agents/{project_type}`      |
 
 ---
 
 ## URLs & Commit References to Study
 
 ### mcp-project-orchestrator
-- **Integration plan**: https://github.com/sparesparrow/mcp-project-orchestrator/blob/main/integration_plan.md
+
+- **Integration plan**: See `integration_plan.md` in your orchestrator checkout.
 - **Template system**: Look for `src/domain/use-cases/GenerateProject` and `ApplyTemplate`
 - **Hexagonal pattern**: Study `src/domain/entities/` and `src/adapters/`
 - **Recent commits** (copy patterns from):
@@ -290,11 +310,13 @@ mcp-prompts/
   - File I/O abstraction
 
 ### VoltAgent/awesome-claude-code-subagents
+
 - **Subagent categories**: https://github.com/VoltAgent/awesome-claude-code-subagents#categories
 - **Each subagent file** (example): `subagents/dev/backend-developer.md` → Contains full system prompt
 - **Meta subagent example**: `subagents/meta/multi-agent-coordinator.md` → Use as reference for orchestrator design
 
 ### Claude SDK Documentation
+
 - **CLI Reference**: https://code.claude.com/docs/en/cli-reference
   - Search for: `--agents`, `--system-prompt`, `--model`, subagent syntax
 - **MCP Documentation**: https://code.claude.com/docs/en/mcp
@@ -335,6 +357,7 @@ mcp-prompts/
 ## File Formats Reference
 
 ### Prompt Entry Format (JSON)
+
 ```json
 {
   "id": "subagent_category_name",
@@ -348,10 +371,10 @@ mcp-prompts/
   "tools": ["tool1", "tool2"],
   "mcp_servers": ["github", "filesystem"],
   "variables": [
-    {"name": "var_name", "type": "string|number|boolean", "description": "...", "required": true}
+    { "name": "var_name", "type": "string|number|boolean", "description": "...", "required": true }
   ],
   "version": "1.0.0",
-  "author": "sparesparrow|voltAgent|...",
+  "author": "maslow|voltAgent|...",
   "source_url": "https://github.com/...",
   "compatible_with": ["project_type1", "project_type2"],
   "created_at": "2025-01-09T00:00:00Z",
@@ -360,6 +383,7 @@ mcp-prompts/
 ```
 
 ### Project Template Format (JSON)
+
 ```json
 {
   "id": "template_mcp_server",

@@ -1,10 +1,11 @@
 {
-  "name": "@sparesparrow/mcp-embedded-coordinator",
+  "name": "@maslowai/embedded-coordinator",
   "version": "1.0.0",
-  "description": "Unified MCP coordinator for embedded systems (ESP32, Android) with cognitive orchestration",
+  "description": "Unified MCP coordinator for embedded systems (ESP32, Android) with Roster",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
+    "roster-embedded-coordinator": "dist/embedded-coordinator.js",
     "mcp-embedded-coordinator": "dist/embedded-coordinator.js"
   },
   "scripts": {
@@ -22,18 +23,18 @@
     "embedded",
     "esp32",
     "android",
+    "roster",
     "coordinator",
     "orchestration",
     "cognitive"
   ],
-  "author": "sparesparrow",
   "license": "Apache-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.2",
-    "@sparesparrow/mcp-prompts": "workspace:*",
-    "@sparesparrow/mcp-fbs": "workspace:*",
-    "@sparesparrow/mcp-esp32-bridge": "workspace:*",
-    "@sparesparrow/mcp-android-bridge": "workspace:*",
+    "@maslowai/roster": "workspace:*",
+    "@maslowai/fbs": "workspace:*",
+    "@maslowai/esp32-bridge": "workspace:*",
+    "@maslowai/android-bridge": "workspace:*",
     "flatbuffers": "^23.5.26",
     "pino": "^8.21.0",
     "pino-pretty": "^10.3.1",
@@ -48,11 +49,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "workspaces": [
-    "../../mcp-prompts",
-    "../mcp-fbs",
-    "../mcp-esp32-bridge",
-    "../mcp-android-bridge"
-  ]
+  }
 }

@@ -14,8 +14,8 @@ pnpm -r run clean
 # Build core packages first (dependencies)
 echo "🔨 Building core packages..."
 cd packages/core && pnpm run build && cd ../..
-cd packages/@sparesparrow/mcp-prompts-contracts && pnpm run build && cd ../../..
-cd packages/@sparesparrow/mcp-prompts-catalog && pnpm run build && cd ../../..
+cd packages/@maslowai/contracts && pnpm run build && cd ../../..
+cd packages/@maslowai/catalog && pnpm run build && cd ../../..
 
 # Build adapters
 echo "🔌 Building adapters..."

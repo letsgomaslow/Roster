@@ -5,6 +5,7 @@ A bridge service that connects Android devices to the MCP cognitive platform, en
 ## Overview
 
 The Android Bridge provides:
+
 - **Clipboard Synchronization**: Real-time cross-device clipboard sharing
 - **Device Data Access**: Battery, network, location, and sensor data
 - **Device Control**: Screenshot, sound, notifications, and app launching
@@ -14,30 +15,35 @@ The Android Bridge provides:
 ## Features
 
 ### Clipboard Management
+
 - **Real-time Sync**: Instant clipboard content sharing across devices
 - **Content Types**: Text, HTML, URIs, images, and files
 - **History Tracking**: Comprehensive clipboard usage history
 - **Pattern Analysis**: Usage pattern recognition and insights
 
 ### Device Monitoring
+
 - **Battery Status**: Level, charging state, temperature, health
 - **Network Information**: WiFi, mobile data, signal strength, data usage
 - **Location Data**: GPS coordinates, accuracy, speed, bearing
 - **System Information**: Device specs, memory, Android version
 
 ### Sensor Integration
+
 - **Accelerometer**: Motion detection and activity recognition
 - **Light Sensor**: Ambient light level monitoring
 - **Environmental Sensors**: Temperature, humidity, pressure
 - **Custom Sensors**: Extensible sensor framework
 
 ### Device Control
+
 - **Screenshot Capture**: Remote screenshot functionality
 - **Audio Feedback**: Sound and vibration control
 - **Toast Messages**: Non-intrusive notifications
 - **App Launching**: Programmatic app starting
 
 ### MCP Tools
+
 - `get_android_clipboard` - Retrieve clipboard content
 - `set_android_clipboard` - Set clipboard content
 - `sync_android_clipboard` - Cross-device clipboard sync
@@ -58,7 +64,7 @@ The Android Bridge provides:
 ```bash
 # From the monorepo root
 pnpm install
-cd packages/mcp-android-bridge
+cd packages/android-bridge
 pnpm build
 ```
 
@@ -75,6 +81,7 @@ pnpm dev
 ```
 
 ### Simulated Features
+
 - **Dynamic Clipboard**: Random content generation and updates
 - **Realistic Sensors**: Accelerometer, light sensor with realistic values
 - **Battery Simulation**: Charging/discharging with temperature changes
@@ -86,6 +93,7 @@ pnpm dev
 For production Android device integration:
 
 ### Android App Requirements
+
 ```xml
 <!-- AndroidManifest.xml -->
 <uses-permission android:name="android.permission.READ_CLIPBOARD" />
@@ -97,6 +105,7 @@ For production Android device integration:
 ```
 
 ### WebSocket Communication
+
 ```javascript
 // Android app connects to bridge via WebSocket
 const ws = new WebSocket('ws://bridge-server:8080/android');
@@ -139,7 +148,7 @@ MODE=mcp                                         # Run mode (mcp or websocket)
   "mcpServers": {
     "mcp-android-bridge": {
       "command": "node",
-      "args": ["/path/to/mcp-android-bridge/dist/android-bridge.js"],
+      "args": ["/path/to/android-bridge/dist/android-bridge.js"],
       "env": {
         "ANDROID_DEVICE_ID": "pixel-7-livingroom",
         "ANDROID_DEVICE_NAME": "Pixel 7",
@@ -303,8 +312,8 @@ pnpm dev
 
 ## Dependencies
 
-- `@sparesparrow/mcp-prompts` - Cognitive prompt management
-- `@sparesparrow/mcp-fbs` - FlatBuffers schemas
+- `@maslowai/roster` - Cognitive prompt management
+- `@maslowai/fbs` - FlatBuffers schemas
 - `ws` - WebSocket communication
 - `@modelcontextprotocol/sdk` - MCP protocol
 

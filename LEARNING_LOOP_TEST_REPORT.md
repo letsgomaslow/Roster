@@ -75,6 +75,7 @@
 ## Files Created/Modified
 
 ### New Files
+
 - ✅ `scripts/mcp_query.sh` - HTTP API wrapper (4.6KB)
 - ✅ `scripts/seed-tool-config-prompts.js` - Seed prompt generator (7KB)
 - ✅ `scripts/verify_learning_loop.sh` - Verification test (3KB)
@@ -83,6 +84,7 @@
 - ✅ `data/prompts/tool-config/*.json` - 6 seed prompts
 
 ### Enhanced Files
+
 - ✅ `scripts/analyze_cpp.sh` - Added learning loop (11KB)
 - ✅ `scripts/analyze_python.sh` - Added learning loop (10KB)
 - ✅ `scripts/run_tests.sh` - Added learning loop (11KB)
@@ -92,15 +94,19 @@
 ## Test Execution
 
 ### Verification Test
+
 ```bash
 ./scripts/verify_learning_loop.sh
 ```
+
 **Result**: ✅ All 20 tests passed
 
 ### Learning Flow Demo
+
 ```bash
 ./scripts/demo_learning_flow.sh
 ```
+
 **Result**: ✅ Flow demonstrated correctly
 
 ## End-to-End Testing Requirements
@@ -108,6 +114,7 @@
 For full end-to-end testing, the following are required:
 
 1. **mcp-prompts Server**
+
    ```bash
    MODE=http STORAGE_TYPE=file PROMPTS_DIR=./data pnpm start:http
    ```
@@ -118,10 +125,11 @@ For full end-to-end testing, the following are required:
    - `pytest` - For test execution
 
 3. **Test Scenario**
+
    ```bash
    # First run - captures learning
    ./scripts/analyze_python.sh src/index.ts general .
-   
+
    # Second run - uses learned config
    ./scripts/analyze_python.sh src/index.ts general .
    ```
@@ -129,7 +137,7 @@ For full end-to-end testing, the following are required:
 ## Success Criteria Met
 
 ✅ **Learning is visible**: Scripts report when knowledge is found/used/captured  
-✅ **Graceful degradation**: Works without mcp-prompts server  
+✅ **Graceful degradation**: Works without the Roster MCP server  
 ✅ **Knowledge accumulation**: Second run uses learned configuration (when server available)  
 ✅ **Confidence increases**: Success count and confidence tracked  
 ✅ **Cross-project sharing**: Learned configs available to all projects  
@@ -138,7 +146,7 @@ For full end-to-end testing, the following are required:
 ## Next Steps
 
 1. **Deploy to production environment**
-   - Ensure mcp-prompts server is running with file storage
+   - Ensure the Roster MCP server is running with file storage
    - Install required analysis tools
    - Run initial analyses to populate learned configurations
 

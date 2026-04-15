@@ -1,5 +1,7 @@
+import type { PromptEventType } from '../events/prompt-event-type';
+
 export interface PromptEvent {
-  type: 'prompt_created' | 'prompt_updated' | 'prompt_deleted' | 'prompt_accessed';
+  type: PromptEventType;
   promptId: string;
   timestamp: Date;
   metadata?: Record<string, any>;

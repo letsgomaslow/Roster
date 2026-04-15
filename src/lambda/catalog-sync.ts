@@ -14,18 +14,21 @@ export const handler: SQSHandler = async (event: SQSEvent): Promise<void> => {
   for (const record of event.Records) {
     try {
       const messageBody = JSON.parse(record.body);
-      const repoUrl = messageBody.repoUrl || process.env.GITHUB_REPO_URL || 'https://github.com/sparesparrow/mcp-prompts-catalog';
+      const repoUrl = messageBody.repoUrl || process.env.GITHUB_REPO_URL;
+      if (!repoUrl) {
+        console.warn('catalog-sync: missing repoUrl / GITHUB_REPO_URL; skipping GitHub sync');
+        await indexingService.syncFromCatalog();
+        continue;
+      }
 
       console.log(`Syncing catalog from: ${repoUrl}`);
 
-      // Sync catalog from GitHub to S3
       await catalogRepository.syncFromGitHub(repoUrl);
 
       // Sync prompts from catalog to DynamoDB
       await indexingService.syncFromCatalog();
 
       console.log('Catalog sync completed successfully');
-
     } catch (error) {
       console.error('Error processing catalog sync:', error);
       throw error;

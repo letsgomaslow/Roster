@@ -1,5 +1,6 @@
 import { Prompt } from '../core/entities/prompt.entity';
-import { IPromptRepository } from '../core/ports/prompt-repository.interface';
+import type { PromptType, ClaudeModel } from '../core/entities/prompt.entity';
+import { IPromptRepository, SubagentFilter } from '../core/ports/prompt-repository.interface';
 import { ICatalogRepository } from '../core/ports/catalog-repository.interface';
 import { IEventBus, PromptEvent } from '../core/ports/event-bus.interface';
 import { logger } from '../utils';
@@ -20,14 +21,14 @@ export class MemoryPromptRepository implements IPromptRepository {
 
   async findByCategory(category: string, limit?: number): Promise<Prompt[]> {
     const categoryPrompts = Array.from(prompts.values())
-      .filter(p => p.category === category)
+      .filter((p) => p.category === category)
       .slice(0, limit || 50);
     return categoryPrompts;
   }
 
   async findLatestVersions(limit?: number): Promise<Prompt[]> {
     const latestPrompts = Array.from(prompts.values())
-      .filter(p => p.isLatest)
+      .filter((p) => p.isLatest)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit || 50);
     return latestPrompts;
@@ -35,18 +36,19 @@ export class MemoryPromptRepository implements IPromptRepository {
 
   async search(query: string, category?: string): Promise<Prompt[]> {
     let searchResults = Array.from(prompts.values());
-    
+
     if (category) {
-      searchResults = searchResults.filter(p => p.category === category);
+      searchResults = searchResults.filter((p) => p.category === category);
     }
-    
+
     const queryLower = query.toLowerCase();
-    searchResults = searchResults.filter(p => 
-      p.name.toLowerCase().includes(queryLower) ||
-      p.template.toLowerCase().includes(queryLower) ||
-      p.tags.some(tag => tag.toLowerCase().includes(queryLower))
+    searchResults = searchResults.filter(
+      (p) =>
+        p.name.toLowerCase().includes(queryLower) ||
+        p.template.toLowerCase().includes(queryLower) ||
+        p.tags.some((tag) => tag.toLowerCase().includes(queryLower)),
     );
-    
+
     return searchResults;
   }
 
@@ -68,7 +70,7 @@ export class MemoryPromptRepository implements IPromptRepository {
       existingPrompt.createdAt,
       new Date(),
       updates.isLatest !== undefined ? updates.isLatest : existingPrompt.isLatest,
-      updates.metadata || existingPrompt.metadata
+      updates.metadata || existingPrompt.metadata,
     );
 
     prompts.set(id, updatedPrompt);
@@ -80,7 +82,7 @@ export class MemoryPromptRepository implements IPromptRepository {
     if (!prompt) {
       throw new Error(`Prompt with ID ${id} not found`);
     }
-    
+
     prompts.delete(id);
     logger.info(`Deleted prompt: ${id}`);
   }
@@ -95,9 +97,91 @@ export class MemoryPromptRepository implements IPromptRepository {
       status: 'healthy',
       details: {
         totalPrompts: prompts.size,
-        storage: 'memory'
-      }
+        storage: 'memory',
+      },
     };
+  }
+
+  async findByType(type: PromptType, limit?: number): Promise<Prompt[]> {
+    const allPrompts = await this.findLatestVersions(limit || 1000);
+    return allPrompts.filter((p) => p.promptType === type);
+  }
+
+  async findSubagents(filter?: SubagentFilter, limit?: number): Promise<Prompt[]> {
+    let list = await this.findByType('subagent_registry', limit);
+    if (!filter) return list;
+    if (filter.category) list = list.filter((p) => p.category === filter.category);
+    if (filter.tags?.length) {
+      list = list.filter((p) => filter.tags!.every((tag) => p.tags.includes(tag)));
+    }
+    if (filter.model) list = list.filter((p) => p.getModel() === filter.model);
+    if (filter.compatibleWith) {
+      list = list.filter((p) => p.agentConfig?.compatibleWith?.includes(filter.compatibleWith!));
+    }
+    return list;
+  }
+
+  async findMainAgents(projectType?: string, limit?: number): Promise<Prompt[]> {
+    let list = await this.findByType('main_agent_template', limit);
+    if (projectType) {
+      list = list.filter(
+        (p) =>
+          p.agentConfig?.compatibleWith?.includes(projectType) ||
+          p.id.includes(projectType) ||
+          p.category === projectType,
+      );
+    }
+    return list;
+  }
+
+  async findProjectTemplates(limit?: number): Promise<Prompt[]> {
+    return this.findByType('project_orchestration_template', limit);
+  }
+
+  async getSubagentCategories(): Promise<string[]> {
+    const subagents = await this.findSubagents();
+    return Array.from(new Set(subagents.map((s) => s.category))).sort();
+  }
+
+  async getAgentModels(): Promise<ClaudeModel[]> {
+    const agents = await this.findLatestVersions(10000);
+    const models = new Set<ClaudeModel>();
+    agents.forEach((a) => {
+      const m = a.getModel();
+      if (m) models.add(m);
+    });
+    return Array.from(models);
+  }
+
+  async updateExecutionStats(
+    id: string,
+    executionCount: number,
+    successRate: number,
+    lastExecutedAt: Date,
+  ): Promise<void> {
+    const prompt = await this.findById(id);
+    if (!prompt || !prompt.agentConfig) {
+      throw new Error(`Agent ${id} not found or not an agent prompt`);
+    }
+    const updated = new Prompt(
+      prompt.id,
+      prompt.name,
+      prompt.description,
+      prompt.template,
+      prompt.category,
+      prompt.tags,
+      prompt.variables,
+      prompt.version,
+      prompt.createdAt,
+      new Date(),
+      prompt.isLatest,
+      prompt.metadata,
+      prompt.accessLevel,
+      prompt.authorId,
+      prompt.promptType,
+      { ...prompt.agentConfig, executionCount, successRate, lastExecutedAt },
+    );
+    await this.save(updated);
   }
 }
 
@@ -107,8 +191,8 @@ export class MemoryCatalogRepository implements ICatalogRepository {
   }
 
   async getPromptTemplate(category: string, name: string): Promise<string> {
-    const prompt = Array.from(prompts.values()).find(p => 
-      p.category === category && p.name === name
+    const prompt = Array.from(prompts.values()).find(
+      (p) => p.category === category && p.name === name,
     );
     return prompt ? prompt.template : '';
   }
@@ -118,8 +202,8 @@ export class MemoryCatalogRepository implements ICatalogRepository {
       prompts: Array.from(prompts.values()),
       metadata: {
         total: prompts.size,
-        lastUpdated: new Date().toISOString()
-      }
+        lastUpdated: new Date().toISOString(),
+      },
     };
   }
 
@@ -132,18 +216,18 @@ export class MemoryCatalogRepository implements ICatalogRepository {
   }
 
   async listPrompts(category?: string): Promise<string[]> {
-    const filteredPrompts = category 
-      ? Array.from(prompts.values()).filter(p => p.category === category)
+    const filteredPrompts = category
+      ? Array.from(prompts.values()).filter((p) => p.category === category)
       : Array.from(prompts.values());
-    return filteredPrompts.map(p => p.name);
+    return filteredPrompts.map((p) => p.name);
   }
 
   async healthCheck(): Promise<{ status: 'healthy' | 'unhealthy'; details?: any }> {
     return {
       status: 'healthy',
       details: {
-        storage: 'memory'
-      }
+        storage: 'memory',
+      },
     };
   }
 }
@@ -153,7 +237,10 @@ export class MemoryEventBus implements IEventBus {
     logger.info('Event published (memory mode):', event.type);
   }
 
-  async subscribe(eventType: string, handler: (event: PromptEvent) => Promise<void>): Promise<void> {
+  async subscribe(
+    eventType: string,
+    handler: (event: PromptEvent) => Promise<void>,
+  ): Promise<void> {
     logger.info(`Subscribed to ${eventType} events (memory mode)`);
   }
 
@@ -161,8 +248,8 @@ export class MemoryEventBus implements IEventBus {
     return {
       status: 'healthy',
       details: {
-        storage: 'memory'
-      }
+        storage: 'memory',
+      },
     };
   }
 }
@@ -174,7 +261,7 @@ export function loadSamplePrompts() {
     const path = require('path');
     const sampleDataPath = path.join(process.cwd(), 'data', 'sample-prompts.json');
     const sampleData = JSON.parse(fs.readFileSync(sampleDataPath, 'utf8'));
-    
+
     for (const promptData of sampleData.prompts) {
       const prompt = new Prompt(
         promptData.id,
@@ -188,7 +275,7 @@ export function loadSamplePrompts() {
         new Date(),
         new Date(),
         true,
-        promptData.metadata || {}
+        promptData.metadata || {},
       );
       prompts.set(prompt.id, prompt);
     }

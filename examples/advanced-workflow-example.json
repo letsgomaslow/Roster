@@ -4,7 +4,7 @@
   "version": 1,
   "description": "Multi-step workflow for comprehensive code review and feedback generation",
   "variables": {
-    "repository": "modelcontextprotocol/mcp-prompts",
+    "repository": "maslow-ai/roster-mcp",
     "branch": "main",
     "file_path": "src/core/prompt.service.ts"
   },

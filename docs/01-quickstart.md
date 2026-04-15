@@ -1,102 +1,102 @@
-# Quick-Start Guide
+# Quick start — Roster MCP
 
-Get MCP-Prompts running in minutes. This guide covers the fastest ways to launch the server, whether for local development, Docker, or production.
+Get **Roster MCP** (Maslow AI, npm **`@maslowai/roster`**) running in minutes: local `npx`, Docker, or **Convex** for a hosted backend.
 
-> **MCP-Prompts** is a modular, hexagonal-architecture MCP server for managing prompts, templates, and workflows. See [Overview](00-overview.md) for architecture and [Configuration](02-configuration.md) for all options.
-
----
-
-## 1. `npx` (local file storage)
-
-The fastest way – **no Docker, no database, no install**.
-
-```bash
-npx -y @sparesparrow/mcp-prompts
-
-# open a new terminal
-curl http://localhost:3003/health  # → { "status": "ok" }
-```
-
-**Environment variables** (optional):
-
-| Variable      | Default              | Description                      |
-| ------------- | -------------------- | -------------------------------- |
-| `PORT`        | `3003`               | HTTP port                        |
-| `PROMPTS_DIR` | `~/mcp/data/prompts` | Where prompts are stored         |
-| `LOG_LEVEL`   | `info`               | `debug`, `info`, `warn`, `error` |
+> Architecture: hexagonal layout in `src/core` and `src/adapters`. See [Configuration](02-configuration.md), [Storage adapters](03-storage-adapters.md), and **[OPERATIONS.md](../OPERATIONS.md)** for Convex.
 
 ---
 
-## 2. Docker (file storage & persistent volume)
+## 1. `npx` (quickest)
+
+Uses the published package; default behavior depends on how the process is started (often HTTP on port 3003 when `MODE=http`).
 
 ```bash
-docker run -d --name mcp-prompts \
-  -p 3003:3003 \
-  -e HTTP_SERVER=true \
-  -e STORAGE_TYPE=file \
-  -v $(pwd)/data:/app/data \
-  sparesparrow/mcp-prompts:latest
+npx -y @maslowai/roster
 ```
 
-- Prompts & backups are persisted to `./data` on your host.
-- **Note for Windows users**: In PowerShell, replace `$(pwd)` with `${PWD}`. In the classic Command Prompt, use `%CD%`.
-- Stop & remove: `docker rm -f mcp-prompts`.
-
----
-
-## 3. Docker Compose (PostgreSQL storage)
-
-For multi-instance or production setups you might prefer Postgres.
-
-`docker-compose.yml`:
-
-```yaml
-version: '3'
-services:
-  prompts:
-    image: sparesparrow/mcp-prompts:latest
-    environment:
-      HTTP_SERVER: 'true'
-      STORAGE_TYPE: 'postgres'
-      POSTGRES_CONNECTION_STRING: 'postgresql://postgres:password@db:5432/mcp_prompts'
-    depends_on: [db]
-    ports: ['3003:3003']
-    volumes:
-      - prompts-data:/app/data
-  db:
-    image: postgres:14
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-    volumes:
-      - pg-data:/var/lib/postgresql/data
-
-volumes:
-  prompts-data:
-  pg-data:
-```
-
-Start services:
-
-```bash
-docker compose up -d
-```
-
-Health-check:
+In another terminal (if HTTP is listening):
 
 ```bash
 curl http://localhost:3003/health
 ```
 
-Expect `{"status":"ok"}`.
+**Useful variables:**
+
+| Variable       | Example          | Description                          |
+| -------------- | ---------------- | ------------------------------------ |
+| `MODE`         | `http` / `mcp`   | `http` for REST; `mcp` for stdio MCP |
+| `PORT`         | `3003`           | HTTP port                            |
+| `STORAGE_TYPE` | `file`           | `file`, `memory`, `convex`, etc.     |
+| `PROMPTS_DIR`  | `./data/prompts` | File storage root                    |
+| `LOG_LEVEL`    | `info`           | Logging                              |
+
+---
+
+## 2. Docker (file storage + volume)
+
+```bash
+docker run -d --name roster-mcp \
+  -p 3003:3003 \
+  -e MODE=http \
+  -e STORAGE_TYPE=file \
+  -v "$(pwd)/data:/app/data" \
+  ghcr.io/roster/roster:latest
+```
+
+- Data under `./data` on the host.
+- **Windows:** use `${PWD}` (PowerShell) or `%CD%` (cmd) instead of `$(pwd)`.
+- Stop/remove: `docker rm -f roster-mcp`.
+
+---
+
+## 3. Convex (hosted / online)
+
+Use **`STORAGE_TYPE=convex`** with your Convex deployment URL and authentication (Clerk or dev owner). Full checklist:
+
+**[OPERATIONS.md](../OPERATIONS.md)**
+
+Example shape:
+
+```bash
+export MODE=http
+export STORAGE_TYPE=convex
+export CONVEX_URL=https://YOUR_DEPLOYMENT.convex.cloud
+# Plus Clerk keys or CONVEX_DEV_OWNER_USER_ID — see OPERATIONS.md
+node dist/index.js
+```
+
+---
+
+## 4. Docker Compose (file + local data)
+
+`STORAGE_TYPE=postgres` is **not** enabled in the main `src/index.ts` entrypoint today. For Postgres-style deployments, use an external plan or contribute adapter wiring.
+
+Example **file**-backed compose:
+
+```yaml
+services:
+  roster:
+    image: ghcr.io/roster/roster:latest
+    ports:
+      - '3003:3003'
+    environment:
+      MODE: http
+      STORAGE_TYPE: file
+    volumes:
+      - ./data:/app/data
+```
+
+```bash
+docker compose up -d
+curl http://localhost:3003/health
+```
 
 ---
 
 ## Next steps
 
-- [Configuration](02-configuration.md) – All environment variables
-- [API Reference](04-api-reference.md) – HTTP endpoints
-- [Templates Guide](05-templates-guide.md) – Using and creating templates
-- [Workflow Guide](09-workflow-guide.md) – Multi-step workflows
-- [Developer Guide](07-developer-guide.md) – Contributing & development
-- Join the discussion on [GitHub Issues](https://github.com/sparesparrow/mcp-prompts/issues)
+- [Configuration](02-configuration.md)
+- [Storage adapters](03-storage-adapters.md)
+- [MCP integration](06-mcp-integration.md)
+- [API reference](04-api-reference.md)
+- [OPERATIONS.md](../OPERATIONS.md) — Convex, Clerk, import

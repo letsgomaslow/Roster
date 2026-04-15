@@ -1,3 +1,5 @@
+> **Archive / historical context:** Orchestrator migration notes. **Current product:** Roster MCP · Maslow AI · npm `@maslowai/roster`.
+
 # Migration Guide: Orchestrator V3 → V4
 
 **Date**: 2026-01-10
@@ -21,19 +23,20 @@ This guide helps you migrate from V3 to V4 smoothly.
 
 ### Architecture
 
-| Aspect | V3 | V4 | Impact |
-|--------|----|----|--------|
-| **Configuration** | JSON files in project | REST API endpoints | More flexible, centralized |
-| **Execution** | Direct Claude CLI | HTTP API calls | Better monitoring & control |
-| **Status Tracking** | None | Real-time polling | See progress as it happens |
-| **Reports** | Single format | Multiple formats | Choose best format for use case |
-| **Error Handling** | Basic | Comprehensive | Better diagnostics |
+| Aspect              | V3                    | V4                 | Impact                          |
+| ------------------- | --------------------- | ------------------ | ------------------------------- |
+| **Configuration**   | JSON files in project | REST API endpoints | More flexible, centralized      |
+| **Execution**       | Direct Claude CLI     | HTTP API calls     | Better monitoring & control     |
+| **Status Tracking** | None                  | Real-time polling  | See progress as it happens      |
+| **Reports**         | Single format         | Multiple formats   | Choose best format for use case |
+| **Error Handling**  | Basic                 | Comprehensive      | Better diagnostics              |
 
 ### Behavioral Changes
 
 #### 1. Configuration Loading
 
 **V3**: Configuration loaded from local JSON files
+
 ```bash
 IMPROVED_AGENTS="${IMPROVED_AGENTS:-${SCRIPT_DIR}/improved-agents.json}"
 PROJECT_AGENTS="${PROJECT_AGENTS:-${SCRIPT_DIR}/PROJECT-agents-v3.json}"
@@ -42,6 +45,7 @@ PROJECT_AGENTS="${PROJECT_AGENTS:-${SCRIPT_DIR}/PROJECT-agents-v3.json}"
 ```
 
 **V4**: Configuration retrieved from API
+
 ```bash
 API_BASE_URL="${API_BASE_URL:-http://localhost:3000}"
 
@@ -50,6 +54,7 @@ load_profile "$PROFILE"  # Loads environment-specific config
 ```
 
 **Migration Impact**:
+
 - ✅ No need to maintain local JSON files
 - ✅ Centralized configuration management
 - ⚠️ Requires API server to be running
@@ -59,6 +64,7 @@ load_profile "$PROFILE"  # Loads environment-specific config
 #### 2. Project Type Detection
 
 **V3**: Hardcoded detection logic
+
 ```bash
 detect_project_type() {
     if [[ -f "$path/CMakeLists.txt" ]]; then echo "cpp"
@@ -68,6 +74,7 @@ detect_project_type() {
 ```
 
 **V4**: Dynamic API-based detection
+
 ```bash
 detect_project_type() {
     local payload=$(jq -n --arg projectPath "$projectPath" '{projectPath: $projectPath}')
@@ -77,6 +84,7 @@ detect_project_type() {
 ```
 
 **Migration Impact**:
+
 - ✅ Detection logic can be updated server-side without script changes
 - ✅ More sophisticated detection algorithms supported
 - ✅ Confidence scoring included
@@ -87,6 +95,7 @@ detect_project_type() {
 #### 3. Execution Model
 
 **V3**: Fire-and-forget with Claude CLI
+
 ```bash
 echo "$COMPLETE_PROMPT" | claude \
     --model "$MAIN_MODEL" \
@@ -97,6 +106,7 @@ echo "$COMPLETE_PROMPT" | claude \
 ```
 
 **V4**: Async with polling
+
 ```bash
 # Start execution
 orchestration=$(start_orchestration "$PROJECT_PATH" "$MODE")
@@ -110,6 +120,7 @@ get_report "$execution_id" "$REPORT_FORMAT"
 ```
 
 **Migration Impact**:
+
 - ✅ Real-time visibility into execution progress
 - ✅ Can abort if needed (by not waiting)
 - ✅ Better timeout control
@@ -120,12 +131,14 @@ get_report "$execution_id" "$REPORT_FORMAT"
 #### 4. Report Handling
 
 **V3**: Output sent directly to stdout
+
 ```bash
 echo "$COMPLETE_PROMPT" | claude ... --print
 # Output goes to terminal, possibly piped to file
 ```
 
 **V4**: Explicit format selection and file management
+
 ```bash
 # Get report in desired format
 get_report "$execution_id" "$REPORT_FORMAT"
@@ -135,6 +148,7 @@ save_report "$execution_id" "$REPORT_FORMAT" "$OUTPUT_DIR"
 ```
 
 **Migration Impact**:
+
 - ✅ Multiple format support (JSON, Markdown, HTML)
 - ✅ Automatic file organization
 - ✅ Better integration with downstream tools
@@ -159,6 +173,7 @@ curl http://localhost:3000/health
 ```
 
 **Troubleshooting**:
+
 - If server won't start, check Node.js version (requires 18+)
 - If port 3000 is in use, set `API_BASE_URL=http://localhost:3001`
 - Check logs in console for startup errors
@@ -184,10 +199,12 @@ Replace references to `claude-orchestrate-v3.sh` with `claude-orchestrate-v4.sh`
 Some arguments have changed:
 
 **Arguments that work the same**:
+
 - `PROJECT_PATH` (first positional argument) ✅
 - `MODE` (second positional argument) ✅
 
 **New optional arguments**:
+
 ```bash
 --api-url URL              # Custom API URL (default: http://localhost:3000)
 --format FORMAT            # Report format: json|markdown|html
@@ -201,6 +218,7 @@ Some arguments have changed:
 ```
 
 **Removed arguments**:
+
 - Direct file path arguments for config files (now API-based)
 - Custom agent definitions (now in API)
 - Output format flags (now simplified to `--format`)
@@ -212,6 +230,7 @@ Some arguments have changed:
 V4 uses different environment variables:
 
 **New Environment Variables**:
+
 ```bash
 API_BASE_URL              # API server URL (default: http://localhost:3000)
 POLL_INTERVAL             # Polling interval in seconds (default: 2)
@@ -222,12 +241,14 @@ WAIT_FOR_COMPLETION       # Wait for completion flag (default: true)
 ```
 
 **Removed Environment Variables**:
+
 ```bash
 IMPROVED_AGENTS           # No longer needed
 PROJECT_AGENTS            # No longer needed
 ```
 
 **Update Example**:
+
 ```bash
 # V3
 export IMPROVED_AGENTS="./agents.json"
@@ -247,6 +268,7 @@ export REPORT_FORMAT="markdown"
 If you use the orchestrator in CI/CD, update your pipeline:
 
 **V3 Pipeline**:
+
 ```yaml
 - name: Analyze with Orchestrator V3
   run: |
@@ -255,6 +277,7 @@ If you use the orchestrator in CI/CD, update your pipeline:
 ```
 
 **V4 Pipeline**:
+
 ```yaml
 - name: Start orchestration
   run: |
@@ -276,6 +299,7 @@ If you use the orchestrator in CI/CD, update your pipeline:
 ### Step 6: Handle Output Format Changes
 
 **V3 Output**:
+
 ```json
 {
   "subagent_results": [...],
@@ -285,6 +309,7 @@ If you use the orchestrator in CI/CD, update your pipeline:
 ```
 
 **V4 Output** (structured):
+
 ```json
 {
   "executionId": "exec_...",
@@ -301,6 +326,7 @@ If you use the orchestrator in CI/CD, update your pipeline:
 ```
 
 **Update downstream processing**:
+
 - Adjust JSON parsers to expect new structure
 - Use `synthesis.recommendations` instead of top-level `recommendations`
 - Include `executionId` in logs for tracking
@@ -314,6 +340,7 @@ V4 introduces configuration profiles. Migrate your settings:
 ### Default Profile (`default.env`)
 
 Use this for most projects:
+
 ```bash
 API_BASE_URL="http://localhost:3000"
 POLL_INTERVAL=2
@@ -324,6 +351,7 @@ REPORT_FORMAT="markdown"
 ### Embedded Systems Profile (`embedded.env`)
 
 For ESP32/Arduino projects:
+
 ```bash
 API_BASE_URL="http://localhost:3000"
 POLL_INTERVAL=3
@@ -334,6 +362,7 @@ REPORT_FORMAT="json"
 ### CI/CD Profile (`ci.env`)
 
 For pipeline integration:
+
 ```bash
 API_BASE_URL="http://localhost:3000"
 POLL_INTERVAL=5
@@ -366,11 +395,13 @@ VERBOSE="true"
 ### Scenario 1: Local Development
 
 **V3**:
+
 ```bash
 ./AGENTS/claude-orchestrate-v3.sh /path/to/project analyze
 ```
 
 **V4**:
+
 ```bash
 # Terminal 1: Start API server
 cd packages/mcp-prompts
@@ -388,12 +419,14 @@ PROMPTS_DIR=./data/prompts npx tsx src/http/server-with-agents.ts
 ### Scenario 2: GitHub Actions CI
 
 **V3**:
+
 ```yaml
 - name: Analyze project
   run: ./AGENTS/claude-orchestrate-v3.sh . analyze > report.txt
 ```
 
 **V4**:
+
 ```yaml
 - name: Start API server
   run: |
@@ -420,12 +453,14 @@ PROMPTS_DIR=./data/prompts npx tsx src/http/server-with-agents.ts
 ### Scenario 3: Automated Cron Job
 
 **V3**:
+
 ```bash
 # Crontab
 0 2 * * * cd /path/to/project && /path/to/orchestrate-v3.sh . analyze > /tmp/analysis.txt 2>&1
 ```
 
 **V4**:
+
 ```bash
 # Crontab - start async and check later
 0 2 * * * cd /path/to/project && /path/to/orchestrate-v4.sh . analyze --no-wait --profile ci > /tmp/exec-id.txt
@@ -439,6 +474,7 @@ PROMPTS_DIR=./data/prompts npx tsx src/http/server-with-agents.ts
 ### Scenario 4: Multiple Project Analysis
 
 **V3**:
+
 ```bash
 for project in /path/to/projects/*; do
     ./AGENTS/claude-orchestrate-v3.sh "$project" analyze
@@ -446,6 +482,7 @@ done
 ```
 
 **V4**:
+
 ```bash
 # Start all analyses without waiting
 for project in /path/to/projects/*; do
@@ -469,6 +506,7 @@ done
 **Cause**: API server not running or wrong URL
 
 **Solution**:
+
 ```bash
 # Start API server
 cd packages/mcp-prompts
@@ -485,6 +523,7 @@ curl http://localhost:3000/health
 **Cause**: Invalid orchestration mode
 
 **Solution**: V4 supports the same 5 modes as V3
+
 ```bash
 # Valid modes (same as V3)
 ./scripts/claude-orchestrate-v4.sh . analyze     # ✅
@@ -501,6 +540,7 @@ curl http://localhost:3000/health
 **Cause**: Output directory doesn't exist or report not available yet
 
 **Solution**:
+
 ```bash
 # Create output directory
 mkdir -p ./orchestration-reports
@@ -519,6 +559,7 @@ curl http://localhost:3000/v1/orchestrate/exec_id_here
 **Cause**: Analysis taking longer than expected
 
 **Solution**:
+
 ```bash
 # Increase wait time
 ./scripts/claude-orchestrate-v4.sh . analyze --max-wait 600
@@ -537,6 +578,7 @@ curl http://localhost:3000/v1/orchestrate/exec_id_here
 If you need to revert to V3:
 
 1. **V3 script is still available**:
+
    ```bash
    ./AGENTS/claude-orchestrate-v3.sh /path/to/project analyze
    ```
@@ -550,12 +592,14 @@ If you need to revert to V3:
 ## Performance Comparison
 
 ### V3 Characteristics
+
 - Direct execution
 - No polling overhead
 - Synchronous operation
 - Hardcoded configuration
 
 ### V4 Characteristics
+
 - API-based execution
 - Configurable polling (default 2s intervals)
 - Asynchronous with status tracking
@@ -564,6 +608,7 @@ If you need to revert to V3:
 - **Trade-off**: Slightly higher latency due to API overhead
 
 **Benchmark**:
+
 - V3: Direct execution, no overhead
 - V4: Typical overhead <100ms per API call, 2-10 status polls
 

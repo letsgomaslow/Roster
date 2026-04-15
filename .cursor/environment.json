@@ -1,7 +1,7 @@
 {
-  "name": "MCP Prompts Development Environment",
-  "description": "Comprehensive development environment for MCP Prompts - a robust server for managing prompts and templates with AWS integration",
-  "user": "sparesparrow",
+  "name": "Roster Development Environment",
+  "description": "Development environment for Roster — MCP prompt server with optional AWS integration",
+  "user": "local",
   "version": "3.14.0",
   "install": "pnpm install",
   "start": "pnpm run dev",
@@ -54,7 +54,7 @@
       "mcp": "docker-compose.mcp.yml"
     },
     "services": {
-      "mcp-prompts": {
+      "roster": {
         "port": "3003",
         "healthcheck": "http://localhost:3003/health",
         "volumes": ["./data:/app/data"]
@@ -66,18 +66,18 @@
       "config": "mcp-inspector-config.json",
       "port": 4000,
       "servers": {
-        "aws-mcp-prompts": {
+        "roster-aws": {
           "command": "npx",
-          "args": ["@sparesparrow/mcp-prompts"],
+          "args": ["@maslowai/roster"],
           "env": {
             "STORAGE_TYPE": "aws",
             "AWS_REGION": "eu-north-1",
             "LOG_LEVEL": "debug"
           }
         },
-        "local-mcp-prompts": {
+        "roster-local": {
           "command": "npx",
-          "args": ["@sparesparrow/mcp-prompts"],
+          "args": ["@maslowai/roster"],
           "env": {
             "STORAGE_TYPE": "memory",
             "LOG_LEVEL": "debug"

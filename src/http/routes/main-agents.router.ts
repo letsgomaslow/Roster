@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { MainAgentService } from '../../core/services/main-agent.service';
 import { ValidationError, NotFoundError } from '../../core/errors/custom-errors';
+import type { Prompt } from '../../core/entities/prompt.entity';
 
 export function createMainAgentsRouter(mainAgentService: MainAgentService): Router {
   const router = Router();
@@ -17,26 +18,30 @@ export function createMainAgentsRouter(mainAgentService: MainAgentService): Rout
     try {
       const { projectType, limit } = req.query;
 
-      const mainAgents = projectType
-        ? [await mainAgentService.getMainAgentForProjectType(projectType as string)].filter(Boolean)
-        : await mainAgentService.listMainAgents(limit ? parseInt(limit as string) : 50);
+      let mainAgents: Prompt[];
+      if (projectType) {
+        const m = await mainAgentService.getMainAgentForProjectType(projectType as string);
+        mainAgents = m ? [m] : [];
+      } else {
+        mainAgents = await mainAgentService.listMainAgents(limit ? parseInt(limit as string) : 50);
+      }
 
       res.json({
-        mainAgents: mainAgents.map(m => m.toJSON()),
+        mainAgents: mainAgents.map((m) => m.toJSON()),
         total: mainAgents.length,
-        filter: projectType ? { projectType } : null
+        filter: projectType ? { projectType } : null,
       });
     } catch (error) {
       if (error instanceof ValidationError) {
         return res.status(400).json({
           error: 'Validation error',
-          message: error.message
+          message: error.message,
         });
       }
 
       res.status(500).json({
         error: 'Failed to list main agents',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -52,26 +57,26 @@ export function createMainAgentsRouter(mainAgentService: MainAgentService): Rout
       const mainAgent = await mainAgentService.getMainAgent(id);
 
       res.json({
-        mainAgent: mainAgent.toJSON()
+        mainAgent: mainAgent.toJSON(),
       });
     } catch (error) {
       if (error instanceof NotFoundError) {
         return res.status(404).json({
           error: 'Not found',
-          message: error.message
+          message: error.message,
         });
       }
 
       if (error instanceof ValidationError) {
         return res.status(400).json({
           error: 'Validation error',
-          message: error.message
+          message: error.message,
         });
       }
 
       res.status(500).json({
         error: 'Failed to get main agent',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -88,22 +93,22 @@ export function createMainAgentsRouter(mainAgentService: MainAgentService): Rout
 
       res.json({
         mainAgent: config.mainAgent.toJSON(),
-        subagents: config.subagents.map(s => s.toJSON()),
+        subagents: config.subagents.map((s) => s.toJSON()),
         mcpServers: config.mcpServers,
         estimatedCost: config.estimatedCost,
-        estimatedTime: config.estimatedTime
+        estimatedTime: config.estimatedTime,
       });
     } catch (error) {
       if (error instanceof NotFoundError) {
         return res.status(404).json({
           error: 'Not found',
-          message: error.message
+          message: error.message,
         });
       }
 
       res.status(500).json({
         error: 'Failed to get configuration',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -119,20 +124,20 @@ export function createMainAgentsRouter(mainAgentService: MainAgentService): Rout
       const subagents = await mainAgentService.getSubagents(id);
 
       res.json({
-        subagents: subagents.map(s => s.toJSON()),
-        total: subagents.length
+        subagents: subagents.map((s) => s.toJSON()),
+        total: subagents.length,
       });
     } catch (error) {
       if (error instanceof NotFoundError) {
         return res.status(404).json({
           error: 'Not found',
-          message: error.message
+          message: error.message,
         });
       }
 
       res.status(500).json({
         error: 'Failed to get subagents',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -151,7 +156,7 @@ export function createMainAgentsRouter(mainAgentService: MainAgentService): Rout
     } catch (error) {
       res.status(500).json({
         error: 'Failed to validate configuration',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -170,25 +175,25 @@ export function createMainAgentsRouter(mainAgentService: MainAgentService): Rout
 
       const systemPrompt = await mainAgentService.generateSystemPrompt(
         id,
-        customContext as string | undefined
+        customContext as string | undefined,
       );
 
       res.json({
         systemPrompt,
         length: systemPrompt.length,
-        estimatedTokens: Math.ceil(systemPrompt.length / 4)
+        estimatedTokens: Math.ceil(systemPrompt.length / 4),
       });
     } catch (error) {
       if (error instanceof NotFoundError) {
         return res.status(404).json({
           error: 'Not found',
-          message: error.message
+          message: error.message,
         });
       }
 
       res.status(500).json({
         error: 'Failed to generate system prompt',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -207,7 +212,7 @@ export function createMainAgentsRouter(mainAgentService: MainAgentService): Rout
 
       const preview = await mainAgentService.getExecutionPreview(
         id,
-        projectType as string | undefined
+        projectType as string | undefined,
       );
 
       res.json(preview);
@@ -215,13 +220,13 @@ export function createMainAgentsRouter(mainAgentService: MainAgentService): Rout
       if (error instanceof NotFoundError) {
         return res.status(404).json({
           error: 'Not found',
-          message: error.message
+          message: error.message,
         });
       }
 
       res.status(500).json({
         error: 'Failed to get preview',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });

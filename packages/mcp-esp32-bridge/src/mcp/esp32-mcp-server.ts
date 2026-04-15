@@ -6,23 +6,26 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import pino from 'pino';
 import { ESP32SerialReader, ESP32Config } from '../serial/esp32-serial-reader.js';
-import { McpPromptsClient } from '@sparesparrow/mcp-prompts';
+import { SimpleMcpPromptsClient, type McpPromptsClient } from '@maslowai/roster/client';
 import {
   TelemetryMessage,
   DeviceProfile,
   ESP32TelemetryParser,
   DeviceType,
-  DeviceCapabilities
-} from '@sparesparrow/mcp-fbs';
+  DeviceCapabilities,
+} from '@maslowai/fbs';
 
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  transport: process.env.NODE_ENV === 'development' ? {
-    target: 'pino-pretty',
-    options: {
-      colorize: true
-    }
-  } : undefined
+  transport:
+    process.env.NODE_ENV === 'development'
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+          },
+        }
+      : undefined,
 });
 
 export class ESP32MCPServer {
@@ -46,7 +49,7 @@ export class ESP32MCPServer {
         capabilities: {
           tools: {},
         },
-      }
+      },
     );
 
     this.setupSerialEventHandlers();
@@ -72,7 +75,6 @@ export class ESP32MCPServer {
       await this.server.connect(transport);
 
       logger.info('ESP32 MCP Bridge server started successfully');
-
     } catch (error) {
       logger.error('Failed to start ESP32 MCP Bridge server:', error);
       throw error;
@@ -93,9 +95,12 @@ export class ESP32MCPServer {
 
   private setupSerialEventHandlers(): void {
     // Handle telemetry data from ESP32
-    this.serialReader.on('telemetry', (data: { deviceId: string; telemetry: TelemetryMessage[]; timestamp: Date }) => {
-      this.handleTelemetryData(data.telemetry);
-    });
+    this.serialReader.on(
+      'telemetry',
+      (data: { deviceId: string; telemetry: TelemetryMessage[]; timestamp: Date }) => {
+        this.handleTelemetryData(data.telemetry);
+      },
+    );
 
     // Handle status updates
     this.serialReader.on('status', (status: any) => {
@@ -126,23 +131,23 @@ export class ESP32MCPServer {
                   type: 'array',
                   items: { type: 'string' },
                   description: 'Specific sensor types to retrieve (optional)',
-                  required: false
+                  required: false,
                 },
                 since_timestamp: {
                   type: 'number',
                   description: 'Get telemetry since this timestamp (Unix epoch ms)',
-                  required: false
-                }
-              }
-            }
+                  required: false,
+                },
+              },
+            },
           },
           {
             name: 'get_esp32_status',
             description: 'Get current status and system information from ESP32',
             inputSchema: {
               type: 'object',
-              properties: {}
-            }
+              properties: {},
+            },
           },
           {
             name: 'get_telemetry_history',
@@ -153,26 +158,26 @@ export class ESP32MCPServer {
                 sensor_type: {
                   type: 'string',
                   description: 'Filter by sensor type',
-                  required: false
+                  required: false,
                 },
                 limit: {
                   type: 'number',
                   description: 'Maximum number of readings to return',
                   default: 100,
-                  required: false
+                  required: false,
                 },
                 start_time: {
                   type: 'number',
                   description: 'Start time for historical data (Unix epoch ms)',
-                  required: false
+                  required: false,
                 },
                 end_time: {
                   type: 'number',
                   description: 'End time for historical data (Unix epoch ms)',
-                  required: false
-                }
-              }
-            }
+                  required: false,
+                },
+              },
+            },
           },
 
           // Device Control Tools
@@ -185,10 +190,10 @@ export class ESP32MCPServer {
                 config: {
                   type: 'object',
                   description: 'Configuration object to send to ESP32',
-                  required: true
-                }
-              }
-            }
+                  required: true,
+                },
+              },
+            },
           },
           {
             name: 'calibrate_esp32_sensors',
@@ -200,10 +205,10 @@ export class ESP32MCPServer {
                   type: 'array',
                   items: { type: 'string' },
                   description: 'Specific sensors to calibrate (optional - calibrates all if empty)',
-                  required: false
-                }
-              }
-            }
+                  required: false,
+                },
+              },
+            },
           },
           {
             name: 'reset_esp32',
@@ -215,10 +220,10 @@ export class ESP32MCPServer {
                   type: 'boolean',
                   description: 'Perform hard reset instead of soft reset',
                   default: false,
-                  required: false
-                }
-              }
-            }
+                  required: false,
+                },
+              },
+            },
           },
 
           // Cognitive Integration Tools
@@ -231,25 +236,25 @@ export class ESP32MCPServer {
                 sensor_type: {
                   type: 'string',
                   description: 'Sensor type to analyze',
-                  required: true
+                  required: true,
                 },
                 time_range: {
                   type: 'object',
                   description: 'Time range for analysis',
                   properties: {
                     start: { type: 'number' },
-                    end: { type: 'number' }
+                    end: { type: 'number' },
                   },
-                  required: false
+                  required: false,
                 },
                 analysis_type: {
                   type: 'string',
                   description: 'Type of analysis (anomaly, trend, correlation)',
                   default: 'anomaly',
-                  required: false
-                }
-              }
-            }
+                  required: false,
+                },
+              },
+            },
           },
           {
             name: 'get_embedded_context',
@@ -261,12 +266,12 @@ export class ESP32MCPServer {
                   type: 'boolean',
                   description: 'Include historical context',
                   default: true,
-                  required: false
-                }
-              }
-            }
-          }
-        ]
+                  required: false,
+                },
+              },
+            },
+          },
+        ],
       };
     });
   }
@@ -303,10 +308,10 @@ export class ESP32MCPServer {
           content: [
             {
               type: 'text',
-              text: `Error executing ${name}: ${error.message}`
-            }
+              text: `Error executing ${name}: ${error.message}`,
+            },
           ],
-          isError: true
+          isError: true,
         };
       }
     });
@@ -321,57 +326,58 @@ export class ESP32MCPServer {
           content: [
             {
               type: 'text',
-              text: 'No telemetry data available from ESP32'
-            }
-          ]
+              text: 'No telemetry data available from ESP32',
+            },
+          ],
         };
       }
 
       // Format telemetry for display
-      const formattedTelemetry = telemetry.map(t => {
-        const payloadType = t.payloadType;
-        const payload = t.payload;
+      const formattedTelemetry = telemetry
+        .map((t) => {
+          const payloadType = t.payloadType;
+          const payload = t.payload;
 
-        let description = `${payloadType}: `;
-        switch (payloadType) {
-          case 'bpm':
-            description += `${payload.bpm} BPM (confidence: ${(payload.confidence * 100).toFixed(1)}%)`;
-            break;
-          case 'temperature':
-            description += `${payload.value} ${payload.unit}`;
-            break;
-          case 'memory':
-            description += `Free: ${payload.heapFree} bytes, Total: ${payload.heapTotal} bytes`;
-            break;
-          case 'wifi':
-            description += `Connected: ${payload.connected}, RSSI: ${payload.rssi || 'N/A'} dBm`;
-            break;
-          default:
-            description += JSON.stringify(payload);
-        }
+          let description = `${payloadType}: `;
+          switch (payloadType) {
+            case 'bpm':
+              description += `${payload.bpm} BPM (confidence: ${(payload.confidence * 100).toFixed(1)}%)`;
+              break;
+            case 'temperature':
+              description += `${payload.value} ${payload.unit}`;
+              break;
+            case 'memory':
+              description += `Free: ${payload.heapFree} bytes, Total: ${payload.heapTotal} bytes`;
+              break;
+            case 'wifi':
+              description += `Connected: ${payload.connected}, RSSI: ${payload.rssi || 'N/A'} dBm`;
+              break;
+            default:
+              description += JSON.stringify(payload);
+          }
 
-        return description;
-      }).join('\n');
+          return description;
+        })
+        .join('\n');
 
       return {
         content: [
           {
             type: 'text',
-            text: `ESP32 Telemetry Data:\n${formattedTelemetry}`
-          }
-        ]
+            text: `ESP32 Telemetry Data:\n${formattedTelemetry}`,
+          },
+        ],
       };
-
     } catch (error) {
       logger.error('Failed to get telemetry:', error);
       return {
         content: [
           {
             type: 'text',
-            text: `Failed to retrieve telemetry: ${error.message}`
-          }
+            text: `Failed to retrieve telemetry: ${error.message}`,
+          },
         ],
-        isError: true
+        isError: true,
       };
     }
   }
@@ -394,20 +400,19 @@ ESP32 System Status:
         content: [
           {
             type: 'text',
-            text: statusText
-          }
-        ]
+            text: statusText,
+          },
+        ],
       };
-
     } catch (error) {
       return {
         content: [
           {
             type: 'text',
-            text: `Failed to get status: ${error.message}`
-          }
+            text: `Failed to get status: ${error.message}`,
+          },
         ],
-        isError: true
+        isError: true,
       };
     }
   }
@@ -417,20 +422,21 @@ ESP32 System Status:
 
     // Apply filters
     if (args.sensor_type) {
-      filteredHistory = filteredHistory.filter(t => t.payloadType === args.sensor_type);
+      filteredHistory = filteredHistory.filter((t) => t.payloadType === args.sensor_type);
     }
 
     if (args.start_time) {
       const startTime = new Date(args.start_time);
-      filteredHistory = filteredHistory.filter(t =>
-        new Date((t.timestamp.seconds * 1000) + (t.timestamp.nanoseconds / 1000000)) >= startTime
+      filteredHistory = filteredHistory.filter(
+        (t) =>
+          new Date(t.timestamp.seconds * 1000 + t.timestamp.nanoseconds / 1000000) >= startTime,
       );
     }
 
     if (args.end_time) {
       const endTime = new Date(args.end_time);
-      filteredHistory = filteredHistory.filter(t =>
-        new Date((t.timestamp.seconds * 1000) + (t.timestamp.nanoseconds / 1000000)) <= endTime
+      filteredHistory = filteredHistory.filter(
+        (t) => new Date(t.timestamp.seconds * 1000 + t.timestamp.nanoseconds / 1000000) <= endTime,
       );
     }
 
@@ -443,24 +449,26 @@ ESP32 System Status:
         content: [
           {
             type: 'text',
-            text: 'No telemetry history available matching the criteria'
-          }
-        ]
+            text: 'No telemetry history available matching the criteria',
+          },
+        ],
       };
     }
 
-    const historyText = filteredHistory.map((t, i) => {
-      const timestamp = new Date((t.timestamp.seconds * 1000) + (t.timestamp.nanoseconds / 1000000));
-      return `${i + 1}. ${timestamp.toISOString()} - ${t.payloadType}: ${JSON.stringify(t.payload)}`;
-    }).join('\n');
+    const historyText = filteredHistory
+      .map((t, i) => {
+        const timestamp = new Date(t.timestamp.seconds * 1000 + t.timestamp.nanoseconds / 1000000);
+        return `${i + 1}. ${timestamp.toISOString()} - ${t.payloadType}: ${JSON.stringify(t.payload)}`;
+      })
+      .join('\n');
 
     return {
       content: [
         {
           type: 'text',
-          text: `Telemetry History (${filteredHistory.length} readings):\n${historyText}`
-        }
-      ]
+          text: `Telemetry History (${filteredHistory.length} readings):\n${historyText}`,
+        },
+      ],
     };
   }
 
@@ -472,20 +480,19 @@ ESP32 System Status:
         content: [
           {
             type: 'text',
-            text: `ESP32 configuration updated successfully: ${JSON.stringify(result)}`
-          }
-        ]
+            text: `ESP32 configuration updated successfully: ${JSON.stringify(result)}`,
+          },
+        ],
       };
-
     } catch (error) {
       return {
         content: [
           {
             type: 'text',
-            text: `Failed to configure ESP32: ${error.message}`
-          }
+            text: `Failed to configure ESP32: ${error.message}`,
+          },
         ],
-        isError: true
+        isError: true,
       };
     }
   }
@@ -498,20 +505,19 @@ ESP32 System Status:
         content: [
           {
             type: 'text',
-            text: `ESP32 sensor calibration completed: ${JSON.stringify(result)}`
-          }
-        ]
+            text: `ESP32 sensor calibration completed: ${JSON.stringify(result)}`,
+          },
+        ],
       };
-
     } catch (error) {
       return {
         content: [
           {
             type: 'text',
-            text: `Failed to calibrate sensors: ${error.message}`
-          }
+            text: `Failed to calibrate sensors: ${error.message}`,
+          },
         ],
-        isError: true
+        isError: true,
       };
     }
   }
@@ -524,20 +530,19 @@ ESP32 System Status:
         content: [
           {
             type: 'text',
-            text: `ESP32 ${args.hard_reset ? 'hard' : 'soft'} reset completed: ${JSON.stringify(result)}`
-          }
-        ]
+            text: `ESP32 ${args.hard_reset ? 'hard' : 'soft'} reset completed: ${JSON.stringify(result)}`,
+          },
+        ],
       };
-
     } catch (error) {
       return {
         content: [
           {
             type: 'text',
-            text: `Failed to reset ESP32: ${error.message}`
-          }
+            text: `Failed to reset ESP32: ${error.message}`,
+          },
         ],
-        isError: true
+        isError: true,
       };
     }
   }
@@ -552,14 +557,16 @@ ESP32 System Status:
           content: [
             {
               type: 'text',
-              text: 'No telemetry data available for analysis'
-            }
-          ]
+              text: 'No telemetry data available for analysis',
+            },
+          ],
         };
       }
 
       // Query for analysis prompts from mcp-prompts
-      const analysisPrompt = await this.mcpClient.getPrompt(`${args.analysis_type}-analysis-pattern`);
+      const analysisPrompt = await this.mcpClient.getPrompt(
+        `${args.analysis_type}-analysis-pattern`,
+      );
 
       let analysisResult = `Pattern analysis for ${args.sensor_type}:\n`;
       analysisResult += `- Data points: ${history.length}\n`;
@@ -579,20 +586,19 @@ ESP32 System Status:
         content: [
           {
             type: 'text',
-            text: analysisResult
-          }
-        ]
+            text: analysisResult,
+          },
+        ],
       };
-
     } catch (error) {
       return {
         content: [
           {
             type: 'text',
-            text: `Failed to analyze telemetry patterns: ${error.message}`
-          }
+            text: `Failed to analyze telemetry patterns: ${error.message}`,
+          },
         ],
-        isError: true
+        isError: true,
       };
     }
   }
@@ -603,21 +609,24 @@ ESP32 System Status:
       connection: {
         connected: this.serialReader.isConnected(),
         telemetry_count: this.telemetryHistory.length,
-        last_telemetry: this.telemetryHistory.length > 0 ?
-          new Date((this.telemetryHistory[this.telemetryHistory.length - 1].timestamp.seconds * 1000)) :
-          null
+        last_telemetry:
+          this.telemetryHistory.length > 0
+            ? new Date(
+                this.telemetryHistory[this.telemetryHistory.length - 1].timestamp.seconds * 1000,
+              )
+            : null,
       },
       capabilities: this.deviceProfile?.capabilities,
-      recent_sensors: this.getRecentSensorTypes()
+      recent_sensors: this.getRecentSensorTypes(),
     };
 
     return {
       content: [
         {
           type: 'text',
-          text: `Embedded Device Context:\n${JSON.stringify(context, null, 2)}`
-        }
-      ]
+          text: `Embedded Device Context:\n${JSON.stringify(context, null, 2)}`,
+        },
+      ],
     };
   }
 
@@ -650,14 +659,13 @@ ESP32 System Status:
           hasBattery: false,
           supportsOta: true,
           supportsEncryption: false,
-          maxMessageSize: 1024
+          maxMessageSize: 1024,
         },
         registrationTimestamp: { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 },
-        status: 'online'
+        status: 'online',
       };
 
       logger.info('Device profile initialized:', this.deviceProfile);
-
     } catch (error) {
       logger.warn('Failed to initialize device profile:', error);
       // Create basic profile
@@ -682,10 +690,10 @@ ESP32 System Status:
           hasBattery: false,
           supportsOta: false,
           supportsEncryption: false,
-          maxMessageSize: 1024
+          maxMessageSize: 1024,
         },
         registrationTimestamp: { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 },
-        status: 'online'
+        status: 'online',
       };
     }
   }
@@ -699,21 +707,26 @@ ESP32 System Status:
       this.telemetryHistory = this.telemetryHistory.slice(-this.maxHistorySize);
     }
 
-    logger.debug(`Stored ${telemetry.length} telemetry readings, total history: ${this.telemetryHistory.length}`);
+    logger.debug(
+      `Stored ${telemetry.length} telemetry readings, total history: ${this.telemetryHistory.length}`,
+    );
   }
 
-  private getFilteredTelemetryHistory(sensorType?: string, timeRange?: { start: number; end: number }): TelemetryMessage[] {
+  private getFilteredTelemetryHistory(
+    sensorType?: string,
+    timeRange?: { start: number; end: number },
+  ): TelemetryMessage[] {
     let filtered = [...this.telemetryHistory];
 
     if (sensorType) {
-      filtered = filtered.filter(t => t.payloadType === sensorType);
+      filtered = filtered.filter((t) => t.payloadType === sensorType);
     }
 
     if (timeRange) {
       const startTime = new Date(timeRange.start);
       const endTime = new Date(timeRange.end);
-      filtered = filtered.filter(t => {
-        const timestamp = new Date((t.timestamp.seconds * 1000) + (t.timestamp.nanoseconds / 1000000));
+      filtered = filtered.filter((t) => {
+        const timestamp = new Date(t.timestamp.seconds * 1000 + t.timestamp.nanoseconds / 1000000);
         return timestamp >= startTime && timestamp <= endTime;
       });
     }
@@ -729,7 +742,7 @@ ESP32 System Status:
     for (const t of telemetry) {
       if (t.payload && typeof t.payload.value === 'number') {
         values.push(t.payload.value);
-        timestamps.push(new Date((t.timestamp.seconds * 1000) + (t.timestamp.nanoseconds / 1000000)));
+        timestamps.push(new Date(t.timestamp.seconds * 1000 + t.timestamp.nanoseconds / 1000000));
       }
     }
 
@@ -746,7 +759,7 @@ ESP32 System Status:
     let analysis = '';
     switch (analysisType) {
       case 'anomaly':
-        const anomalies = values.filter(v => Math.abs(v - avg) > 2 * stdDev);
+        const anomalies = values.filter((v) => Math.abs(v - avg) > 2 * stdDev);
         analysis = `Anomaly Detection:\n- Average: ${avg.toFixed(2)}\n- Standard Deviation: ${stdDev.toFixed(2)}\n- Anomalies detected: ${anomalies.length}\n- Anomaly values: ${anomalies.slice(0, 5).join(', ')}`;
         break;
 
@@ -768,7 +781,7 @@ ESP32 System Status:
 
   private getRecentSensorTypes(): string[] {
     const recent = this.telemetryHistory.slice(-20); // Last 20 readings
-    const sensorTypes = [...new Set(recent.map(t => t.payloadType))];
+    const sensorTypes = [...new Set(recent.map((t) => t.payloadType))];
     return sensorTypes;
   }
 }

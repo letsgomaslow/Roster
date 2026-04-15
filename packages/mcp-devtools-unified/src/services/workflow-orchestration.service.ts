@@ -1,15 +1,18 @@
 import pino from 'pino';
 import { McpPromptsClient } from '../adapters/mcp-prompts-client.js';
-import { PromptLayer, Domain } from '@sparesparrow/mcp-fbs';
+import { PromptLayer, Domain } from '@maslowai/fbs';
 
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  transport: process.env.NODE_ENV === 'development' ? {
-    target: 'pino-pretty',
-    options: {
-      colorize: true
-    }
-  } : undefined
+  transport:
+    process.env.NODE_ENV === 'development'
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+          },
+        }
+      : undefined,
 });
 
 export interface WorkflowStep {
@@ -58,11 +61,13 @@ export class WorkflowOrchestrationService {
 
         // Check dependencies
         if (step.depends_on) {
-          const dependenciesMet = step.depends_on.every(dep =>
-            results.some(r => r.step === dep && r.success)
+          const dependenciesMet = step.depends_on.every((dep) =>
+            results.some((r) => r.step === dep && r.success),
           );
           if (!dependenciesMet) {
-            throw new Error(`Dependencies not met for step ${step.name}: ${step.depends_on.join(', ')}`);
+            throw new Error(
+              `Dependencies not met for step ${step.name}: ${step.depends_on.join(', ')}`,
+            );
           }
         }
 
@@ -71,16 +76,15 @@ export class WorkflowOrchestrationService {
         results.push({
           step: step.name,
           success: true,
-          result
+          result,
         });
-
       } catch (error) {
         logger.error(`Step ${step.name} failed:`, error);
 
         const result = {
           step: step.name,
           success: false,
-          error: error.message
+          error: error.message,
         };
 
         results.push(result);
@@ -103,9 +107,9 @@ export class WorkflowOrchestrationService {
     return {
       workflow: workflowName,
       total_steps: workflow.steps.length,
-      completed_steps: results.filter(r => r.success).length,
-      failed_steps: results.filter(r => !r.success).length,
-      results
+      completed_steps: results.filter((r) => r.success).length,
+      failed_steps: results.filter((r) => !r.success).length,
+      results,
     };
   }
 
@@ -121,7 +125,7 @@ export class WorkflowOrchestrationService {
     const mergedArgs = {
       ...config,
       ...context,
-      ...step.args
+      ...step.args,
     };
 
     // Execute the tool (delegate to appropriate domain service)
@@ -151,15 +155,15 @@ export class WorkflowOrchestrationService {
         {
           name: 'analyze',
           tool: 'analyze_code',
-          args: { files: ['src/main.cpp'] }
+          args: { files: ['src/main.cpp'] },
         },
         {
           name: 'test',
           tool: 'run_tests',
           args: {},
-          depends_on: ['analyze']
-        }
-      ]
+          depends_on: ['analyze'],
+        },
+      ],
     };
   }
 
@@ -171,7 +175,7 @@ export class WorkflowOrchestrationService {
     // For now, return mock config
     return {
       enable_all_checks: true,
-      language: 'cpp'
+      language: 'cpp',
     };
   }
 
@@ -181,33 +185,33 @@ export class WorkflowOrchestrationService {
   private async captureWorkflowExecution(
     workflowName: string,
     results: any[],
-    context: Record<string, any>
+    context: Record<string, any>,
   ): Promise<void> {
     const episode = {
       name: `workflow-execution-${workflowName}-${Date.now()}`,
       problem_signature: {
         symptoms: context.symptoms || ['workflow execution'],
         context_fingerprint: JSON.stringify(context),
-        affected_components: [workflowName]
+        affected_components: [workflowName],
       },
       context: {
         project_type: context.project_type || 'unknown',
-        domain: 'software-development'
+        domain: 'software-development',
       },
-      investigation_path: results.map(r => ({
+      investigation_path: results.map((r) => ({
         step_number: results.indexOf(r) + 1,
         action: `Execute ${r.step}`,
         findings: r.success ? 'Success' : `Failed: ${r.error}`,
-        led_to_solution: r.success
+        led_to_solution: r.success,
       })),
       solution: {
         description: `Executed ${workflowName} workflow`,
-        implementation_steps: results.map(r => r.step),
-        success: results.every(r => r.success)
+        implementation_steps: results.map((r) => r.step),
+        success: results.every((r) => r.success),
       },
-      success: results.every(r => r.success),
+      success: results.every((r) => r.success),
       cognitive_load: results.length,
-      tags: ['workflow', 'automation', workflowName]
+      tags: ['workflow', 'automation', workflowName],
     };
 
     await this.mcpClient.captureEpisode({
@@ -218,7 +222,7 @@ export class WorkflowOrchestrationService {
       solution: episode.solution,
       success: episode.success,
       cognitive_load: episode.cognitive_load,
-      tags: episode.tags
+      tags: episode.tags,
     });
   }
 
@@ -251,7 +255,7 @@ export class WorkflowOrchestrationService {
     const workflow: Workflow = {
       name: patternName,
       description: `Workflow derived from successful ${patternName} executions`,
-      steps: commonSteps
+      steps: commonSteps,
     };
 
     // Store as new procedural knowledge
@@ -260,7 +264,7 @@ export class WorkflowOrchestrationService {
       content: JSON.stringify(workflow, null, 2),
       layer: PromptLayer.Procedural,
       domain: Domain.SoftwareDevelopment,
-      tags: ['workflow', 'derived', patternName]
+      tags: ['workflow', 'derived', patternName],
     });
   }
 
@@ -274,14 +278,14 @@ export class WorkflowOrchestrationService {
       {
         name: 'analyze',
         tool: 'analyze_code',
-        args: {}
+        args: {},
       },
       {
         name: 'test',
         tool: 'run_tests',
         args: {},
-        depends_on: ['analyze']
-      }
+        depends_on: ['analyze'],
+      },
     ];
   }
 }

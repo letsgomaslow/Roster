@@ -3,12 +3,14 @@
 ## 🎯 **Účel & Role**
 
 ### **Hexagonální architektura**
+
 - **Primary/Driving Adapter** - MCP server pro externí komunikaci
 - **Composition Root** - propojuje všechny porty a adaptéry
 - **Transport Layer** - stdio, HTTP, SSE pro MCP protokol
 - **Dependency Injection** - konfiguruje a propojuje všechny komponenty
 
 ### **MCP Server Role**
+
 - **Model Context Protocol** implementace
 - **Tools & Resources** registrace
 - **Transport management** (stdio, HTTP, SSE)
@@ -50,25 +52,29 @@ src/
 ## 🔧 **MCP SDK Integration**
 
 ### **Server setup**
+
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { HttpServerTransport } from "@modelcontextprotocol/sdk/server/http.js";
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { HttpServerTransport } from '@modelcontextprotocol/sdk/server/http.js';
 
 export class MCPServer {
   private server: McpServer;
-  
+
   constructor() {
-    this.server = new McpServer({
-      name: "mcp-prompts",
-      version: "3.0.0"
-    }, {
-      capabilities: {
-        tools: {},
-        resources: {},
-        prompts: {}
-      }
-    });
+    this.server = new McpServer(
+      {
+        name: 'mcp-prompts',
+        version: '3.0.0',
+      },
+      {
+        capabilities: {
+          tools: {},
+          resources: {},
+          prompts: {},
+        },
+      },
+    );
   }
 
   async start(transport: 'stdio' | 'http' | 'sse') {
@@ -77,10 +83,12 @@ export class MCPServer {
         await this.server.connect(new StdioServerTransport());
         break;
       case 'http':
-        await this.server.connect(new HttpServerTransport({
-          port: 3003,
-          host: '0.0.0.0'
-        }));
+        await this.server.connect(
+          new HttpServerTransport({
+            port: 3003,
+            host: '0.0.0.0',
+          }),
+        );
         break;
     }
   }
@@ -88,20 +96,21 @@ export class MCPServer {
 ```
 
 ### **Tool registration**
+
 ```typescript
 // src/server/tools/prompt.tools.ts
 export function registerPromptTools(server: McpServer, promptService: IPromptApplication) {
   server.tool(
-    "mcp-prompts/createPrompt",
+    'mcp-prompts/createPrompt',
     {
-      title: "Create Prompt",
-      description: "Create a new prompt with template support",
+      title: 'Create Prompt',
+      description: 'Create a new prompt with template support',
       inputSchema: z.object({
         name: z.string(),
         content: z.string(),
         isTemplate: z.boolean().optional(),
-        variables: z.array(z.string()).optional()
-      })
+        variables: z.array(z.string()).optional(),
+      }),
     },
     async ({ name, content, isTemplate, variables }) => {
       try {
@@ -109,55 +118,57 @@ export function registerPromptTools(server: McpServer, promptService: IPromptApp
           name,
           content,
           isTemplate: isTemplate ?? false,
-          variables: variables ?? []
+          variables: variables ?? [],
         });
-        
+
         return {
-          content: [{
-            type: "text",
-            text: `Prompt created successfully: ${prompt.id}`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `Prompt created successfully: ${prompt.id}`,
+            },
+          ],
         };
       } catch (error) {
         throw new Error(`Failed to create prompt: ${error.message}`);
       }
-    }
+    },
   );
 }
 ```
 
 ### **Resource registration**
+
 ```typescript
 // src/server/resources/prompt.resources.ts
 export function registerPromptResources(server: McpServer, promptService: IPromptApplication) {
-  server.resource(
-    "mcp-prompts/prompts",
-    "prompt://{id}",
-    async (uri: URL) => {
-      const id = uri.pathname.split('/').pop();
-      if (!id) {
-        throw new Error('Invalid prompt ID');
-      }
-      
-      const prompt = await promptService.getPrompt(id);
-      if (!prompt) {
-        throw new Error(`Prompt with ID '${id}' not found`);
-      }
-      
-      return {
-        contents: [{
-          uri: uri.toString(),
-          text: JSON.stringify(prompt, null, 2)
-        }]
-      };
+  server.resource('mcp-prompts/prompts', 'prompt://{id}', async (uri: URL) => {
+    const id = uri.pathname.split('/').pop();
+    if (!id) {
+      throw new Error('Invalid prompt ID');
     }
-  );
+
+    const prompt = await promptService.getPrompt(id);
+    if (!prompt) {
+      throw new Error(`Prompt with ID '${id}' not found`);
+    }
+
+    return {
+      contents: [
+        {
+          uri: uri.toString(),
+          text: JSON.stringify(prompt, null, 2),
+        },
+      ],
+    };
+  });
 }
 ```
 
 ## 🚀 **Transport Configuration**
 
 ### **Transport selection**
+
 ```typescript
 // src/server/transport/transport.factory.ts
 export class TransportFactory {
@@ -168,13 +179,13 @@ export class TransportFactory {
       case 'http':
         return new HttpServerTransport({
           port: config.port ?? 3003,
-          host: config.host ?? '0.0.0.0'
+          host: config.host ?? '0.0.0.0',
         });
       case 'sse':
         return new HttpServerTransport({
           port: config.port ?? 3003,
           host: config.host ?? '0.0.0.0',
-          enableSSE: true
+          enableSSE: true,
         });
       default:
         throw new Error(`Unsupported transport type: ${type}`);
@@ -184,6 +195,7 @@ export class TransportFactory {
 ```
 
 ### **Environment configuration**
+
 ```typescript
 // src/config/transport.config.ts
 export const transportConfig = {
@@ -191,23 +203,25 @@ export const transportConfig = {
   http: {
     port: parseInt(process.env.MCP_HTTP_PORT || '3003'),
     host: process.env.MCP_HTTP_HOST || '0.0.0.0',
-    enableSSE: process.env.MCP_ENABLE_SSE === 'true'
+    enableSSE: process.env.MCP_ENABLE_SSE === 'true',
   },
   stdio: {
-    enableLogging: process.env.MCP_STDIO_LOGGING === 'true'
-  }
+    enableLogging: process.env.MCP_STDIO_LOGGING === 'true',
+  },
 } as const;
 ```
 
 ## 🧪 **Testing Strategy**
 
 ### **Test framework**
+
 - **Vitest** pro unit testy
 - **Playwright** pro e2e testy
 - **MCP Inspector** pro protocol testing
 - **Integration tests** s real adaptéry
 
 ### **Test struktura**
+
 ```
 tests/
 ├── unit/
@@ -225,6 +239,7 @@ tests/
 ```
 
 ### **MCP Inspector testing**
+
 ```typescript
 // tests/e2e/mcp.inspector.test.ts
 import { test, expect } from '@playwright/test';
@@ -232,49 +247,47 @@ import { test, expect } from '@playwright/test';
 test('MCP Server responds to tools/list', async ({ page }) => {
   // Start MCP server
   const server = await startMCPServer();
-  
+
   // Test with MCP Inspector
   await page.goto('http://localhost:6274');
-  
+
   // Verify tools are registered
   const toolsList = await page.locator('[data-testid="tools-list"]');
-  await expect(toolsList).toContainText('mcp-prompts/createPrompt');
+  await expect(toolsList).toContainText('create_prompt');
 });
 ```
 
 ## 📦 **Dependency Injection**
 
 ### **Container setup**
+
 ```typescript
 // src/composition/container.ts
 import { container } from 'tsyringe';
-import { PromptService } from '@sparesparrow/mcp-prompts-core';
-import { FilePromptRepository } from '@sparesparrow/mcp-prompts-adapters-file';
-import { HandlebarsTemplatingEngine } from '@sparesparrow/mcp-prompts-core';
+import { PromptService } from '../../src/core/services/prompt.service';
+import { FilePromptRepository } from '../../src/adapters/file/file-prompt-repository';
+// Templating: use this repo’s prompt service / template utilities (Roster MCP — `@maslowai/roster`).
 
 export function setupContainer() {
   // Register core services
   container.register('IPromptRepository', {
-    useClass: FilePromptRepository
+    useClass: FilePromptRepository,
   });
-  
-  container.register('ITemplatingEngine', {
-    useClass: HandlebarsTemplatingEngine
-  });
-  
+
   container.register('IPromptApplication', {
-    useClass: PromptService
+    useClass: PromptService,
   });
 }
 ```
 
 ### **Service resolution**
+
 ```typescript
 // src/server/mcp.server.ts
 export class MCPServer {
   constructor() {
     const promptService = container.resolve<IPromptApplication>('IPromptApplication');
-    
+
     // Register tools and resources
     registerPromptTools(this.server, promptService);
     registerPromptResources(this.server, promptService);
@@ -302,12 +315,13 @@ export class MCPServer {
 ## 📋 **Code Quality**
 
 ### **Error handling**
+
 ```typescript
 export class MCPServerError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public readonly details?: Record<string, unknown>
+    public readonly details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'MCPServerError';
@@ -315,35 +329,34 @@ export class MCPServerError extends Error {
 }
 
 // Usage in tools
-server.tool("mcp-prompts/createPrompt", {
-  // ... schema
-}, async (params) => {
-  try {
-    // Implementation
-  } catch (error) {
-    if (error instanceof DomainError) {
-      throw new MCPServerError(
-        error.message,
-        'DOMAIN_ERROR',
-        { details: error.details }
-      );
+server.tool(
+  'create_prompt',
+  {
+    // ... schema
+  },
+  async (params) => {
+    try {
+      // Implementation
+    } catch (error) {
+      if (error instanceof DomainError) {
+        throw new MCPServerError(error.message, 'DOMAIN_ERROR', { details: error.details });
+      }
+      throw new MCPServerError('Internal server error', 'INTERNAL_ERROR');
     }
-    throw new MCPServerError(
-      'Internal server error',
-      'INTERNAL_ERROR'
-    );
-  }
-});
+  },
+);
 ```
 
 ### **Logging**
+
 ```typescript
-import { logger } from '@sparesparrow/mcp-prompts-core';
+import pino from 'pino';
+const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
 export class MCPServer {
   async start(transport: Transport) {
     logger.info('Starting MCP server', { transport: transport.type });
-    
+
     try {
       await this.server.connect(transport);
       logger.info('MCP server started successfully');
@@ -357,4 +370,4 @@ export class MCPServer {
 
 ---
 
-*Server aplikace implementuje MCP protokol a propojuje všechny komponenty.* 
+_Server aplikace implementuje MCP protokol a propojuje všechny komponenty._

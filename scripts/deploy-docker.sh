@@ -12,7 +12,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-IMAGE_NAME="${IMAGE_NAME:-sparesparrow/mcp-prompts}"
+IMAGE_NAME="${IMAGE_NAME:-roster/roster}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
 REGISTRY="${REGISTRY:-docker.io}"
 STORAGE_TYPE="${STORAGE_TYPE:-memory}"

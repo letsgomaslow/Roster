@@ -1,3 +1,5 @@
+> **Archive / historical context:** Internal phase notes. **Current product:** Roster MCP · Maslow AI · npm `@maslowai/roster`.
+
 # Phase 2: API Layer & Endpoints - Completion Summary
 
 **Date**: 2026-01-09
@@ -11,9 +13,11 @@
 ### 1. Service Layer Created ✅
 
 #### SubagentService
+
 **File**: `src/core/services/subagent.service.ts`
 
 **Capabilities**:
+
 - List subagents with filtering (category, tags, model, compatibility)
 - Get specific subagent by ID
 - Search subagents by query string
@@ -24,6 +28,7 @@
 - Cost and token estimation
 
 **Key Methods** (15 total):
+
 ```typescript
 listSubagents(filter?, limit?): Promise<Prompt[]>
 getSubagent(id): Promise<Prompt>
@@ -40,9 +45,11 @@ validateSubagentConfig(data): { valid: boolean; errors: string[] }
 ```
 
 #### MainAgentService
+
 **File**: `src/core/services/main-agent.service.ts`
 
 **Capabilities**:
+
 - List all main agent templates
 - Get main agent by ID or project type
 - Get full configuration including subagents
@@ -52,6 +59,7 @@ validateSubagentConfig(data): { valid: boolean; errors: string[] }
 - Cost and time estimation
 
 **Key Methods** (10 total):
+
 ```typescript
 listMainAgents(limit?): Promise<Prompt[]>
 getMainAgent(id): Promise<Prompt>
@@ -68,9 +76,11 @@ getExecutionPreview(mainAgentId, projectType?): Promise<Preview>
 ### 2. REST API Endpoints Created ✅
 
 #### Subagents Router
+
 **File**: `src/http/routes/subagents.router.ts`
 
 **Endpoints**:
+
 1. `GET /v1/subagents` - List all subagents with filtering
    - Query params: `category`, `tags`, `model`, `compatibleWith`, `limit`
    - Returns: Array of subagents with metadata
@@ -97,9 +107,11 @@ getExecutionPreview(mainAgentId, projectType?): Promise<Preview>
    - Returns: Success confirmation
 
 #### Main Agents Router
+
 **File**: `src/http/routes/main-agents.router.ts`
 
 **Endpoints**:
+
 1. `GET /v1/main-agents` - List all main agents
    - Query params: `projectType`, `limit`
    - Returns: Array of main agent templates
@@ -132,6 +144,7 @@ getExecutionPreview(mainAgentId, projectType?): Promise<Preview>
 **File**: `src/http/server-with-agents.ts`
 
 **Features**:
+
 - Express server with all middleware (helmet, cors, morgan)
 - File-based storage adapter integration
 - Service layer initialization
@@ -143,6 +156,7 @@ getExecutionPreview(mainAgentId, projectType?): Promise<Preview>
 - API info endpoint
 
 **Running the server**:
+
 ```bash
 # Set prompts directory
 export PROMPTS_DIR=./data/prompts
@@ -155,6 +169,7 @@ PORT=8080 npx tsx src/http/server-with-agents.ts
 ```
 
 **Endpoints Available**:
+
 - `GET /health` - Health check
 - `GET /v1` - API information
 - `GET /v1/prompts` - Legacy prompt listing
@@ -168,6 +183,7 @@ PORT=8080 npx tsx src/http/server-with-agents.ts
 ## 📊 Statistics
 
 ### Code Created
+
 - **Files Created**: 3
   - `src/core/services/subagent.service.ts` (300+ lines)
   - `src/core/services/main-agent.service.ts` (350+ lines)
@@ -181,6 +197,7 @@ PORT=8080 npx tsx src/http/server-with-agents.ts
 - **Error Handling**: Comprehensive with ValidationError and NotFoundError
 
 ### API Coverage
+
 - **Subagent Operations**: 7 endpoints
 - **Main Agent Operations**: 7 endpoints
 - **Stats & Metadata**: 2 endpoints
@@ -191,6 +208,7 @@ PORT=8080 npx tsx src/http/server-with-agents.ts
 ## 🔍 Key Features Implemented
 
 ### 1. Advanced Filtering
+
 ```typescript
 // Filter by category
 GET /v1/subagents?category=dev
@@ -209,12 +227,14 @@ GET /v1/subagents?category=dev&model=claude-sonnet&limit=10
 ```
 
 ### 2. Full-Text Search
+
 ```typescript
 // Search across name, description, tags, and system prompts
 GET /v1/subagents/search?q=backend&category=dev
 ```
 
 ### 3. Execution Tracking
+
 ```typescript
 // Record execution
 POST /v1/subagents/dev/backend-developer/execute
@@ -230,13 +250,15 @@ GET /v1/subagents/dev/backend-developer/stats
 ```
 
 ### 4. Configuration Preview
+
 ```typescript
 // Get full configuration with estimates
-GET /v1/main-agents/main_agent_cpp_backend/configuration
+GET / v1 / main - agents / main_agent_cpp_backend / configuration;
 // Returns: mainAgent, subagents[], mcpServers[], estimatedCost, estimatedTime
 ```
 
 ### 5. System Prompt Generation
+
 ```typescript
 // Generate context-aware system prompt
 POST /v1/main-agents/main_agent_cpp_backend/system-prompt
@@ -247,9 +269,10 @@ POST /v1/main-agents/main_agent_cpp_backend/system-prompt
 ```
 
 ### 6. Validation
+
 ```typescript
 // Validate main agent configuration
-POST /v1/main-agents/main_agent_cpp_backend/validate
+POST / v1 / main - agents / main_agent_cpp_backend / validate;
 // Returns: { valid: boolean, errors: string[], warnings: string[] }
 ```
 
@@ -258,12 +281,14 @@ POST /v1/main-agents/main_agent_cpp_backend/validate
 ## 🎯 API Design Principles
 
 ### 1. RESTful Design
+
 - Noun-based URLs (`/subagents`, `/main-agents`)
 - HTTP verbs for actions (GET, POST)
 - Nested resources (`/subagents/:id/stats`)
 - Query parameters for filtering
 
 ### 2. Consistent Response Format
+
 ```json
 {
   "subagents": [...],
@@ -273,6 +298,7 @@ POST /v1/main-agents/main_agent_cpp_backend/validate
 ```
 
 ### 3. Error Handling
+
 ```json
 {
   "error": "Validation error",
@@ -281,6 +307,7 @@ POST /v1/main-agents/main_agent_cpp_backend/validate
 ```
 
 ### 4. Path Parameters Support
+
 - Supports slashes in IDs: `/v1/subagents/dev/backend-developer`
 - Uses wildcard matching: `/:id(*)`
 
@@ -289,11 +316,13 @@ POST /v1/main-agents/main_agent_cpp_backend/validate
 ## 🧪 Testing Examples
 
 ### Example 1: List All Subagents
+
 ```bash
 curl http://localhost:3000/v1/subagents
 ```
 
 **Response**:
+
 ```json
 {
   "subagents": [
@@ -312,26 +341,31 @@ curl http://localhost:3000/v1/subagents
 ```
 
 ### Example 2: Filter by Category
+
 ```bash
 curl "http://localhost:3000/v1/subagents?category=dev&limit=5"
 ```
 
 ### Example 3: Search
+
 ```bash
 curl "http://localhost:3000/v1/subagents/search?q=backend"
 ```
 
 ### Example 4: Get Specific Subagent
+
 ```bash
 curl http://localhost:3000/v1/subagents/dev/backend-developer
 ```
 
 ### Example 5: Get Main Agent Configuration
+
 ```bash
 curl http://localhost:3000/v1/main-agents/main_agent_cpp_backend/configuration
 ```
 
 **Response**:
+
 ```json
 {
   "mainAgent": { ... },
@@ -343,11 +377,13 @@ curl http://localhost:3000/v1/main-agents/main_agent_cpp_backend/configuration
 ```
 
 ### Example 6: Get System Statistics
+
 ```bash
 curl http://localhost:3000/v1/stats
 ```
 
 **Response**:
+
 ```json
 {
   "total": 127,
@@ -370,12 +406,13 @@ curl http://localhost:3000/v1/stats
 ## 💡 Cost & Performance Estimations
 
 ### Cost Estimation Logic
+
 ```typescript
 // Pricing per 1M tokens (approximate)
 const pricing = {
-  'claude-opus': 15,    // $15 per 1M input tokens
-  'claude-sonnet': 3,   // $3 per 1M input tokens
-  'claude-haiku': 0.25  // $0.25 per 1M input tokens
+  'claude-opus': 15, // $15 per 1M input tokens
+  'claude-sonnet': 3, // $3 per 1M input tokens
+  'claude-haiku': 0.25, // $0.25 per 1M input tokens
 };
 
 // Estimate: systemPrompt.length / 4 characters per token
@@ -385,12 +422,13 @@ const cost = (inputTokens + outputTokens) * pricePerToken;
 ```
 
 ### Time Estimation Logic
+
 ```typescript
 // Estimated minutes per model
 const timePerModel = {
-  'claude-opus': 5,    // 5 minutes for complex analysis
-  'claude-sonnet': 3,  // 3 minutes for normal work
-  'claude-haiku': 1    // 1 minute for fast tasks
+  'claude-opus': 5, // 5 minutes for complex analysis
+  'claude-sonnet': 3, // 3 minutes for normal work
+  'claude-haiku': 1, // 1 minute for fast tasks
 };
 
 // Total time = sum of all subagents + main agent coordination
@@ -401,6 +439,7 @@ const timePerModel = {
 ## 🔧 Error Handling
 
 ### Validation Errors (400)
+
 ```json
 {
   "error": "Validation error",
@@ -409,6 +448,7 @@ const timePerModel = {
 ```
 
 ### Not Found Errors (404)
+
 ```json
 {
   "error": "Not found",
@@ -417,6 +457,7 @@ const timePerModel = {
 ```
 
 ### Server Errors (500)
+
 ```json
 {
   "error": "Failed to list subagents",
@@ -429,18 +470,21 @@ const timePerModel = {
 ## 📝 Next Steps: Phase 3
 
 ### Import Main Agent Templates
+
 1. Port `improved-agents.json` to new format
 2. Create main agent template JSON files
 3. Import MIA-specific templates
 4. Validate all configurations
 
 ### Import Project Templates
+
 1. Extract templates from mcp-project-orchestrator
 2. Create project orchestration template JSON files
 3. Document template variables
 4. Test template rendering
 
 ### Testing
+
 1. Write unit tests for services
 2. Write integration tests for endpoints
 3. Test with real data
@@ -466,6 +510,7 @@ const timePerModel = {
 ## 🚀 Ready for Phase 3
 
 All infrastructure is in place to:
+
 1. Import main agent templates from improved-agents.json
 2. Import project templates from mcp-project-orchestrator
 3. Create integration tests

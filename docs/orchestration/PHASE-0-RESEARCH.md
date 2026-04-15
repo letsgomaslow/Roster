@@ -1,8 +1,10 @@
+> **Archive / historical context:** Internal planning doc. **Current product:** Roster MCP · Maslow AI · npm `@maslowai/roster`.
+
 # Phase 0: Research & Planning - Complete Documentation
 
 **Status**: In Progress  
 **Started**: 2025-01-09  
-**Owner**: sparesparrow
+**Owner**: (historical)
 
 ---
 
@@ -13,6 +15,7 @@
 **Location**: `/home/sparrow/projects/mcp/awesome-claude-code-subagents`
 
 #### Repository Structure
+
 ```
 categories/
 ├── 01-core-development/     - 11 subagents (backend, frontend, API, mobile, etc.)
@@ -28,7 +31,9 @@ categories/
 ```
 
 #### Subagent File Format
+
 Each `.md` file follows YAML frontmatter + Markdown content:
+
 ```yaml
 ---
 name: subagent-name
@@ -43,6 +48,7 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 ```
 
 #### Key Subagents Identified for Priority Import
+
 - **Core Development**: backend-developer, frontend-developer, fullstack-developer
 - **Language**: typescript-pro, python-pro, cpp-pro, rust-engineer, golang-pro
 - **Infrastructure**: devops-engineer, kubernetes-specialist, cloud-architect, terraform-engineer
@@ -56,13 +62,16 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 **Location**: `/home/sparrow/projects/mcp/ai-mcp-monorepo/packages/mcp-project-orchestrator`
 
 #### Integration Status
+
 All phases completed:
+
 - ✅ Core module, prompt manager, mermaid integration
 - ✅ Template, prompt template, resource integration
 - ✅ Server integration, CLI integration
 - ✅ Documentation and cleanup
 
 #### Key Patterns to Adopt
+
 1. **Hexagonal Architecture**: Ports & adapters pattern for storage abstraction
 2. **Template System**: Variable substitution with Jinja2-like patterns
 3. **Project Orchestration**: JSON-based orchestration configuration
@@ -101,6 +110,7 @@ All phases completed:
 | multiplatform_iot | C++, Python, Kotlin, JS | Multi-framework |
 
 ### MIA-Specific Customizations
+
 - Pi as gateway/relay/aggregator
 - ESP32 as sensor hub
 - Android for mobile control
@@ -117,12 +127,14 @@ All phases completed:
 **Decision**: Use UNIFIED Prompt table with discriminator field
 
 **Rationale**:
+
 - Maintains backward compatibility with existing prompts
 - Single API surface for all prompt types
 - Flexible querying across types
 - Simplified storage adapter implementation
 
 **Implementation**:
+
 ```typescript
 interface Prompt {
   // Existing fields
@@ -135,8 +147,12 @@ interface Prompt {
   // ...
 
   // NEW: Discriminator for prompt types
-  promptType?: 'standard' | 'subagent_registry' | 'main_agent_template' | 'project_orchestration_template';
-  
+  promptType?:
+    | 'standard'
+    | 'subagent_registry'
+    | 'main_agent_template'
+    | 'project_orchestration_template';
+
   // Agent-specific fields (optional based on promptType)
   agentConfig?: AgentConfig;
 }
@@ -158,6 +174,7 @@ interface AgentConfig {
 **Decision**: Separate table for execution records
 
 **Rationale**:
+
 - Keeps prompt definitions immutable
 - Enables analytics without modifying prompts
 - Better query performance for telemetry
@@ -167,6 +184,7 @@ interface AgentConfig {
 **Decision**: Use `/v1/` prefix for all new orchestration endpoints
 
 **New Endpoints**:
+
 - `GET /v1/subagents` - List subagents with filtering
 - `GET /v1/subagents/:id` - Get single subagent
 - `GET /v1/main-agents` - List main agent templates
@@ -178,6 +196,7 @@ interface AgentConfig {
 ## P0.4: Unified Prompt Schema
 
 ### Extended Prompt Entity
+
 ```typescript
 export class Prompt {
   // Existing fields
@@ -211,7 +230,11 @@ export class Prompt {
 }
 
 // Enums
-type PromptType = 'standard' | 'subagent_registry' | 'main_agent_template' | 'project_orchestration_template';
+type PromptType =
+  | 'standard'
+  | 'subagent_registry'
+  | 'main_agent_template'
+  | 'project_orchestration_template';
 type ClaudeModel = 'claude-opus' | 'claude-sonnet' | 'claude-haiku';
 
 // Variable definition
@@ -281,33 +304,41 @@ mcp-prompts/
 ## P0.6: Risk Assessment
 
 ### Risk 1: Schema Migration Impact
+
 **Risk Level**: Medium  
 **Impact**: Existing prompts may need migration  
-**Mitigation**: 
+**Mitigation**:
+
 - New fields are optional
 - Backward compatible with defaults
 - Migration script for existing data
 
 ### Risk 2: API Breaking Changes
+
 **Risk Level**: Low  
 **Impact**: Existing API clients unaffected  
 **Mitigation**:
+
 - New endpoints use `/v1/` prefix
 - Existing endpoints unchanged
 - Deprecation notices for future changes
 
 ### Risk 3: Cost of Opus Model Usage
+
 **Risk Level**: Medium  
 **Impact**: High-cost main agent executions  
 **Mitigation**:
+
 - Default to Sonnet for most operations
 - Use Haiku for discovery/simple tasks
 - Cost estimation before execution
 
 ### Risk 4: Complexity of Multi-Agent Coordination
+
 **Risk Level**: High  
 **Impact**: Difficult debugging and testing  
 **Mitigation**:
+
 - Incremental implementation (Phase 1-6)
 - Comprehensive logging
 - Dry-run mode for testing
@@ -317,6 +348,7 @@ mcp-prompts/
 ## Next Steps
 
 ### Week 1 Deliverables
+
 1. ✅ Study reference repositories
 2. ✅ Document architecture decisions
 3. ⏳ Extract VoltAgent subagents to JSON
@@ -324,6 +356,7 @@ mcp-prompts/
 5. ⏳ Extend Prompt entity schema
 
 ### Week 2 Preview (Phase 1)
+
 - Database migrations
 - Storage adapter extensions
 - API endpoint stubs

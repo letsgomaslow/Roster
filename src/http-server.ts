@@ -1,3 +1,7 @@
+/**
+ * @deprecated Prefer `MODE=http node dist/index.js` with `STORAGE_TYPE=file|memory|convex|aws`.
+ * This module uses legacy AWS-only adapter wiring; it does not support Convex or Clerk.
+ */
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -19,15 +23,11 @@ export async function createServer(): Promise<express.Application> {
   app.use(express.urlencoded({ extended: true }));
 
   // Initialize adapters (use environment variables or defaults)
-  const promptRepository = new DynamoDBAdapter(
-    process.env.PROMPTS_TABLE || 'mcp-prompts'
-  );
+  const promptRepository = new DynamoDBAdapter(process.env.PROMPTS_TABLE || 'mcp-prompts');
   const catalogRepository = new S3CatalogAdapter(
-    process.env.PROMPTS_BUCKET || 'mcp-prompts-catalog-bucket'
+    process.env.PROMPTS_BUCKET || 'mcp-prompts-catalog-bucket',
   );
-  const eventBus = new SQSAdapter(
-    process.env.PROCESSING_QUEUE || 'mcp-prompts-processing'
-  );
+  const eventBus = new SQSAdapter(process.env.PROCESSING_QUEUE || 'mcp-prompts-processing');
 
   // Initialize services
   const promptService = new PromptService(promptRepository, catalogRepository, eventBus);
@@ -39,27 +39,27 @@ export async function createServer(): Promise<express.Application> {
       const health = await Promise.all([
         promptRepository.healthCheck(),
         catalogRepository.healthCheck(),
-        eventBus.healthCheck()
+        eventBus.healthCheck(),
       ]);
 
-      const allHealthy = health.every(h => h.status === 'healthy');
+      const allHealthy = health.every((h) => h.status === 'healthy');
 
       res.status(allHealthy ? 200 : 503).json({
         status: allHealthy ? 'healthy' : 'unhealthy',
-        service: 'mcp-prompts',
+        service: 'roster',
         services: {
           dynamodb: health[0],
           s3: health[1],
-          sqs: health[2]
+          sqs: health[2],
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       res.status(503).json({
         status: 'unhealthy',
-        service: 'mcp-prompts',
+        service: 'roster',
         error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     }
   });
@@ -69,17 +69,20 @@ export async function createServer(): Promise<express.Application> {
     try {
       const { category, limit } = req.query;
       const prompts = category
-        ? await promptService.getPromptsByCategory(category as string, parseInt(limit as string) || 50)
+        ? await promptService.getPromptsByCategory(
+            category as string,
+            parseInt(limit as string) || 50,
+          )
         : await promptService.getLatestPrompts(parseInt(limit as string) || 50);
 
       res.json({
-        prompts: prompts.map(p => p.toJSON()),
-        total: prompts.length
+        prompts: prompts.map((p) => p.toJSON()),
+        total: prompts.length,
       });
     } catch (error) {
       res.status(500).json({
         error: 'Failed to fetch prompts',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -88,9 +91,9 @@ export async function createServer(): Promise<express.Application> {
     try {
       const { id } = req.params;
       const { version } = req.query;
-      
+
       const prompt = await promptService.getPrompt(id, version as string);
-      
+
       if (!prompt) {
         return res.status(404).json({ error: 'Prompt not found' });
       }
@@ -99,7 +102,7 @@ export async function createServer(): Promise<express.Application> {
     } catch (error) {
       res.status(500).json({
         error: 'Failed to fetch prompt',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -109,12 +112,12 @@ export async function createServer(): Promise<express.Application> {
       const prompt = await promptService.createPrompt(req.body);
       res.status(201).json({
         prompt: prompt.toJSON(),
-        message: 'Prompt created successfully'
+        message: 'Prompt created successfully',
       });
     } catch (error) {
       res.status(500).json({
         error: 'Failed to create prompt',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -123,15 +126,15 @@ export async function createServer(): Promise<express.Application> {
     try {
       const { id } = req.params;
       const prompt = await promptService.updatePrompt(id, req.body);
-      
+
       res.json({
         prompt: prompt.toJSON(),
-        message: 'Prompt updated successfully'
+        message: 'Prompt updated successfully',
       });
     } catch (error) {
       res.status(500).json({
         error: 'Failed to update prompt',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -140,12 +143,12 @@ export async function createServer(): Promise<express.Application> {
     try {
       const { id } = req.params;
       await promptService.deletePrompt(id);
-      
+
       res.json({ message: 'Prompt deleted successfully' });
     } catch (error) {
       res.status(500).json({
         error: 'Failed to delete prompt',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -154,17 +157,17 @@ export async function createServer(): Promise<express.Application> {
     try {
       const { id } = req.params;
       const { variables } = req.body;
-      
+
       const result = await promptService.applyTemplate(id, variables || {});
-      
+
       res.json({
         result,
-        appliedVariables: variables
+        appliedVariables: variables,
       });
     } catch (error) {
       res.status(500).json({
         error: 'Failed to apply template',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -186,7 +189,7 @@ export async function createServer(): Promise<express.Application> {
     } catch (error) {
       res.status(500).json({
         error: 'Failed to execute tool',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -195,22 +198,22 @@ export async function createServer(): Promise<express.Application> {
   app.get('/v1/search', async (req, res) => {
     try {
       const { q: query, category } = req.query;
-      
+
       if (!query) {
         return res.status(400).json({ error: 'Query parameter is required' });
       }
 
       const prompts = await promptService.searchPrompts(query as string, category as string);
-      
+
       res.json({
-        prompts: prompts.map(p => p.toJSON()),
+        prompts: prompts.map((p) => p.toJSON()),
         total: prompts.length,
-        query: query as string
+        query: query as string,
       });
     } catch (error) {
       res.status(500).json({
         error: 'Failed to search prompts',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -220,7 +223,7 @@ export async function createServer(): Promise<express.Application> {
     console.error('Unhandled error:', err);
     res.status(500).json({
       error: 'Internal server error',
-      message: err.message || 'Unknown error'
+      message: err.message || 'Unknown error',
     });
   });
 

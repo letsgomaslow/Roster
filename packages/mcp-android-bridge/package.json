@@ -1,10 +1,11 @@
 {
-  "name": "@sparesparrow/mcp-android-bridge",
+  "name": "@maslowai/android-bridge",
   "version": "1.0.0",
-  "description": "Android device bridge for MCP cognitive platform with clipboard sync and device data access",
+  "description": "Android device bridge for Roster with clipboard sync and device data access",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
+    "roster-android-bridge": "dist/android-bridge.js",
     "mcp-android-bridge": "dist/android-bridge.js"
   },
   "scripts": {
@@ -20,18 +21,18 @@
   "keywords": [
     "mcp",
     "android",
+    "roster",
     "mobile",
     "clipboard",
     "sync",
     "device-data",
     "flatbuffers"
   ],
-  "author": "sparesparrow",
   "license": "Apache-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.2",
-    "@sparesparrow/mcp-prompts": "workspace:*",
-    "@sparesparrow/mcp-fbs": "workspace:*",
+    "@maslowai/roster": "workspace:*",
+    "@maslowai/fbs": "workspace:*",
     "flatbuffers": "^23.5.26",
     "ws": "^8.16.0",
     "express": "^4.21.2",
@@ -52,9 +53,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "workspaces": [
-    "../../mcp-prompts",
-    "../mcp-fbs"
-  ]
+  }
 }

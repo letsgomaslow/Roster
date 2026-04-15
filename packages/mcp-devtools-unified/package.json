@@ -1,11 +1,12 @@
 {
-  "name": "@sparesparrow/mcp-devtools-unified",
+  "name": "@maslowai/devtools-unified",
   "version": "1.0.0",
   "description": "Unified MCP server for development tooling integration with cognitive architecture",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "mcp-devtools-unified": "dist/mcp-devtools-server.js"
+    "roster-devtools-unified": "dist/mcp/devtools-server.js",
+    "mcp-devtools-unified": "dist/mcp/devtools-server.js"
   },
   "scripts": {
     "build": "tsc",
@@ -23,18 +24,14 @@
   "keywords": [
     "mcp",
     "development-tools",
-    "static-analysis",
-    "debugging",
-    "git",
-    "docker",
+    "roster",
     "cognitive-architecture"
   ],
-  "author": "sparesparrow",
   "license": "Apache-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.2",
-    "@sparesparrow/mcp-prompts": "workspace:*",
-    "@sparesparrow/mcp-fbs": "workspace:*",
+    "@maslowai/roster": "workspace:*",
+    "@maslowai/fbs": "workspace:*",
     "flatbuffers": "^23.5.26",
     "pino": "^8.21.0",
     "pino-pretty": "^10.3.1",
@@ -49,9 +46,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "workspaces": [
-    "../mcp-prompts",
-    "../mcp-fbs"
-  ]
+  }
 }

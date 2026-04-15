@@ -81,7 +81,7 @@ function CognitiveLearningDemonstration() {
         line: 3,
         column: 37,
         errorCode: 'TS2307',
-        message: "Cannot find module '@sparesparrow/mcp-fbs'",
+        message: "Cannot find module '@maslowai/fbs'",
         severity: 'error' as const,
         category: 'missing-dependency'
       },
@@ -112,7 +112,7 @@ function CognitiveLearningDemonstration() {
         line: 9,
         column: 34,
         errorCode: 'TS2307',
-        message: "Cannot find module '@sparesparrow/mcp-prompts'",
+        message: "Cannot find module '@maslowai/roster'",
         severity: 'error' as const,
         category: 'missing-dependency'
       }

@@ -161,7 +161,7 @@
         "tertiary_server_description": "Converts text to high-quality speech for podcasts or audio content",
         "additional_servers": "memory, filesystem",
         "primary_installation_command": "npx -y @modelcontextprotocol/server-brave-search",
-        "secondary_installation_command": "npx -y @sparesparrow/mcp-prompts",
+        "secondary_installation_command": "npx -y @maslowai/roster",
         "tertiary_installation_command": "uvx elevenlabs-mcp-server",
         "primary_mcp_server_id": "brave-search",
         "primary_command": "npx",
@@ -169,7 +169,7 @@
         "primary_env_vars": "\"BRAVE_API_KEY\": \"your-brave-api-key\"",
         "secondary_mcp_server_id": "prompts",
         "secondary_command": "npx",
-        "secondary_args": "\"-y\", \"@sparesparrow/mcp-prompts\"",
+        "secondary_args": "\"-y\", \"@maslowai/roster\"",
         "secondary_env_vars": "\"STORAGE_TYPE\": \"file\", \"PROMPTS_DIR\": \"/path/to/prompts\"",
         "tertiary_mcp_server_id": "elevenlabs",
         "tertiary_command": "uvx",
@@ -180,7 +180,7 @@
         "primary_environment_2": "PORT=3001",
         "primary_volume_mapping": "./data:/data",
         "primary_port_mapping": "3001:3000",
-        "secondary_image": "sparesparrow/mcp-prompts:latest",
+        "secondary_image": "roster/roster:latest",
         "secondary_environment_1": "STORAGE_TYPE=file",
         "secondary_environment_2": "PROMPTS_DIR=/app/data/prompts",
         "secondary_volume_mapping": "./prompts:/app/data/prompts",
@@ -219,4 +219,4 @@
     }
   ],
   "categories": ["integration", "multi-server", "configuration", "advanced", "docker"]
-} 
+}

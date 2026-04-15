@@ -1,15 +1,18 @@
-# MCP Cognitive Platform Integration
+# Roster MCP — cognitive platform integration
 
-This document describes the MCP Cognitive Platform - a unified cognitive development platform with mcp-prompts as the universal knowledge layer.
+This document describes how **Roster MCP** (Maslow AI) fits into a broader cognitive development setup: prompt libraries under `data/prompts/`, MCP tools, and optional FlatBuffers (`@maslowai/fbs`) for embedded-style payloads.
+
+> Historical references to “mcp-prompts” in this file mean the same **Roster MCP** server product.
 
 ## Phase 1: Foundation Setup - COMPLETED ✅
 
 ### Repository Organization & Dependencies
 
 **Status**: ✅ **COMPLETE**
-- mcp-prompts server configured and running
-- Claude Desktop configuration updated with mcp-prompts server
-- Claude CLI connected to mcp-prompts MCP server
+
+- Roster MCP server configured and running
+- Claude Desktop configuration updated with the Roster MCP server
+- Claude CLI connected to the Roster MCP server
 - mcp-fbs package integrated with FlatBuffers schemas
 
 ### Cognitive Prompt Architecture
@@ -34,6 +37,7 @@ cognitive/
 #### Seeded Prompts (92 total, 22 cognitive)
 
 **Development Tooling Prompts** (15 prompts):
+
 - `detect-project-context` - Project type/language detection
 - `identify-analysis-goals` - Analysis goal determination
 - `static-analysis-tools-knowledge` - Tool capabilities knowledge
@@ -42,11 +46,13 @@ cognitive/
 - `select-debugging-strategy` - Meta-cognitive strategy selection
 
 **Embedded Systems Prompts** (3 prompts):
+
 - `detect-embedded-project-context` - ESP32/ARM project detection
 - `esp32-architecture-knowledge` - ESP32-specific constraints
 - `embedded-memory-constrained-analysis` - Memory analysis for embedded
 
 **MCP Tool Usage Prompts** (3 prompts):
+
 - `use-mcp-prompts-list` - Self-demonstrating list_prompts usage
 - `use-static-analysis-mcp` - MCP tool workflow examples
 - `use-git-integration-mcp` - Git-based development workflows
@@ -56,6 +62,7 @@ cognitive/
 **Status**: ✅ **COMPLETE**
 
 Integrated comprehensive mcp-fbs package with:
+
 - **cognitive.fbs**: Seven-layer cognitive architecture schemas
 - **base_types.fbs**: UUID, Timestamp, Version, KeyValue types
 - **protocol.fbs**: MCP protocol message definitions
@@ -66,23 +73,26 @@ Integrated comprehensive mcp-fbs package with:
 **Status**: ✅ **COMPLETE**
 
 #### Claude CLI Integration
-- ✅ mcp-prompts server added to Claude CLI configuration
+
+- ✅ Roster MCP server added to Claude CLI configuration
 - ✅ Server connectivity verified: `✓ Connected`
 - ✅ MCP tools exposed: `list_prompts`, `get_prompt`, `search_prompts`, etc.
 
 #### HTTP Server Testing
+
 - ✅ REST API running on port 3000
 - ✅ Health endpoint responding
 - ✅ MCP tools proxy endpoint functional
 - ✅ Prompt management endpoints available
 
 #### Test Script Results
+
 ```bash
 === MCP Integration Test Script ===
-Testing mcp-prompts... ✓ Connected
+Testing Roster MCP... ✓ Connected
 Found .cursor/mcp.json configuration
 Configured servers: sparetools-android sparetools-conan sparetools-esp32 sparetools-mcp-prompts sparetools-repo
-Claude Desktop config: ✓ mcp-prompts configured
+Claude Desktop config: ✓ Roster MCP configured
 HTTP server: ✓ Running
 MCP tools endpoint: ✓ Available
 ```
@@ -124,7 +134,7 @@ graph TB
     end
 
     subgraph "MCP Cognitive Platform"
-        MP[mcp-prompts<br/>Universal Knowledge Hub]
+        MP[Roster MCP<br/>Universal Knowledge Hub]
         style MP fill:#4A90E2,color:#fff,stroke:#2E5C8A
     end
 
@@ -149,7 +159,7 @@ graph TB
 
 ## MCP Tools Available
 
-The mcp-prompts server exposes these MCP tools:
+The Roster MCP server exposes these MCP tools:
 
 - `list_prompts` - List prompts by category or get latest
 - `get_prompt` - Retrieve prompt by ID
@@ -162,12 +172,13 @@ The mcp-prompts server exposes these MCP tools:
 ## Configuration
 
 ### Claude Desktop
+
 ```json
 {
   "mcpServers": {
-    "mcp-prompts": {
+    "roster": {
       "command": "node",
-      "args": ["/path/to/mcp-prompts/dist/mcp-server-standalone.js"],
+      "args": ["/path/to/roster/dist/mcp-server-standalone.js"],
       "env": {
         "MODE": "mcp",
         "STORAGE_TYPE": "file",
@@ -180,23 +191,27 @@ The mcp-prompts server exposes these MCP tools:
 ```
 
 ### Claude CLI
+
 ```bash
-claude mcp add --transport stdio mcp-prompts -- node /path/to/mcp-prompts/dist/mcp-server-standalone.js
+claude mcp add --transport stdio roster -- node /path/to/roster/dist/mcp-server-standalone.js
 ```
 
 ## Next Steps
 
 ### Phase 2: Development Tooling Consolidation
+
 - Create `mcp-devtools-unified` server
 - Implement FlatBuffers inter-server protocol
-- Integrate with mcp-prompts via FlatBuffers client
+- Integrate with Roster MCP via FlatBuffers client
 
 ### Phase 3: Embedded Systems Integration
+
 - ESP32 MCP server with FlatBuffers telemetry
 - Android integration for clipboard/data sync
 - Binary protocol optimization for embedded
 
 ### Phase 4: Cognitive System Maturation
+
 - Self-improving prompt system
 - Pattern synthesis from usage data
 - Cross-domain knowledge transfer
@@ -212,17 +227,20 @@ claude mcp add --transport stdio mcp-prompts -- node /path/to/mcp-prompts/dist/m
 ## Files Created/Modified
 
 **New Directories**:
+
 - `data/prompts/cognitive/{perception,episodes,semantic,procedures,meta,transfer,evaluation}/`
 - `data/prompts/mcp-tools/`
 - `packages/mcp-fbs/` (FlatBuffers integration)
 
 **New Files**:
+
 - `scripts/seed-cognitive-prompts.js` - Cognitive prompt seeding
 - `scripts/update-index.js` - Index regeneration
 - `scripts/test-mcp-integration.sh` - Integration testing
 
 **Modified Files**:
-- `~/.config/Claude/claude_desktop_config.json` - Added mcp-prompts server
+
+- `~/.config/Claude/claude_desktop_config.json` - Added Roster MCP server
 - `data/index.json` - Updated with 71 prompts
 - Various prompt JSON files in cognitive directories
 
@@ -236,9 +254,9 @@ claude mcp add --transport stdio mcp-prompts -- node /path/to/mcp-prompts/dist/m
 ## Integration Verification
 
 Run the integration test script:
+
 ```bash
 ./scripts/test-mcp-integration.sh
 ```
 
 Expected output shows all systems connected and functional.
-

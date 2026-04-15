@@ -12,17 +12,20 @@ import {
   SensorReading,
   BPMData,
   MemoryStats,
-  WiFiStats
-} from '@sparesparrow/mcp-fbs';
+  WiFiStats,
+} from '@maslowai/fbs';
 
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  transport: process.env.NODE_ENV === 'development' ? {
-    target: 'pino-pretty',
-    options: {
-      colorize: true
-    }
-  } : undefined
+  transport:
+    process.env.NODE_ENV === 'development'
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+          },
+        }
+      : undefined,
 });
 
 export interface ESP32Config {
@@ -48,7 +51,10 @@ export class ESP32SerialReader extends EventEmitter {
   private config: ESP32Config;
   private connected: boolean = false;
   private reconnectTimer?: NodeJS.Timeout;
-  private messageBuffer: Map<string, { resolve: Function; reject: Function; timeout: NodeJS.Timeout }> = new Map();
+  private messageBuffer: Map<
+    string,
+    { resolve: Function; reject: Function; timeout: NodeJS.Timeout }
+  > = new Map();
 
   constructor(config: ESP32Config) {
     super();
@@ -73,7 +79,7 @@ export class ESP32SerialReader extends EventEmitter {
         dataBits: 8,
         parity: 'none',
         stopBits: 1,
-        autoOpen: false
+        autoOpen: false,
       });
 
       this.parser = new ReadlineParser({ delimiter: '\n' });
@@ -98,7 +104,6 @@ export class ESP32SerialReader extends EventEmitter {
           resolve();
         });
       });
-
     } catch (error) {
       logger.error('ESP32 serial connection failed:', error);
       if (this.config.autoReconnect) {
@@ -157,7 +162,7 @@ export class ESP32SerialReader extends EventEmitter {
       type: 'command',
       command,
       parameters,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     return new Promise((resolve, reject) => {
@@ -274,7 +279,7 @@ export class ESP32SerialReader extends EventEmitter {
       this.emit('telemetry', {
         deviceId: this.config.deviceId,
         telemetry,
-        timestamp: message.timestamp
+        timestamp: message.timestamp,
       });
 
       logger.debug(`Processed telemetry: ${telemetry.length} readings`);
@@ -347,8 +352,11 @@ export class ESP32SerialReader extends EventEmitter {
             confidence: data.confidence || 1.0,
             rawSamples: new Int16Array(data.raw_samples || []),
             qualityScore: data.quality_score || 0.0,
-            timestamp: { seconds: Math.floor(data.timestamp / 1000), nanoseconds: (data.timestamp % 1000) * 1000000 },
-            sensorMetadata: []
+            timestamp: {
+              seconds: Math.floor(data.timestamp / 1000),
+              nanoseconds: (data.timestamp % 1000) * 1000000,
+            },
+            sensorMetadata: [],
           };
           break;
 
@@ -358,11 +366,14 @@ export class ESP32SerialReader extends EventEmitter {
           // Generic sensor reading
           telemetryData = {
             sensorId: data.sensor_id || data.sensor_type,
-            timestamp: { seconds: Math.floor(data.timestamp / 1000), nanoseconds: (data.timestamp % 1000) * 1000000 },
+            timestamp: {
+              seconds: Math.floor(data.timestamp / 1000),
+              nanoseconds: (data.timestamp % 1000) * 1000000,
+            },
             value: data.value,
             unit: data.unit,
             confidence: data.confidence || 1.0,
-            metadata: []
+            metadata: [],
           };
           break;
 
@@ -371,7 +382,10 @@ export class ESP32SerialReader extends EventEmitter {
             heapFree: data.heap_free,
             heapTotal: data.heap_total,
             heapMinFree: data.heap_min_free,
-            timestamp: { seconds: Math.floor(data.timestamp / 1000), nanoseconds: (data.timestamp % 1000) * 1000000 }
+            timestamp: {
+              seconds: Math.floor(data.timestamp / 1000),
+              nanoseconds: (data.timestamp % 1000) * 1000000,
+            },
           };
           break;
 
@@ -381,7 +395,10 @@ export class ESP32SerialReader extends EventEmitter {
             ssid: data.ssid,
             rssi: data.rssi,
             ipAddress: data.ip_address,
-            timestamp: { seconds: Math.floor(data.timestamp / 1000), nanoseconds: (data.timestamp % 1000) * 1000000 }
+            timestamp: {
+              seconds: Math.floor(data.timestamp / 1000),
+              nanoseconds: (data.timestamp % 1000) * 1000000,
+            },
           };
           break;
 
@@ -389,11 +406,14 @@ export class ESP32SerialReader extends EventEmitter {
           // Generic sensor reading for unknown types
           telemetryData = {
             sensorId: data.sensor_id || data.sensor_type,
-            timestamp: { seconds: Math.floor(data.timestamp / 1000), nanoseconds: (data.timestamp % 1000) * 1000000 },
+            timestamp: {
+              seconds: Math.floor(data.timestamp / 1000),
+              nanoseconds: (data.timestamp % 1000) * 1000000,
+            },
             value: data.value,
             unit: data.unit,
             confidence: data.confidence || 1.0,
-            metadata: []
+            metadata: [],
           };
       }
 
@@ -407,9 +427,8 @@ export class ESP32SerialReader extends EventEmitter {
         sequenceNumber: 1,
         payloadType: data.sensor_type,
         payload: telemetryData,
-        crc32: 0
+        crc32: 0,
       };
-
     } catch (error) {
       logger.error('Failed to convert telemetry data:', error);
       return null;
@@ -429,7 +448,7 @@ export class ESP32SerialReader extends EventEmitter {
       const handshake = {
         type: 'handshake',
         device_id: this.config.deviceId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       const message = JSON.stringify(handshake) + '\n';

@@ -5,6 +5,7 @@ This document describes the integration of SpareTools MCP servers with the mcp-p
 ## Overview
 
 The SpareTools MCP servers provide comprehensive tooling for:
+
 - **ESP32 Development**: Serial monitoring and device interaction
 - **Android Development**: APK building, deployment, and testing
 - **Package Management**: Conan packaging and Cloudsmith distribution
@@ -15,21 +16,25 @@ The SpareTools MCP servers provide comprehensive tooling for:
 ### Individual Server Prompts
 
 #### `sparetools-esp32-monitor`
+
 **Purpose**: ESP32 device monitoring and serial communication
 **Tools**: 8 ESP32-specific monitoring and debugging tools
 **Usage**: Hardware debugging, firmware development, device testing
 
 #### `sparetools-android-dev`
+
 **Purpose**: Complete Android development workflow
 **Tools**: 7 Android development and deployment tools
 **Usage**: Mobile app development, testing, deployment
 
 #### `sparetools-conan-cloudsmith`
+
 **Purpose**: C++ package management and distribution
 **Tools**: 9 Conan and Cloudsmith package management tools
 **Usage**: Package creation, dependency management, distribution
 
 #### `sparetools-repo-cleanup`
+
 **Purpose**: Repository health analysis and maintenance
 **Tools**: 4 Git repository analysis and cleanup tools
 **Usage**: Repository optimization, cleanup recommendations
@@ -37,6 +42,7 @@ The SpareTools MCP servers provide comprehensive tooling for:
 ### Integrated Workflow Prompt
 
 #### `sparetools-full-workflow`
+
 **Purpose**: Complete development lifecycle from hardware to cloud
 **Tools**: All 28 SpareTools MCP tools across 4 servers
 **Usage**: Full-stack embedded systems development
@@ -80,10 +86,11 @@ Install the SpareTools MCP servers package:
 
 ```bash
 # Via Conan
-conan install sparetools-mcp-servers/1.0.0@sparesparrow/stable
+# Example Conan reference user/channel — use the remote your org publishes to
+conan install sparetools-mcp-servers/1.0.0@youruser/stable
 
 # Via SpareTools monorepo
-conan install sparetools-monorepo/1.0.0@sparesparrow/stable
+conan install sparetools-monorepo/1.0.0@youruser/stable
 ```
 
 ## Usage Examples
@@ -155,12 +162,14 @@ conan install sparetools-monorepo/1.0.0@sparesparrow/stable
 ## Tool Categories and Capabilities
 
 ### ESP32 Serial Monitor (8 tools)
+
 - Device detection and port scanning
 - Serial communication monitoring
 - Session management and logging
 - Real-time command sending
 
 ### Android Development (7 tools)
+
 - Device management and detection
 - APK building with Gradle
 - App deployment and installation
@@ -169,6 +178,7 @@ conan install sparetools-monorepo/1.0.0@sparesparrow/stable
 - Data management and cleanup
 
 ### Conan & Cloudsmith (9 tools)
+
 - Conanfile validation and analysis
 - Package creation and building
 - Remote repository management
@@ -177,6 +187,7 @@ conan install sparetools-monorepo/1.0.0@sparesparrow/stable
 - Package information and searching
 
 ### Repository Cleanup (4 tools)
+
 - Comprehensive repository scanning
 - Large file detection and analysis
 - Git status monitoring
@@ -185,12 +196,14 @@ conan install sparetools-monorepo/1.0.0@sparesparrow/stable
 ## Integration Benefits
 
 ### For Developers
+
 - **Streamlined Workflow**: Single interface for hardware, mobile, and packaging tasks
 - **AI Assistance**: Intelligent prompts guide tool usage and best practices
 - **Error Prevention**: Validation and safety checks built into all operations
 - **Time Savings**: Automated workflows reduce manual command execution
 
 ### For Teams
+
 - **Standardized Processes**: Consistent development workflows across team members
 - **Knowledge Sharing**: Prompts capture and share development best practices
 - **Quality Assurance**: Automated validation and testing integration
@@ -233,16 +246,19 @@ Use prompts in automated pipelines:
 ## Troubleshooting
 
 ### MCP Server Not Available
+
 - Ensure SpareTools MCP servers package is installed
 - Check MCP server configuration in Cursor settings
 - Verify environment variables are set correctly
 
 ### Tool Execution Errors
+
 - Check device connections (ESP32, Android)
 - Verify file paths and permissions
 - Ensure required dependencies are installed
 
 ### Prompt Not Found
+
 - Update mcp-prompts package to latest version
 - Restart Cursor to refresh prompt cache
 - Check prompt availability with `/list-prompts`
@@ -259,10 +275,10 @@ To contribute new SpareTools MCP prompts:
 ## Related Resources
 
 - [SpareTools MCP Servers Documentation](https://sparetools.readthedocs.io/)
-- [MCP Prompts Usage Guide](https://github.com/sparesparrow/mcp-prompts)
+- [Roster MCP (`@maslowai/roster`) on npm](https://www.npmjs.com/package/@maslowai/roster)
 - [Conan Package Manager](https://conan.io/)
 - [Cloudsmith Package Registry](https://cloudsmith.io/)
 
 ---
 
-*This integration provides AI-powered assistance for the complete embedded systems development lifecycle using SpareTools MCP servers.*
+_This integration provides AI-powered assistance for the complete embedded systems development lifecycle using SpareTools MCP servers._

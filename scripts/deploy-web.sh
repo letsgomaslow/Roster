@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# Deploy web assets to S3 bucket
+# DEPRECATED for the product UI: prefer hosting **apps/web** (Next.js) on Vercel or your Node host.
+# This script uploads the legacy static dashboard under **web/** to S3. Keep only if you still serve
+# that static site; new deployments should use the Next app and BFF routes under apps/web.
+
+# Deploy legacy web assets to S3 bucket
 # Usage: ./scripts/deploy-web.sh <web-bucket-name>
 
 set -e

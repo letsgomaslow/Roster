@@ -9,7 +9,7 @@ set -e  # Exit on any error
 API_URL="https://jaqwv7shwc.execute-api.eu-north-1.amazonaws.com/prod"  # Actual API Gateway URL
 API_KEY="o68POXdCOI4ud9jVMOmvY4yg3NJlJdtw8J4sH3up"  # Replace with actual API key
 AWS_REGION="eu-north-1"
-PACKAGE_NAME="@sparesparrow/mcp-prompts@3.10.0"
+PACKAGE_NAME="@maslowai/roster@3.10.0"
 
 echo "=== Starting Comprehensive Testing ==="
 

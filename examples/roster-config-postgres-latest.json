@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "roster": {
+      "command": "npx",
+      "args": ["-y", "@maslowai/roster"],
+      "env": {
+        "STORAGE_TYPE": "postgres",
+        "POSTGRES_URL": "postgres://postgres:postgres@localhost:5432/mcp_prompts",
+        "LOG_LEVEL": "info",
+        "PORT": "3003",
+        "HOST": "0.0.0.0"
+      }
+    }
+  }
+}

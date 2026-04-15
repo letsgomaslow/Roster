@@ -1,6 +1,8 @@
-# MCP Prompts Deployment Guide
+# Roster MCP — deployment guide
 
-This guide provides comprehensive deployment instructions for MCP Prompts across different storage backends and deployment targets.
+**Roster MCP** (Maslow AI, npm `@maslowai/roster`) — deployment patterns across storage backends and targets.
+
+For **Convex** (hosted), prefer **[OPERATIONS.md](OPERATIONS.md)** as the primary runbook.
 
 ## Table of Contents
 
@@ -43,17 +45,20 @@ This guide provides comprehensive deployment instructions for MCP Prompts across
 **Best for:** Development, small deployments, offline usage
 
 **Features:**
+
 - Simple file-based storage
 - No external dependencies
 - Easy backup and restore
 - Perfect for development
 
 **Deployment:**
+
 ```bash
 ./scripts/deploy-file-storage.sh
 ```
 
 **Configuration:**
+
 ```bash
 export STORAGE_TYPE=file
 export PROMPTS_DIR=./data/prompts
@@ -65,17 +70,20 @@ export PORT=3000
 **Best for:** Production applications, complex queries, ACID compliance
 
 **Features:**
+
 - Full ACID compliance
 - Complex queries and indexing
 - Session management
 - Backup and restore capabilities
 
 **Deployment:**
+
 ```bash
 ./scripts/deploy-postgres.sh
 ```
 
 **Configuration:**
+
 ```bash
 export STORAGE_TYPE=postgres
 export DB_HOST=localhost
@@ -90,6 +98,7 @@ export DB_PASSWORD=mcp_password
 **Best for:** Scalable production applications, cloud-native deployments
 
 **Features:**
+
 - DynamoDB for prompts storage
 - S3 for catalog and assets
 - SQS for event processing
@@ -97,11 +106,13 @@ export DB_PASSWORD=mcp_password
 - CloudFront for CDN
 
 **Deployment:**
+
 ```bash
 ./scripts/deploy-aws-enhanced.sh
 ```
 
 **Configuration:**
+
 ```bash
 export STORAGE_TYPE=aws
 export AWS_REGION=us-east-1
@@ -115,12 +126,14 @@ export PROCESSING_QUEUE=https://sqs.us-east-1.amazonaws.com/account/queue
 **Best for:** Testing, development, temporary deployments
 
 **Features:**
+
 - In-memory storage
 - No persistence
 - Fast access
 - Sample data included
 
 **Configuration:**
+
 ```bash
 export STORAGE_TYPE=memory
 ```
@@ -162,6 +175,7 @@ STORAGE_TYPE=postgres pnpm run dev
 ### 3. Production Servers
 
 #### Systemd Service
+
 ```bash
 # Deploy with systemd service
 ./scripts/deploy-file-storage.sh --systemd
@@ -174,6 +188,7 @@ sudo systemctl stop mcp-prompts-file
 ```
 
 #### Docker Compose
+
 ```bash
 # Start with docker-compose
 docker-compose -f docker-compose.postgres.yml up -d
@@ -185,6 +200,7 @@ docker-compose -f docker-compose.postgres.yml up -d --scale mcp-prompts=3
 ### 4. Cloud Platforms
 
 #### AWS
+
 ```bash
 # Deploy to AWS
 ./scripts/deploy-aws-enhanced.sh
@@ -197,6 +213,7 @@ docker-compose -f docker-compose.postgres.yml up -d --scale mcp-prompts=3
 ```
 
 #### Kubernetes
+
 ```yaml
 # Example Kubernetes deployment
 apiVersion: apps/v1
@@ -207,22 +224,22 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      app: mcp-prompts
+      app: roster-mcp
   template:
     metadata:
       labels:
-        app: mcp-prompts
+        app: roster-mcp
     spec:
       containers:
-      - name: mcp-prompts
-        image: ghcr.io/sparesparrow/mcp-prompts:postgres
-        ports:
-        - containerPort: 3000
-        env:
-        - name: STORAGE_TYPE
-          value: "postgres"
-        - name: DB_HOST
-          value: "postgres-service"
+        - name: roster-mcp
+          image: ghcr.io/<your-org>/roster-mcp:postgres
+          ports:
+            - containerPort: 3000
+          env:
+            - name: STORAGE_TYPE
+              value: 'postgres'
+            - name: DB_HOST
+              value: 'postgres-service'
 ```
 
 ## CI/CD Pipelines
@@ -292,6 +309,7 @@ curl http://localhost:3000/health
 ### Backup and Restore
 
 #### File Storage
+
 ```bash
 # Backup
 ./scripts/backup-file-storage.sh
@@ -301,6 +319,7 @@ curl http://localhost:3000/health
 ```
 
 #### PostgreSQL
+
 ```bash
 # Backup
 ./scripts/backup-postgres.sh
@@ -310,6 +329,7 @@ curl http://localhost:3000/health
 ```
 
 #### AWS
+
 ```bash
 # Backup
 ./scripts/backup-aws.sh
@@ -338,6 +358,7 @@ curl http://localhost:3000/health
 #### 1. Database Connection Issues
 
 **PostgreSQL:**
+
 ```bash
 # Check connection
 PGPASSWORD=mcp_password psql -h localhost -U mcp_user -d mcp_prompts -c "SELECT 1;"
@@ -347,6 +368,7 @@ sudo systemctl status postgresql
 ```
 
 **AWS DynamoDB:**
+
 ```bash
 # Check table exists
 aws dynamodb describe-table --table-name mcp-prompts
@@ -394,11 +416,12 @@ docker logs -f mcp-prompts-memory
 ### Performance Tuning
 
 #### PostgreSQL
+
 ```sql
 -- Check slow queries
-SELECT query, mean_time, calls 
-FROM pg_stat_statements 
-ORDER BY mean_time DESC 
+SELECT query, mean_time, calls
+FROM pg_stat_statements
+ORDER BY mean_time DESC
 LIMIT 10;
 
 -- Update statistics
@@ -406,6 +429,7 @@ ANALYZE;
 ```
 
 #### AWS DynamoDB
+
 ```bash
 # Check table metrics
 aws cloudwatch get-metric-statistics \

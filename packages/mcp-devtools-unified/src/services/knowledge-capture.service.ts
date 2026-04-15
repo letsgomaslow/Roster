@@ -1,15 +1,18 @@
 import pino from 'pino';
 import { McpPromptsClient } from '../adapters/mcp-prompts-client.js';
-import { PromptLayer, Domain } from '@sparesparrow/mcp-fbs';
+import { PromptLayer, Domain } from '@maslowai/fbs';
 
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  transport: process.env.NODE_ENV === 'development' ? {
-    target: 'pino-pretty',
-    options: {
-      colorize: true
-    }
-  } : undefined
+  transport:
+    process.env.NODE_ENV === 'development'
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+          },
+        }
+      : undefined,
 });
 
 export interface ToolExecutionResult {
@@ -43,7 +46,7 @@ export class KnowledgeCaptureService {
   async recordExecution(result: ToolExecutionResult): Promise<void> {
     logger.info(`Recording tool execution: ${result.tool}`, {
       success: result.success,
-      duration: result.duration
+      duration: result.duration,
     });
 
     // Add to execution history
@@ -92,7 +95,7 @@ export class KnowledgeCaptureService {
     // Query for existing knowledge about this failure
     const existingKnowledge = await this.mcpClient.searchEpisodes({
       symptoms: failureSignature.symptoms,
-      context_fingerprint: failureSignature.context_hash
+      context_fingerprint: failureSignature.context_hash,
     });
 
     if (existingKnowledge.length === 0) {
@@ -112,7 +115,7 @@ export class KnowledgeCaptureService {
 
     // Look for successful execution sequences
     const recentSuccesses = this.executionHistory
-      .filter(r => r.success && r.tool === currentResult.tool)
+      .filter((r) => r.success && r.tool === currentResult.tool)
       .slice(-10); // Last 10 successful executions of this tool
 
     if (recentSuccesses.length >= 3) {
@@ -124,7 +127,7 @@ export class KnowledgeCaptureService {
           pattern: `successful-${currentResult.tool}-configuration`,
           confidence: Math.min(recentSuccesses.length / 10, 1.0),
           occurrences: recentSuccesses,
-          abstraction_level: 2
+          abstraction_level: 2,
         });
       }
     }
@@ -137,7 +140,7 @@ export class KnowledgeCaptureService {
           pattern: `successful-tool-sequence-${sequence.tools.join('-')}`,
           confidence: sequence.confidence,
           occurrences: sequence.executions,
-          abstraction_level: 3
+          abstraction_level: 3,
         });
       }
     }
@@ -183,9 +186,17 @@ export class KnowledgeCaptureService {
   /**
    * Find sequences of tools that commonly succeed together
    */
-  private findSuccessfulToolSequences(): Array<{tools: string[], confidence: number, executions: ToolExecutionResult[]}> {
+  private findSuccessfulToolSequences(): Array<{
+    tools: string[];
+    confidence: number;
+    executions: ToolExecutionResult[];
+  }> {
     // Group executions by time windows and look for successful sequences
-    const sequences: Array<{tools: string[], confidence: number, executions: ToolExecutionResult[]}> = [];
+    const sequences: Array<{
+      tools: string[];
+      confidence: number;
+      executions: ToolExecutionResult[];
+    }> = [];
 
     // Simple implementation: look for pairs of tools that often execute successfully together
     const toolPairs = new Map<string, ToolExecutionResult[]>();
@@ -194,7 +205,7 @@ export class KnowledgeCaptureService {
     const windowSize = 5;
     for (let i = 0; i < this.executionHistory.length - windowSize; i++) {
       const window = this.executionHistory.slice(i, i + windowSize);
-      const successfulTools = window.filter(r => r.success).map(r => r.tool);
+      const successfulTools = window.filter((r) => r.success).map((r) => r.tool);
 
       if (successfulTools.length >= 2) {
         const pairKey = successfulTools.slice(0, 2).sort().join('-');
@@ -208,13 +219,13 @@ export class KnowledgeCaptureService {
     // Convert to sequences with confidence scores
     for (const [pairKey, executions] of toolPairs) {
       const tools = pairKey.split('-');
-      const successRate = executions.filter(r => r.success).length / executions.length;
+      const successRate = executions.filter((r) => r.success).length / executions.length;
 
       if (successRate > 0.8 && executions.length >= 3) {
         sequences.push({
           tools,
           confidence: successRate,
-          executions
+          executions,
         });
       }
     }
@@ -228,7 +239,7 @@ export class KnowledgeCaptureService {
   private async captureSuccessfulPattern(candidate: PatternCandidate): Promise<void> {
     logger.info(`Capturing successful pattern: ${candidate.pattern}`, {
       confidence: candidate.confidence,
-      occurrences: candidate.occurrences.length
+      occurrences: candidate.occurrences.length,
     });
 
     // Create configuration prompt for this pattern
@@ -246,7 +257,7 @@ ${JSON.stringify(configArgs, null, 2)}
 ${(candidate.confidence * 100).toFixed(1)}% success rate across ${candidate.occurrences.length} executions.
 
 ### Common Context
-- Tools: ${[...new Set(candidate.occurrences.map(r => r.tool))].join(', ')}
+- Tools: ${[...new Set(candidate.occurrences.map((r) => r.tool))].join(', ')}
 - Average duration: ${this.calculateAverageDuration(candidate.occurrences)}ms
 
 ### Usage Recommendation
@@ -260,7 +271,7 @@ ${this.generateUsageRecommendations(candidate)}
       layer: PromptLayer.Procedural,
       domain: Domain.SoftwareDevelopment,
       tags: ['configuration', 'successful-pattern', 'derived-knowledge'],
-      abstractionLevel: candidate.abstraction_level
+      abstractionLevel: candidate.abstraction_level,
     });
   }
 
@@ -271,11 +282,11 @@ ${this.generateUsageRecommendations(candidate)}
     // Query existing knowledge for this tool + context combination
     const existingPrompts = await this.mcpClient.searchPrompts({
       layer: 4, // Procedural
-      tags: [result.tool, 'successful']
+      tags: [result.tool, 'successful'],
     });
 
     // Check if we have similar successful configurations
-    const similarConfigs = existingPrompts.filter(prompt => {
+    const similarConfigs = existingPrompts.filter((prompt) => {
       // TODO: Implement similarity checking
       return false; // For now, assume all are novel
     });
@@ -292,27 +303,29 @@ ${this.generateUsageRecommendations(candidate)}
       problem_signature: {
         symptoms: result.context.symptoms || ['tool execution'],
         context_fingerprint: JSON.stringify(result.context),
-        affected_components: [result.tool]
+        affected_components: [result.tool],
       },
       context: {
         project_type: result.context.project_type || 'unknown',
-        domain: 'software-development'
+        domain: 'software-development',
       },
-      investigation_path: [{
-        step_number: 1,
-        action: `Execute ${result.tool} with args: ${JSON.stringify(result.args)}`,
-        findings: `Success: ${result.output.substring(0, 200)}...`,
-        led_to_solution: true
-      }],
+      investigation_path: [
+        {
+          step_number: 1,
+          action: `Execute ${result.tool} with args: ${JSON.stringify(result.args)}`,
+          findings: `Success: ${result.output.substring(0, 200)}...`,
+          led_to_solution: true,
+        },
+      ],
       solution: {
         description: `Successfully executed ${result.tool}`,
         implementation_steps: [`Run ${result.tool} with configuration`],
-        validation_method: 'Tool execution completed without errors'
+        validation_method: 'Tool execution completed without errors',
       },
       success: true,
       cognitive_load: 1,
       generalization_cues: [`${result.tool}-success-pattern`],
-      tags: ['novel-success', result.tool, 'learning-opportunity']
+      tags: ['novel-success', result.tool, 'learning-opportunity'],
     };
 
     await this.mcpClient.captureEpisode(episode);
@@ -326,7 +339,7 @@ ${this.generateUsageRecommendations(candidate)}
       symptoms: this.parseErrorSymptoms(result.output),
       context_hash: this.hashContext(result.context),
       error_patterns: this.extractErrorPatterns(result.output),
-      tool: result.tool
+      tool: result.tool,
     };
   }
 
@@ -335,30 +348,32 @@ ${this.generateUsageRecommendations(candidate)}
    */
   private async captureNovelFailure(
     result: ToolExecutionResult,
-    failureSignature: any
+    failureSignature: any,
   ): Promise<void> {
     const episode = {
       name: `novel-failure-${result.tool}-${Date.now()}`,
       problem_signature: failureSignature,
       context: {
         project_type: result.context.project_type || 'unknown',
-        domain: 'software-development'
+        domain: 'software-development',
       },
-      investigation_path: [{
-        step_number: 1,
-        action: `Execute ${result.tool} with args: ${JSON.stringify(result.args)}`,
-        findings: `Failed: ${result.output.substring(0, 200)}...`,
-        led_to_solution: false
-      }],
+      investigation_path: [
+        {
+          step_number: 1,
+          action: `Execute ${result.tool} with args: ${JSON.stringify(result.args)}`,
+          findings: `Failed: ${result.output.substring(0, 200)}...`,
+          led_to_solution: false,
+        },
+      ],
       solution: {
         description: 'Failure - no solution found',
         implementation_steps: [],
-        validation_method: 'N/A - execution failed'
+        validation_method: 'N/A - execution failed',
       },
       success: false,
       cognitive_load: 2,
       generalization_cues: [`${result.tool}-failure-pattern`],
-      tags: ['novel-failure', result.tool, 'learning-opportunity']
+      tags: ['novel-failure', result.tool, 'learning-opportunity'],
     };
 
     await this.mcpClient.captureEpisode(episode);
@@ -369,7 +384,7 @@ ${this.generateUsageRecommendations(candidate)}
    */
   private async updateExistingFailureKnowledge(
     result: ToolExecutionResult,
-    existingEpisode: any
+    existingEpisode: any,
   ): Promise<void> {
     // Update usage statistics and potentially refine the failure pattern
     logger.info(`Updating existing failure knowledge for ${result.tool}`);
@@ -380,10 +395,11 @@ ${this.generateUsageRecommendations(candidate)}
   private parseErrorSymptoms(output: string): string[] {
     // Simple error parsing - in reality, this would be more sophisticated
     const lines = output.split('\n');
-    return lines.filter(line =>
-      line.toLowerCase().includes('error') ||
-      line.toLowerCase().includes('failed') ||
-      line.toLowerCase().includes('exception')
+    return lines.filter(
+      (line) =>
+        line.toLowerCase().includes('error') ||
+        line.toLowerCase().includes('failed') ||
+        line.toLowerCase().includes('exception'),
     );
   }
 
@@ -420,6 +436,6 @@ ${this.generateUsageRecommendations(candidate)}
       recommendations.push('- In CI/CD pipelines for automated testing');
     }
 
-    return recommendations.map(r => `- ${r}`).join('\n');
+    return recommendations.map((r) => `- ${r}`).join('\n');
   }
 }

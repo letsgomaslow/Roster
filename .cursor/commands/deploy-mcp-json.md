@@ -1,54 +1,50 @@
 ```bash
 set -euo pipefail
 
-# Validate and run MCP server via mcp.json for different backends
+# Write sample .cursor/mcp.json entries for Roster MCP (@maslowai/roster)
 
-# 1) Local Postgres via mcp.json
+# 1) File storage (works locally without extra services)
 cat > .cursor/mcp.json << 'JSON'
 {
   "mcpServers": {
-    "mcp-prompts": {
+    "roster": {
       "command": "npx",
-      "args": ["-y", "@sparesparrow/mcp-prompts"],
+      "args": ["-y", "@maslowai/roster"],
       "env": {
         "MODE": "mcp",
-        "STORAGE_TYPE": "postgres",
-        "POSTGRES_URL": "postgres://postgres:postgres@localhost:5432/mcp_prompts",
-        "PORT": "3003",
-        "HOST": "0.0.0.0"
+        "STORAGE_TYPE": "file",
+        "PROMPTS_DIR": "./prompts",
+        "LOG_LEVEL": "info"
       }
     }
   }
 }
 JSON
 
-echo "mcp.json for Postgres written."
+echo "Wrote .cursor/mcp.json (file storage)."
 
-# 2) Alternative AWS backend (switch by replacing env)
+# 2) Legacy AWS DynamoDB/S3/SQS path (STORAGE_TYPE not in file|memory|postgres|convex)
 cat > .cursor/mcp.aws.json << 'JSON'
 {
   "mcpServers": {
-    "mcp-prompts": {
+    "roster": {
       "command": "npx",
-      "args": ["-y", "@sparesparrow/mcp-prompts"],
+      "args": ["-y", "@maslowai/roster"],
       "env": {
         "MODE": "mcp",
         "STORAGE_TYPE": "aws",
-        "AWS_REGION": "eu-north-1",
-        "PORT": "3003",
-        "HOST": "0.0.0.0"
+        "AWS_REGION": "us-east-1",
+        "LOG_LEVEL": "info"
       }
     }
   }
 }
 JSON
 
-echo "mcp.aws.json for AWS written."
+echo "Wrote .cursor/mcp.aws.json (AWS adapters — set PROMPTS_TABLE, PROMPTS_BUCKET, PROCESSING_QUEUE as needed)."
 
-# 3) Quick checks
-node -e "require('fs').readFileSync('.cursor/mcp.json'); console.log('Validated .cursor/mcp.json')"
-node -e "require('fs').readFileSync('.cursor/mcp.aws.json'); console.log('Validated .cursor/mcp.aws.json')"
+node -e "JSON.parse(require('fs').readFileSync('.cursor/mcp.json','utf8')); console.log('OK: mcp.json')"
+node -e "JSON.parse(require('fs').readFileSync('.cursor/mcp.aws.json','utf8')); console.log('OK: mcp.aws.json')"
 
-echo "Switch active config by copying desired file to .cursor/mcp.json"
+echo "Copy the file you want to .cursor/mcp.json (Convex: see OPERATIONS.md)."
 ```
-

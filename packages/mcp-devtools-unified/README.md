@@ -5,6 +5,7 @@ A unified MCP server for development tooling that integrates with the cognitive 
 ## Overview
 
 This package consolidates various development tools into a single MCP server that can:
+
 - Perform static code analysis (cppcheck, clang-tidy)
 - Execute tests with framework detection
 - Manage debugging sessions (GDB/LLDB)
@@ -14,7 +15,8 @@ This package consolidates various development tools into a single MCP server tha
 
 ## Integration with Cognitive Architecture
 
-The server integrates with `mcp-prompts` to:
+The server integrates with **Roster MCP** (`@maslowai/roster`) to:
+
 - Query for tool configuration prompts before execution
 - Store successful configurations as new cognitive prompts
 - Retrieve interpretation prompts for analysis results
@@ -23,22 +25,28 @@ The server integrates with `mcp-prompts` to:
 ## MCP Tools
 
 ### Code Analysis
+
 - `analyze_code` - Unified static analysis (cppcheck/clang-tidy)
 - `analyze_changed_code` - Git + static analysis integration
 
 ### Testing
+
 - `run_tests` - Test execution with framework detection
 
 ### Debugging
+
 - `debug_session_start` - GDB/LLDB session management
 
 ### Version Control
+
 - `git_analyze_history` - Commit analysis for debugging
 
 ### Containerization
+
 - `docker_exec_analysis` - Run analysis in containers
 
 ### Workflow Orchestration
+
 - `workflow_execute` - Multi-tool orchestrated workflows
 
 ## Installation
@@ -53,6 +61,7 @@ pnpm build
 ## Usage
 
 ### MCP Mode (stdio)
+
 ```bash
 # Start the MCP server
 pnpm start:mcp
@@ -62,6 +71,7 @@ pnpm dev:mcp
 ```
 
 ### Configuration
+
 ```json
 {
   "mcpServers": {
@@ -88,21 +98,21 @@ mcp-devtools-unified/
 │   │   ├── vcs/            # Git operations
 │   │   └── environment/    # Docker, build systems
 │   ├── services/
-│   │   ├── knowledge-capture.service.ts  # Captures to mcp-prompts
+│   │   ├── knowledge-capture.service.ts  # Captures to Roster MCP
 │   │   ├── workflow-orchestration.service.ts
 │   │   └── session-manager.service.ts
 │   ├── mcp/
 │   │   └── devtools-server.ts  # MCP protocol implementation
 │   └── adapters/
-│       └── mcp-prompts-client.ts  # FlatBuffers client
+│       └── mcp-prompts-client.ts  # Roster MCP / FlatBuffers client
 ├── package.json
 └── tsconfig.json
 ```
 
 ## Dependencies
 
-- `@sparesparrow/mcp-prompts` - Cognitive prompt management
-- `@sparesparrow/mcp-fbs` - FlatBuffers schemas and builders
+- `@maslowai/roster` - Cognitive prompt management
+- `@maslowai/fbs` - FlatBuffers schemas and builders
 - `@modelcontextprotocol/sdk` - MCP protocol implementation
 
 ## Development

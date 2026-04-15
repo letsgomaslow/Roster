@@ -5,6 +5,7 @@ A bridge service that connects ESP32 embedded devices to the MCP cognitive platf
 ## Overview
 
 The ESP32 Bridge provides:
+
 - **Serial Communication**: Bidirectional communication with ESP32 devices
 - **Telemetry Streaming**: Real-time sensor data collection and processing
 - **Device Control**: Remote configuration and command execution
@@ -14,18 +15,21 @@ The ESP32 Bridge provides:
 ## Features
 
 ### Telemetry Support
+
 - **Sensor Data**: BPM, temperature, accelerometer, environmental sensors
 - **System Monitoring**: Memory, WiFi, task statistics, power consumption
 - **Real-time Streaming**: Continuous data collection with buffering
 - **Historical Analysis**: Time-series data storage and retrieval
 
 ### Device Control
+
 - **Configuration**: Runtime parameter adjustment
 - **Calibration**: Sensor calibration commands
 - **Reset**: Soft and hard reset capabilities
 - **OTA Updates**: Firmware update coordination
 
 ### MCP Tools
+
 - `get_esp32_telemetry` - Retrieve current sensor data
 - `get_esp32_status` - System status and health information
 - `get_telemetry_history` - Historical data analysis
@@ -40,13 +44,14 @@ The ESP32 Bridge provides:
 ```bash
 # From the monorepo root
 pnpm install
-cd packages/mcp-esp32-bridge
+cd packages/esp32-bridge
 pnpm build
 ```
 
 ## ESP32 Firmware Requirements
 
 The ESP32 device must run firmware that:
+
 - Communicates via JSON over serial (115200 baud)
 - Supports telemetry commands (`get_telemetry`, `set_config`, etc.)
 - Provides structured sensor data
@@ -119,7 +124,7 @@ MODE=mcp                                # Run mode (mcp or http)
   "mcpServers": {
     "mcp-esp32-bridge": {
       "command": "node",
-      "args": ["/path/to/mcp-esp32-bridge/dist/esp32-bridge.js"],
+      "args": ["/path/to/esp32-bridge/dist/esp32-bridge.js"],
       "env": {
         "ESP32_SERIAL_PORT": "/dev/ttyUSB0",
         "ESP32_DEVICE_ID": "esp32-livingroom",
@@ -255,8 +260,8 @@ pnpm dev
 
 ## Dependencies
 
-- `@sparesparrow/mcp-prompts` - Cognitive prompt management
-- `@sparesparrow/mcp-fbs` - FlatBuffers schemas
+- `@maslowai/roster` - Cognitive prompt management
+- `@maslowai/fbs` - FlatBuffers schemas
 - `serialport` - Serial communication
 - `@modelcontextprotocol/sdk` - MCP protocol
 

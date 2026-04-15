@@ -1,17 +1,17 @@
 {
   "mcpServers": {
-    "aws-mcp-prompts": {
+    "roster-aws": {
       "command": "npx",
-      "args": ["@sparesparrow/mcp-prompts"],
+      "args": ["-y", "@maslowai/roster"],
       "env": {
         "STORAGE_TYPE": "aws",
         "AWS_REGION": "eu-north-1",
         "LOG_LEVEL": "debug"
       }
     },
-    "local-mcp-prompts": {
+    "roster-memory": {
       "command": "npx",
-      "args": ["@sparesparrow/mcp-prompts"],
+      "args": ["-y", "@maslowai/roster"],
       "env": {
         "STORAGE_TYPE": "memory",
         "LOG_LEVEL": "debug"

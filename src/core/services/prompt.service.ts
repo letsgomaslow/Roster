@@ -17,7 +17,7 @@ export class PromptService {
   constructor(
     private promptRepository: IPromptRepository,
     private catalogRepository: ICatalogRepository,
-    private eventBus: IEventBus
+    private eventBus: IEventBus,
   ) {}
 
   async createPrompt(data: any): Promise<Prompt> {
@@ -42,28 +42,34 @@ export class PromptService {
       true,
       data.metadata || {},
       data.access_level || 'public',
-      data.author_id
+      data.author_id,
+      data.promptType || data.prompt_type || 'standard',
+      data.agentConfig || data.agent_config,
     );
 
     await this.promptRepository.save(prompt);
-    
+
     // Publish event
-    await this.eventBus.publish(new PromptEvent('prompt_created', prompt.id, new Date(), {
-      category: prompt.category,
-      name: prompt.name
-    }));
+    await this.eventBus.publish(
+      new PromptEvent('prompt_created', prompt.id, new Date(), {
+        category: prompt.category,
+        name: prompt.name,
+      }),
+    );
 
     return prompt;
   }
 
   async getPrompt(id: string, version?: string): Promise<Prompt | null> {
     const prompt = await this.promptRepository.findById(id, version);
-    
+
     if (prompt) {
       // Publish access event
-      await this.eventBus.publish(new PromptEvent('prompt_accessed', prompt.id, new Date(), {
-        version: prompt.version
-      }));
+      await this.eventBus.publish(
+        new PromptEvent('prompt_accessed', prompt.id, new Date(), {
+          version: prompt.version,
+        }),
+      );
     }
 
     return prompt;
@@ -100,16 +106,20 @@ export class PromptService {
       existingPrompt.isLatest,
       { ...existingPrompt.metadata, ...data.metadata },
       data.access_level || existingPrompt.accessLevel,
-      data.author_id || existingPrompt.authorId
+      data.author_id || existingPrompt.authorId,
+      data.promptType || data.prompt_type || existingPrompt.promptType,
+      data.agentConfig || data.agent_config || existingPrompt.agentConfig,
     );
 
     await this.promptRepository.save(updatedPrompt);
-    
+
     // Publish event
-    await this.eventBus.publish(new PromptEvent('prompt_updated', updatedPrompt.id, new Date(), {
-      category: updatedPrompt.category,
-      name: updatedPrompt.name
-    }));
+    await this.eventBus.publish(
+      new PromptEvent('prompt_updated', updatedPrompt.id, new Date(), {
+        category: updatedPrompt.category,
+        name: updatedPrompt.name,
+      }),
+    );
 
     return updatedPrompt;
   }
@@ -125,12 +135,14 @@ export class PromptService {
     }
 
     await this.promptRepository.delete(id);
-    
+
     // Publish event
-    await this.eventBus.publish(new PromptEvent('prompt_deleted', id, new Date(), {
-      category: existingPrompt.category,
-      name: existingPrompt.name
-    }));
+    await this.eventBus.publish(
+      new PromptEvent('prompt_deleted', id, new Date(), {
+        category: existingPrompt.category,
+        name: existingPrompt.name,
+      }),
+    );
   }
 
   async getPromptsByCategory(category: string, limit: number = 50): Promise<Prompt[]> {
@@ -141,11 +153,40 @@ export class PromptService {
     const allPrompts = await this.promptRepository.findLatestVersions(limit * 2); // Get more to filter
 
     // Filter prompts based on user access
-    return allPrompts.filter(prompt => this.hasAccessToPrompt(prompt, userContext)).slice(0, limit);
+    return allPrompts
+      .filter((prompt) => this.hasAccessToPrompt(prompt, userContext))
+      .slice(0, limit);
   }
 
   async searchPrompts(query: string, category?: string): Promise<Prompt[]> {
     return await this.promptRepository.search(query, category);
+  }
+
+  /** Aggregate stats from latest prompts (cap for cost). */
+  async getPromptStats(limit: number = 2000): Promise<{
+    total: number;
+    templates: number;
+    regular: number;
+    tags: string[];
+    categories: string[];
+    byCategory: Record<string, number>;
+  }> {
+    const prompts = await this.promptRepository.findLatestVersions(limit);
+    const isTemplate = (p: Prompt) =>
+      p.metadata?.isTemplate === true ||
+      ['main_agent_template', 'project_orchestration_template'].includes(p.promptType);
+    const byCategory: Record<string, number> = {};
+    for (const p of prompts) {
+      byCategory[p.category] = (byCategory[p.category] ?? 0) + 1;
+    }
+    return {
+      total: prompts.length,
+      templates: prompts.filter(isTemplate).length,
+      regular: prompts.filter((p) => !isTemplate(p)).length,
+      tags: Array.from(new Set(prompts.flatMap((p) => p.tags || []))),
+      categories: Array.from(new Set(prompts.map((p) => p.category))),
+      byCategory,
+    };
   }
 
   async applyTemplate(promptId: string, variables: Record<string, any>): Promise<string> {
@@ -155,7 +196,7 @@ export class PromptService {
     }
 
     let template = prompt.template;
-    
+
     // Replace variables in template
     for (const [key, value] of Object.entries(variables)) {
       const placeholder = `{{${key}}}`;

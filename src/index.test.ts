@@ -10,23 +10,21 @@ describe('MCP Prompts Server', () => {
 
   it('should have health endpoint', async () => {
     const app = await createServer();
-    
+
     // Simulate a request to health endpoint
     const mockReq = {} as any;
     const mockRes = {
       status: (code: number) => mockRes,
       json: (data: any) => {
         expect(data.status).toBe('ok');
-        expect(data.service).toBe('mcp-prompts');
+        expect(data.service).toBe('roster');
         return mockRes;
-      }
+      },
     } as any;
 
     // Find health route
-    const healthRoute = app._router?.stack?.find((layer: any) => 
-      layer.route?.path === '/health'
-    );
-    
+    const healthRoute = app._router?.stack?.find((layer: any) => layer.route?.path === '/health');
+
     if (healthRoute) {
       expect(healthRoute.route.path).toBe('/health');
     }
