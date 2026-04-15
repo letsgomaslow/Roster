@@ -424,6 +424,35 @@ cliphist-android/: clipboard-intelligence
 
 All skills automatically query the central Roster MCP knowledge base and contribute learnings back to improve the entire ecosystem.
 
+## Web Frontend (`apps/web/`)
+
+The control-plane UI is a separate Next.js 16 App Router app under `apps/web/`. It is **not** served by the Node runtime in `src/` — it runs as its own `next dev` / `next start` process.
+
+### Two env files, not one
+
+- **`/.env.local`** (repo root) — read by the **Roster HTTP server** (`src/`, `pnpm run dev:http`).
+- **`apps/web/.env.local`** — read by the **Next.js web app**. Next.js does NOT read the repo-root file; env vars must be duplicated here for the frontend to see them.
+
+This is the most common local-dev failure mode: agents and developers set Clerk keys in the root file, Next stays in "Auth disabled" mode, and there are no console errors. Full RCA and runbook: `apps/web/docs/AUTH-SETUP.md`.
+
+### Clean local startup
+
+```bash
+# Terminal 1 — Roster HTTP server (port 3003 by default, per src/config.ts:5)
+pnpm run dev:http
+
+# Terminal 2 — Next.js web app (port 3000)
+pnpm --filter web dev
+```
+
+Open `http://localhost:3000`. The sidebar should render Clerk **Sign in** / **Create account** buttons. A yellow **"Auth disabled"** card means `apps/web/.env.local` is missing, or one of its keys is blank/whitespace — restart the dev server after any env change.
+
+### Frontend env gotchas
+
+- `NEXT_PUBLIC_CONVEX_URL` must use the `.convex.cloud` host. `<slug>.convex.site` is the HTTP-actions domain and silently breaks the Convex client (no WebSocket, no error).
+- `ROSTER_HTTP_URL` points to the **Roster** server (`http://127.0.0.1:3003`), not Next's own port. Setting it to `:3000` makes the BFF proxy to itself.
+- Next's per-directory dev-server lock survives crashed processes. If `pnpm dev` errors with _"Another next dev server is already running"_, find and kill the stale PID: `lsof -tiTCP:3000 -sTCP:LISTEN | xargs kill`.
+
 ## Testing Strategy
 
 ### Test Organization
@@ -789,9 +818,11 @@ Tool Execution → Result Capture → Pattern Learning → System Improvement
 This cognitive development platform represents a significant advancement in AI-assisted software development, creating systems that genuinely learn and improve through accumulated experience.
 
 <!-- convex-ai-start -->
+
 This project uses [Convex](https://convex.dev) as its backend.
 
 When working on Convex code, **always read `convex/_generated/ai/guidelines.md` first** for important guidelines on how to correctly use Convex APIs and patterns. The file contains rules that override what you may have learned about Convex from training data.
 
 Convex agent skills for common tasks can be installed by running `npx convex ai-files install`.
+
 <!-- convex-ai-end -->

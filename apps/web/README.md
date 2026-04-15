@@ -2,15 +2,32 @@ This is the **Roster** product UI (Next.js App Router): dashboard + **BFF** rout
 
 ## Getting Started
 
-Copy `.env.local.example` to `.env.local`, set Clerk keys and **`ROSTER_HTTP_URL`**, then:
+> **Env file location matters.** Next.js reads env from **`apps/web/.env.local`** — not the repo-root `.env.local`. The two files serve different processes (web app vs Roster server). Full rationale and troubleshooting in [`docs/AUTH-SETUP.md`](./docs/AUTH-SETUP.md).
 
 ```bash
+# 1. Create the env file in the correct location
+cp apps/web/.env.local.example apps/web/.env.local
+# Fill in: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY,
+#          CLERK_JWT_ISSUER_DOMAIN, NEXT_PUBLIC_CONVEX_URL (must be .convex.cloud),
+#          ROSTER_HTTP_URL=http://127.0.0.1:3003
+
+# 2. Start the Roster HTTP server (separate terminal, repo root)
+pnpm run dev:http
+
+# 3. Start the web app
 pnpm dev
 ```
 
 (`pnpm dev` runs **`next dev --webpack`** so CSS/Tailwind resolve reliably in the monorepo.)
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). The sidebar should show **Sign in** and **Create account** buttons. If you see an **"Auth disabled"** card, Clerk env is wrong — see [`docs/AUTH-SETUP.md`](./docs/AUTH-SETUP.md#symptom-matrix).
+
+### Common pitfalls
+
+- **`NEXT_PUBLIC_CONVEX_URL` host:** must be `<slug>.convex.cloud`, not `<slug>.convex.site`. The `.site` domain is for HTTP actions only — using it silently breaks the Convex client.
+- **Port collision:** `ROSTER_HTTP_URL` points to the _Roster_ server (default `3003`), not Next's own port (`3000`). Setting it to `:3000` makes the BFF proxy to itself.
+- **Stale dev servers:** Next refuses to start a second dev server in the same directory. If `pnpm dev` exits with _"Another next dev server is already running"_, kill the stale PID: `lsof -tiTCP:3000 -sTCP:LISTEN | xargs kill`.
+- **Env changes require a restart:** Next reads env only at boot.
 
 ### Tests
 

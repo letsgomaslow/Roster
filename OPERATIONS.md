@@ -30,8 +30,14 @@ The canonical dashboard lives in **`apps/web`** (App Router). The browser talks 
 1. Copy `apps/web/.env.local.example` to `apps/web/.env.local`.
 2. Set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` from Clerk (required for middleware on matched routes).
 3. Set **`ROSTER_HTTP_URL`** to your Roster HTTP base (e.g. `http://127.0.0.1:3003` locally).
-4. Optional: `NEXT_PUBLIC_CONVEX_URL` if client components call Convex directly.
+4. Optional: `NEXT_PUBLIC_CONVEX_URL` if client components call Convex directly. **Use the `.convex.cloud` host**, not `.convex.site` — the `.site` domain is for HTTP actions only and silently breaks the Convex client (no WebSocket, no console error).
 5. From repo root: `pnpm --filter web dev` (or `cd apps/web && pnpm dev`). Dev uses **`next dev --webpack`** so Tailwind resolves correctly in this monorepo.
+
+> **Common misconfigurations (seen 2026-04-15):**
+>
+> - Env vars placed in the **repo-root `.env.local`** are NOT read by Next.js. The file at `apps/web/.env.local` is separate. If the sidebar shows an "Auth disabled" card despite valid keys, this is almost always the cause. Full RCA: [`apps/web/docs/AUTH-SETUP.md`](apps/web/docs/AUTH-SETUP.md).
+> - `ROSTER_HTTP_URL=http://localhost:3000` collides with the Next dev server's own port. Set it to `http://127.0.0.1:3003` (Roster's default per `src/config.ts:5`).
+> - Env changes require a full dev-server restart. Next reads env only at boot.
 
 ### Phased auth (local vs production-shaped)
 
