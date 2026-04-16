@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { useQuery, useConvexAuth } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import {
+  Badge,
   PageIntro,
   Panel,
   StatCard,
-  Badge,
   ActionButton,
   EmptyState,
 } from '@/app/components/control-plane/primitives';
+import { OnboardingChecklist } from '@/app/components/control-plane/OnboardingChecklist';
 import { useTrackPageView } from '@/app/components/control-plane/useProductEvents';
 import { convexEnabled } from '@/lib/convex-client';
 import { formatNumber, formatPercent, formatRelativeDate, titleCase } from '@/lib/formatters';
@@ -53,6 +54,16 @@ export function HomeScreen() {
         title="Private beta control plane for the Roster MCP server"
       />
 
+      {isAuthenticated ? (
+        <OnboardingChecklist
+          dashboard={dashboard.data?.data}
+          showDismiss
+          snapshot={snapshot ?? null}
+          subtitle="New public-beta workspaces should connect a host, prove readiness, create a prompt, and run an orchestration before the dashboard is considered healthy."
+          title="New workspace checklist"
+        />
+      ) : null}
+
       <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
         <Panel
           action={
@@ -61,7 +72,7 @@ export function HomeScreen() {
             </Badge>
           }
           className="overflow-hidden"
-          subtitle="The shortest path to useful feedback starts with proving setup, tool availability, and usage limits from one screen."
+          subtitle="The first scan should answer whether setup is real, whether tools are visible, and whether the account can move into actual work."
           title="Integration readiness"
           tone="dark"
         >
@@ -153,10 +164,12 @@ export function HomeScreen() {
                   },
                 ].map((item) => (
                   <div
-                    className="flex items-center justify-between rounded-[18px] border border-white/10 px-4 py-3"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/10 px-4 py-3"
                     key={item.label}
                   >
-                    <span className="text-sm text-white/90">{item.label}</span>
+                    <span className="max-w-[22rem] text-sm leading-6 text-white/90">
+                      {item.label}
+                    </span>
                     <Badge tone={item.status ? 'success' : 'warning'}>
                       {item.status ? 'Ready' : 'Missing'}
                     </Badge>
@@ -168,7 +181,7 @@ export function HomeScreen() {
         </Panel>
 
         <Panel
-          subtitle="Use these cards to spot whether the beta user is actually creating, editing, and running anything."
+          subtitle="Once setup is real, these cards should answer whether the workspace is doing anything beyond configuration."
           title="Workspace activity"
           tone="strategy"
         >
@@ -207,7 +220,7 @@ export function HomeScreen() {
               Open library
             </Link>
           }
-          subtitle="Convex-backed recent activity keeps the control plane responsive while BFF routes stay reserved for side effects."
+          subtitle="Recent prompt activity should prove that beta users can move from setup into actual authoring."
           title="Recent prompts"
         >
           {snapshot?.recentPrompts?.length ? (
@@ -265,7 +278,7 @@ export function HomeScreen() {
               Open runs
             </Link>
           }
-          subtitle="The orchestration list should immediately tell you whether the backend is producing traceable work."
+          subtitle="The orchestration list should immediately tell you whether the backend is producing traceable, inspectable work."
           title="Recent runs"
         >
           {runs.length ? (

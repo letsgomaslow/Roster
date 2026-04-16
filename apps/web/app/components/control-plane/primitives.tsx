@@ -110,7 +110,7 @@ export function StatCard({
   return (
     <div
       className={cx(
-        'rounded-[24px] border px-4 py-4',
+        'min-h-[168px] rounded-[24px] border px-4 py-4',
         accent === 'strong'
           ? 'border-[rgba(255,255,255,0.14)] bg-white/8'
           : 'border-[var(--line)] bg-[var(--panel-soft)]',
@@ -154,12 +154,12 @@ export function Badge({
   tone?: 'default' | 'brand' | 'success' | 'info' | 'warning' | 'error' | 'strategy';
 }) {
   const tones = {
-    default: 'border-[var(--line)] bg-[var(--background-soft)] text-[var(--muted)]',
-    brand: 'border-[var(--accent-soft)] bg-[var(--accent-wash)] text-[var(--accent-hover)]',
-    success: 'border-[rgba(44,213,82,0.24)] bg-[var(--success-soft)] text-[color:var(--success)]',
-    info: 'border-[var(--tech-soft)] bg-[var(--tech-wash)] text-[color:var(--ink)]',
-    warning: 'border-[var(--attention-soft)] bg-[var(--attention-wash)] text-[color:var(--ink)]',
-    error: 'border-[var(--error-soft)] bg-[rgba(213,44,44,0.08)] text-[color:var(--error)]',
+    default: 'border-[var(--line)] bg-[var(--background-soft)] text-[var(--ink)]',
+    brand: 'border-[var(--accent-soft)] bg-[var(--accent-wash)] text-[var(--accent-strong)]',
+    success: 'border-[rgba(44,213,82,0.3)] bg-[var(--success-soft)] text-[#1c6d31]',
+    info: 'border-[var(--tech-soft)] bg-[var(--tech-wash)] text-[#174f46]',
+    warning: 'border-[var(--attention-soft)] bg-[var(--attention-wash)] text-[#6f4903]',
+    error: 'border-[var(--error-soft)] bg-[rgba(213,44,44,0.08)] text-[var(--error-strong)]',
     strategy:
       'border-[var(--strategy-soft)] bg-[var(--strategy-wash)] text-[color:var(--label-purple,var(--strategy))]',
   };
@@ -167,7 +167,7 @@ export function Badge({
   return (
     <span
       className={cx(
-        'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-[0.02em]',
+        'inline-flex min-h-8 items-center rounded-full border px-3 py-1.5 text-[12px] font-semibold tracking-[0.02em]',
         tones[tone],
       )}
     >

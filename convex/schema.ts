@@ -54,4 +54,16 @@ export default defineSchema({
     context: v.optional(v.any()),
     createdAt: v.number(),
   }).index('by_owner_and_created_at', ['ownerUserId', 'createdAt']),
+  userProfiles: defineTable({
+    ownerUserId: v.string(),
+    checklistStepStates: v.object({
+      connectHostCompletedAt: v.optional(v.number()),
+      verifySetupCompletedAt: v.optional(v.number()),
+      createPromptCompletedAt: v.optional(v.number()),
+      runOrchestrationCompletedAt: v.optional(v.number()),
+    }),
+    checklistDismissedAt: v.optional(v.number()),
+    onboardingCompletedAt: v.optional(v.number()),
+    updatedAt: v.number(),
+  }).index('by_owner_user_id', ['ownerUserId']),
 });

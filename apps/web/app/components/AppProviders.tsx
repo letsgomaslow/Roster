@@ -7,7 +7,11 @@ import { convex } from '@/lib/convex-client';
 
 function useClerkBackedConvexAuth() {
   const { isLoaded, isSignedIn, getToken, sessionClaims } = useAuth();
-  const template = process.env.NEXT_PUBLIC_CLERK_CONVEX_JWT_TEMPLATE?.trim();
+  // Default to Clerk's "convex" JWT template so local auth works without an extra public env var.
+  const template =
+    process.env.NEXT_PUBLIC_CLERK_CONVEX_JWT_TEMPLATE?.trim() ||
+    process.env.NEXT_PUBLIC_CLERK_JWT_TEMPLATE?.trim() ||
+    'convex';
   const hasNativeConvexAudience = sessionClaims?.aud === 'convex';
 
   return {

@@ -9,6 +9,7 @@
  */
 
 import type * as prompts from "../prompts.js";
+import type * as onboarding from "../onboarding.js";
 
 import type {
   ApiFromModules,
@@ -17,6 +18,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  onboarding: typeof onboarding;
   prompts: typeof prompts;
 }>;
 

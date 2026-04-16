@@ -161,7 +161,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           open ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none',
         )}
         aria-describedby={descriptionId}
-        aria-label="Command palette"
         aria-labelledby={titleId}
         aria-modal="true"
         hidden={!open}
@@ -169,17 +168,19 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         role="dialog"
         tabIndex={-1}
       >
-        <div className="sr-only">
-          <h2 id={titleId}>Command palette</h2>
-          <p id={descriptionId}>
-            Search prompts, navigate between pages, and run global control plane actions.
-          </p>
-        </div>
-        <div className="mb-4 flex items-center justify-between gap-3 px-1">
+        <div className="mb-4 flex items-start justify-between gap-3 px-1">
           <MaslowRosterLogo compact />
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-            Quick navigation and prompt lookup
-          </p>
+          <div className="space-y-1 text-right">
+            <p
+              className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]"
+              id={titleId}
+            >
+              Command palette
+            </p>
+            <p className="text-xs text-[var(--muted)]" id={descriptionId}>
+              Quick navigation, prompt lookup, and global actions.
+            </p>
+          </div>
         </div>
         <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3">
           <label className="sr-only" htmlFor={inputId}>

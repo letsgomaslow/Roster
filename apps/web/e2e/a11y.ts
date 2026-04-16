@@ -46,7 +46,11 @@ export async function expectNoBlockingAxeViolations(
   await injectAxe(page);
 
   const results = await page.evaluate(async ({ include, exclude }) => {
-    const axe = (window as Window & { axe: { run: (context?: unknown, options?: unknown) => Promise<unknown> } }).axe;
+    const axe = (
+      window as unknown as Window & {
+        axe: { run: (context?: unknown, options?: unknown) => Promise<unknown> };
+      }
+    ).axe;
     return (await axe.run(document, {
       include,
       exclude,

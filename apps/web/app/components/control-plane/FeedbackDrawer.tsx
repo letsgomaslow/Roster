@@ -6,6 +6,8 @@ import { useMutation } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { cx } from '@/lib/cx';
 import { openFeedback } from '@/lib/control-plane-events';
+import type { AuthSurfaceState } from '@/lib/auth-surface';
+import { AuthCtas } from './AuthCtas';
 import { useTrackProductEvent } from './useProductEvents';
 import { useDialogA11y } from './useDialogA11y';
 
@@ -46,15 +48,29 @@ function seedToState(seed?: FeedbackSeed) {
 }
 
 export function FeedbackDrawer() {
-  return <FeedbackDrawerInner isSignedIn={false} />;
+  return <FeedbackDrawerInner authSurfaceState="disabled" isSignedIn={false} />;
+}
+
+export function AuthSurfaceFeedbackDrawer({
+  authSurfaceState,
+}: {
+  authSurfaceState: Exclude<AuthSurfaceState, 'ready'>;
+}) {
+  return <FeedbackDrawerInner authSurfaceState={authSurfaceState} isSignedIn={false} />;
 }
 
 export function ClerkFeedbackDrawer() {
   const { isSignedIn } = useAuth();
-  return <FeedbackDrawerInner isSignedIn={Boolean(isSignedIn)} />;
+  return <FeedbackDrawerInner authSurfaceState="ready" isSignedIn={Boolean(isSignedIn)} />;
 }
 
-function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
+function FeedbackDrawerInner({
+  isSignedIn,
+  authSurfaceState,
+}: {
+  isSignedIn: boolean;
+  authSurfaceState: AuthSurfaceState;
+}) {
   const submitFeedback = useMutation(api.prompts.submitFeedback);
   const track = useTrackProductEvent();
   const titleId = useId();
@@ -101,11 +117,6 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isSignedIn) {
-      setError('Sign in before sending beta feedback.');
-      return;
-    }
-
     setStatus('saving');
     setError(null);
     try {
@@ -167,12 +178,12 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
               Beta Feedback
             </p>
             <h2 className="font-heading text-2xl tracking-[-0.04em] text-[var(--ink)]" id={titleId}>
-              {state.micro
-                ? 'What blocked the last step?'
-                : 'Tell us where the control plane breaks down'}
+              Beta feedback
             </h2>
             <p className="text-sm leading-6 text-[var(--muted)]" id={descriptionId}>
-              Feedback is stored with route and entity context so the beta backlog stays actionable.
+              {isSignedIn
+                ? 'Feedback is stored with route and entity context so the beta backlog stays actionable.'
+                : 'Sign in before submitting structured feedback so the beta backlog stays tied to a real workspace.'}
             </p>
           </div>
           <button
@@ -185,6 +196,27 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
           </button>
         </div>
 
+        {!isSignedIn ? (
+          <div className="mt-5 space-y-5">
+            <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+              <p className="font-medium text-[var(--ink)]">
+                {state.micro
+                  ? 'Sign in before reporting the blocked step.'
+                  : 'Sign in before sending structured beta feedback.'}
+              </p>
+              <p className="mt-2 text-sm leading-7 text-[var(--muted)]">
+                Auth happens before the form so feedback can be tied to the correct account, route,
+                and setup state from the first submission.
+              </p>
+            </div>
+            <AuthCtas
+              authSurfaceState={authSurfaceState}
+              layout="stack"
+              signInLabel="Sign in to send feedback"
+              signUpLabel="Create beta account"
+            />
+          </div>
+        ) : (
         <form className="mt-5 space-y-4" onSubmit={onSubmit}>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2 text-sm">
@@ -304,6 +336,7 @@ function FeedbackDrawerInner({ isSignedIn }: { isSignedIn: boolean }) {
             </button>
           </div>
         </form>
+        )}
       </aside>
     </>
   );
