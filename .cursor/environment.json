@@ -1,0 +1,181 @@
+{
+  "name": "Roster Development Environment",
+  "description": "Development environment for Roster — MCP prompt server with optional AWS integration",
+  "user": "local",
+  "version": "3.14.0",
+  "install": "pnpm install",
+  "start": "pnpm run dev",
+  "env": {
+    "NODE_ENV": "development",
+    "LOG_LEVEL": "debug",
+    "STORAGE_TYPE": "postgres",
+    "PORT": "3003",
+    "HOST": "0.0.0.0",
+    "MODE": "http",
+    "PROMPTS_DIR": "./data",
+    "POSTGRES_URL": "postgres://postgres:postgres@localhost:5432/mcp_prompts",
+    "AWS_REGION": "eu-north-1",
+    "AWS_PROFILE": "default",
+    "CDK_DEFAULT_REGION": "eu-north-1",
+    "CDK_DEFAULT_ACCOUNT": "${AWS_ACCOUNT_ID}",
+    "STRIPE_SECRET_KEY": "sk_test_...",
+    "STRIPE_WEBHOOK_SECRET": "whsec_..."
+  },
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile.mcp"
+  },
+  "aws": {
+    "region": "eu-north-1",
+    "stackName": "McpPromptsStack",
+    "apiUrl": "https://jaqwv7shwc.execute-api.eu-north-1.amazonaws.com/prod/",
+    "services": {
+      "dynamodb": {
+        "tableName": "mcp-prompts-table",
+        "region": "eu-north-1"
+      },
+      "s3": {
+        "bucketName": "mcp-prompts-storage",
+        "region": "eu-north-1"
+      },
+      "lambda": {
+        "functionName": "mcp-prompts-lambda",
+        "region": "eu-north-1"
+      },
+      "cloudwatch": {
+        "logGroup": "/aws/lambda/mcp-prompts-lambda",
+        "region": "eu-north-1"
+      }
+    }
+  },
+  "docker": {
+    "compose": {
+      "default": "docker-compose.yml",
+      "mcp": "docker-compose.mcp.yml"
+    },
+    "services": {
+      "roster": {
+        "port": "3003",
+        "healthcheck": "http://localhost:3003/health",
+        "volumes": ["./data:/app/data"]
+      }
+    }
+  },
+  "mcp": {
+    "inspector": {
+      "config": "mcp-inspector-config.json",
+      "port": 4000,
+      "servers": {
+        "roster-aws": {
+          "command": "npx",
+          "args": ["@maslowai/roster"],
+          "env": {
+            "STORAGE_TYPE": "aws",
+            "AWS_REGION": "eu-north-1",
+            "LOG_LEVEL": "debug"
+          }
+        },
+        "roster-local": {
+          "command": "npx",
+          "args": ["@maslowai/roster"],
+          "env": {
+            "STORAGE_TYPE": "memory",
+            "LOG_LEVEL": "debug"
+          }
+        }
+      }
+    }
+  },
+  "testing": {
+    "framework": "vitest",
+    "config": "vitest.config.ts",
+    "watch": true,
+    "coverage": false,
+    "scripts": {
+      "test": "vitest run",
+      "test:watch": "vitest",
+      "test:ui": "vitest --ui"
+    }
+  },
+  "monitoring": {
+    "healthcheck": "http://localhost:3003/health",
+    "metrics": {
+      "enabled": true,
+      "endpoint": "/metrics"
+    },
+    "logging": {
+      "level": "debug",
+      "format": "json",
+      "transport": "pino-pretty"
+    }
+  },
+  "development": {
+    "hotReload": true,
+    "nodemon": {
+      "config": "nodemon.json",
+      "watch": ["src/**/*"],
+      "ext": "ts,js,json"
+    },
+    "typescript": {
+      "config": "tsconfig.json",
+      "strict": true,
+      "sourceMap": true,
+      "declaration": true
+    }
+  },
+  "workspace": {
+    "recommendedExtensions": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "ms-vscode.vscode-typescript-next",
+      "@biomejs/biome",
+      "ms-azuretools.vscode-docker",
+      "amazonwebservices.aws-toolkit-vscode",
+      "ms-vscode.vscode-json",
+      "redhat.vscode-yaml",
+      "ms-vscode.vscode-node-azure-pack"
+    ],
+    "settings": {
+      "typescript.preferences.importModuleSpecifier": "relative",
+      "typescript.suggest.autoImports": true,
+      "typescript.updateImportsOnFileMove.enabled": "always",
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+      },
+      "eslint.experimental.useFlatConfig": true,
+      "npm.packageManager": "pnpm",
+      "files.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/.turbo": true,
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/cdk.out": true
+      },
+      "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/.turbo": true,
+        "**/cdk.out": true
+      },
+      "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/dist/**": true,
+        "**/.turbo/**": true,
+        "**/cdk.out/**": true
+      }
+    }
+  },
+  "paths": {
+    "src": "./src",
+    "dist": "./dist",
+    "data": "./data",
+    "scripts": "./scripts",
+    "docs": "./docs",
+    "examples": "./examples",
+    "packages": "./packages",
+    "apps": "./apps",
+    "cdk": "./cdk"
+  }
+}

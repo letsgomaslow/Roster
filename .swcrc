@@ -1,0 +1,22 @@
+{
+  "module": {
+    "type": "commonjs"
+  },
+  "jsc": {
+    "target": "es2020",
+    "parser": {
+      "syntax": "typescript",
+      "tsx": false
+    },
+    "transform": {
+      "optimizer": {
+        "globals": {
+          "vars": {
+            "process.env.NODE_ENV": "\"production\""
+          }
+        }
+      }
+    }
+  },
+  "sourceMaps": true
+}

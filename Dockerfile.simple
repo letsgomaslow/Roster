@@ -1,0 +1,18 @@
+FROM node:20-alpine
+
+# Install the mcp-prompts package globally
+RUN npm install -g @maslowai/roster
+
+# Create app user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S mcp-prompts -u 1001
+
+# Switch to non-root user
+USER mcp-prompts
+
+# Set environment for MCP mode
+ENV MODE=mcp
+ENV NODE_ENV=production
+
+# Start the MCP server using the standalone entry point
+CMD ["npx", "@maslowai/roster", "start"]

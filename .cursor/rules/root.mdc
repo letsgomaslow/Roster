@@ -1,0 +1,28 @@
+---
+globs: package.json, tsconfig.json, tsconfig.options.json
+alwaysApply: false
+---
+# Roster monorepo root rules
+
+## Build & Package Management
+- Use pnpm for all package operations
+- Build order: core → adapters → apps/server
+- Use `pnpm -r build` for full monorepo builds
+- Test with `pnpm -r test`
+
+## Import Strategy
+- Use workspace:* for internal dependencies
+- Import workspace packages as `@maslowai/*` (see package.json names)
+- Avoid circular dependencies
+
+## Code Style
+- ESLint 9.0+ flat config
+- Prettier for formatting
+- TypeScript strict mode
+- Use NodeNext module resolution
+
+## Architecture
+- Hexagonal architecture patterns
+- Ports (interfaces) in core/ports/
+- Adapters in separate packages
+- Pure domain logic in core/

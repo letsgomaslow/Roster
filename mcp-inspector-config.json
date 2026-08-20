@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "roster-aws": {
+      "command": "npx",
+      "args": ["-y", "@maslowai/roster"],
+      "env": {
+        "STORAGE_TYPE": "aws",
+        "AWS_REGION": "eu-north-1",
+        "LOG_LEVEL": "debug"
+      }
+    },
+    "roster-memory": {
+      "command": "npx",
+      "args": ["-y", "@maslowai/roster"],
+      "env": {
+        "STORAGE_TYPE": "memory",
+        "LOG_LEVEL": "debug"
+      }
+    }
+  }
+}

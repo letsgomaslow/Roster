@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "roster": {
+      "command": "npx",
+      "args": ["-y", "@maslowai/roster"],
+      "env": {
+        "STORAGE_TYPE": "mdc",
+        "PROMPTS_DIR": "./mdc-prompts",
+        "LOG_LEVEL": "debug",
+        "PORT": "3003",
+        "HOST": "0.0.0.0"
+      }
+    }
+  }
+}

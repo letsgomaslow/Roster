@@ -1,0 +1,21 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - dependabot
+  categories:
+    - title: 🚀 Features
+      labels:
+        - enhancement
+        - feature
+    - title: 🐛 Bugfixes
+      labels:
+        - bug
+        - fix
+    - title: 👒 Dependencies
+      labels:
+        - dependencies
+    - title: Other Changes
+      labels:
+        - '*'

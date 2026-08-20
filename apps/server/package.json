@@ -1,0 +1,17 @@
+{
+  "name": "@maslowai/sample-http-server",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "description": "Stale sample app; depends on packages not in this repo. Not part of workspace.",
+  "dependencies": {},
+  "scripts": {
+    "build": "swc src -d dist --copy-files",
+    "build:watch": "swc src -d dist --watch --copy-files",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  }
+}

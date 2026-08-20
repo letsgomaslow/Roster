@@ -1,0 +1,9 @@
+{
+  "name": "@maslowai/roster",
+  "version": "3.14.0",
+  "description": "Roster MCP server (Lambda layer bundle)",
+  "main": "dist/mcp-server-standalone.js",
+  "types": "dist/mcp-server-standalone.d.ts",
+  "license": "MIT",
+  "private": true
+}
