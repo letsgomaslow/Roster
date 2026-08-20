@@ -12,20 +12,20 @@ export function PageIntro({
 }: {
   eyebrow: string;
   title: string;
-  description: string;
+  description: ReactNode;
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-5 border-b border-[var(--line)] pb-6 md:flex-row md:items-end md:justify-between">
+    <div className="flex flex-col gap-4 border-b border-[var(--line)] pb-5 md:flex-row md:items-end md:justify-between">
       <div className="max-w-3xl space-y-3">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-[var(--strategy-strong)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--strategy-strong)]">
           {eyebrow}
         </p>
-        <div className="space-y-2">
-          <h1 className="font-heading text-balance text-3xl tracking-[-0.05em] text-[var(--ink)] md:text-[3.25rem]">
+        <div className="space-y-3">
+          <h1 className="font-heading text-balance text-3xl tracking-[-0.045em] text-[var(--ink)] md:text-[2.6rem]">
             {title}
           </h1>
-          <p className="max-w-2xl text-sm leading-7 text-[var(--muted)] md:text-[15px]">
+          <p className="max-w-2xl text-sm leading-7 text-[var(--ink-soft)] md:text-[15px]">
             {description}
           </p>
         </div>
@@ -51,19 +51,17 @@ export function Panel({
   action?: ReactNode;
 }) {
   const toneClasses = {
-    neutral: 'border-[var(--line)] bg-[var(--panel)] text-[var(--ink)] shadow-[var(--shadow-card)]',
-    dark: 'border-[rgba(255,255,255,0.14)] bg-[var(--panel-strong)] text-white shadow-[var(--shadow-panel-strong)] [background-image:var(--panel-strong-gradient)]',
-    tech: 'border-[var(--tech-soft)] bg-[linear-gradient(180deg,rgba(115,193,174,0.12),rgba(255,255,255,0.88))] text-[var(--ink)] shadow-[var(--shadow-card)]',
-    strategy:
-      'border-[var(--strategy-soft)] bg-[linear-gradient(180deg,rgba(160,112,166,0.11),rgba(255,255,255,0.88))] text-[var(--ink)] shadow-[var(--shadow-card)]',
-    attention:
-      'border-[var(--attention-soft)] bg-[linear-gradient(180deg,rgba(235,169,61,0.14),rgba(255,255,255,0.9))] text-[var(--ink)] shadow-[var(--shadow-card)]',
+    neutral: 'border-[var(--line)] bg-[var(--panel)] text-[var(--ink)]',
+    dark: 'border-[var(--panel-strong)] bg-[var(--panel-strong)] text-white',
+    tech: 'border-[var(--tech-soft)] bg-[var(--tech-wash)] text-[var(--ink)]',
+    strategy: 'border-[var(--strategy-soft)] bg-[var(--strategy-wash)] text-[var(--ink)]',
+    attention: 'border-[var(--attention-soft)] bg-[var(--attention-wash)] text-[var(--ink)]',
   } satisfies Record<PanelTone, string>;
 
   return (
     <section
       className={cx(
-        'group rounded-[28px] border px-5 py-5 transition duration-300 hover:-translate-y-0.5',
+        'border px-5 py-5',
         toneClasses[tone],
         className,
       )}
@@ -110,7 +108,7 @@ export function StatCard({
   return (
     <div
       className={cx(
-        'min-h-[168px] rounded-[24px] border px-4 py-4',
+        'min-h-[152px] border px-4 py-4',
         accent === 'strong'
           ? 'border-[rgba(255,255,255,0.14)] bg-white/8'
           : 'border-[var(--line)] bg-[var(--panel-soft)]',
@@ -167,7 +165,7 @@ export function Badge({
   return (
     <span
       className={cx(
-        'inline-flex min-h-8 items-center rounded-full border px-3 py-1.5 text-[12px] font-semibold tracking-[0.02em]',
+        'inline-flex min-h-8 items-center rounded-[var(--maslow-radius-capsule)] border px-3 py-1.5 text-[12px] font-semibold tracking-[0.02em]',
         tones[tone],
       )}
     >
@@ -192,7 +190,7 @@ export function ActionButton({
   disabled?: boolean;
 }) {
   const classes = cx(
-    'inline-flex min-h-11 items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium transition',
+    'inline-flex min-h-11 items-center justify-center px-4 py-2.5 text-sm font-semibold transition-colors',
     tone === 'primary' &&
       'bg-[var(--button-primary)] text-[var(--button-primary-ink)] hover:bg-[var(--button-primary-hover)]',
     tone === 'secondary' &&
@@ -230,17 +228,116 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="rounded-[24px] border border-dashed border-[var(--line)] bg-[var(--panel-soft)] px-5 py-8 text-sm text-[var(--muted)]">
-      <p className="font-medium text-[var(--ink)]">{title}</p>
+    <div className="border border-dashed border-[var(--line-strong)] bg-[var(--panel-soft)] px-5 py-8 text-sm text-[var(--muted)]">
+      <h2 className="font-semibold text-[var(--ink)]">{title}</h2>
       <p className="mt-2 max-w-xl leading-6">{description}</p>
       {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );
 }
 
+export function SurfaceNotice({
+  title,
+  description,
+  tone = 'neutral',
+  action,
+  live = false,
+}: {
+  title: string;
+  description: string;
+  tone?: 'neutral' | 'info' | 'warning' | 'error' | 'success';
+  action?: ReactNode;
+  live?: boolean;
+}) {
+  const toneClasses = {
+    neutral: 'border-[var(--line)] bg-[var(--panel-soft)] text-[var(--ink)]',
+    info: 'border-[var(--tech-soft)] bg-[var(--tech-wash)] text-[var(--ink)]',
+    warning: 'border-[var(--attention-soft)] bg-[var(--attention-wash)] text-[var(--ink)]',
+    error: 'border-[var(--error-soft)] bg-[rgba(213,44,44,0.08)] text-[var(--ink)]',
+    success: 'border-[rgba(44,213,82,0.28)] bg-[var(--success-soft)] text-[var(--ink)]',
+  } satisfies Record<'neutral' | 'info' | 'warning' | 'error' | 'success', string>;
+  const role =
+    tone === 'error' ? 'alert' : live && (tone === 'info' || tone === 'success') ? 'status' : undefined;
+
+  return (
+    <div className={cx('border px-4 py-4', toneClasses[tone])} role={role}>
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-[var(--ink)]">{title}</p>
+          <p className="max-w-3xl text-sm leading-6 text-[var(--muted)]">{description}</p>
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
+      </div>
+    </div>
+  );
+}
+
+export function SkeletonCardGrid({
+  count = 4,
+  detail = true,
+}: {
+  count?: number;
+  detail?: boolean;
+}) {
+  return (
+    <div aria-busy="true" aria-label="Loading library cards" role="status">
+      <div aria-hidden="true" className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: count }, (_, index) => (
+        <div
+          className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4"
+          key={`skeleton-card-${index + 1}`}
+        >
+          <div className="h-3 w-24 bg-[var(--panel-muted)]" />
+          <div className="mt-4 h-7 w-36 bg-[var(--panel-muted)]" />
+          {detail ? (
+            <>
+              <div className="mt-4 h-3 w-full bg-[var(--panel-muted)]" />
+              <div className="mt-2 h-3 w-3/4 bg-[var(--panel-muted)]" />
+            </>
+          ) : null}
+        </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function SkeletonList({
+  rows = 4,
+  dense = false,
+}: {
+  rows?: number;
+  dense?: boolean;
+}) {
+  return (
+    <div aria-busy="true" aria-label="Loading items" role="status">
+      <div aria-hidden="true" className="space-y-3">
+        {Array.from({ length: rows }, (_, index) => (
+        <div
+          className={cx(
+            'border border-[var(--line)] bg-[var(--panel-soft)] px-4',
+            dense ? 'py-3' : 'py-4',
+          )}
+          key={`skeleton-row-${index + 1}`}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <div className="h-4 w-40 bg-[var(--panel-muted)]" />
+              <div className="mt-3 h-3 w-full bg-[var(--panel-muted)]" />
+              <div className="mt-2 h-3 w-2/3 bg-[var(--panel-muted)]" />
+            </div>
+            <div className="h-7 w-20 bg-[var(--panel-muted)]" />
+          </div>
+        </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function CodeBlock({ value }: { value: string }) {
   return (
-    <pre className="overflow-x-auto rounded-[24px] border border-[rgba(255,255,255,0.14)] bg-[var(--panel-strong)] px-4 py-4 text-xs leading-6 text-[#d7e4ff] [background-image:var(--panel-strong-gradient)]">
+    <pre className="overflow-x-auto border border-[rgba(255,255,255,0.14)] bg-[var(--panel-strong)] px-4 py-4 text-xs leading-6 text-[#d7e4ff]">
       <code>{value}</code>
     </pre>
   );

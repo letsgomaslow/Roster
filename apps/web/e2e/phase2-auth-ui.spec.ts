@@ -44,6 +44,28 @@ test.describe('Auth UI and onboarding entry', () => {
     await expect(page.getByRole('button', { name: /sign in to continue/i })).toBeVisible();
   });
 
+  test('signed-out protected routes keep route-specific access gates', async ({ page }) => {
+    for (const route of [
+      {
+        path: '/library',
+        heading: /sign in to continue to prompt library/i,
+      },
+      {
+        path: '/integrations',
+        heading: /sign in to continue to integrations/i,
+      },
+      {
+        path: '/runs',
+        heading: /sign in to continue to orchestration runs/i,
+      },
+    ]) {
+      await page.goto(route.path);
+      await page.waitForLoadState('networkidle');
+      await expect(page.getByRole('heading', { level: 1, name: route.heading })).toBeVisible();
+      await expect(page.getByRole('button', { name: /sign in to continue/i })).toBeVisible();
+    }
+  });
+
   test('getting-started never renders the authenticated checklist when Clerk JS fails to load', async ({
     page,
   }) => {
@@ -66,6 +88,31 @@ test.describe('Auth UI and onboarding entry', () => {
         name: /finish setup before the dashboard takes over/i,
       }),
     ).toHaveCount(0);
+  });
+
+  test('protected routes stay route-true when Clerk JS fails to load', async ({ page }) => {
+    await page.route('**/npm/@clerk/clerk-js@*/dist/clerk.browser.js*', (route) => route.abort());
+
+    for (const route of [
+      {
+        path: '/library',
+        heading: /prompt library is unavailable until auth recovers/i,
+      },
+      {
+        path: '/runs/example-run',
+        heading: /orchestration runs is unavailable until auth recovers/i,
+      },
+    ]) {
+      await page.goto(route.path);
+      await page.waitForLoadState('networkidle');
+      await expect(page.getByRole('heading', { level: 1, name: route.heading })).toBeVisible();
+      await expect(
+        page.getByRole('heading', {
+          level: 1,
+          name: /public beta access for the roster mcp server control plane/i,
+        }),
+      ).toHaveCount(0);
+    }
   });
 
   test('signed-in users land on the onboarding checklist when storage state is present', async ({

@@ -1,73 +1,74 @@
 import { expect, test } from '@playwright/test';
 import { expectNoBlockingAxeViolations } from './a11y';
 
-const ROUTES = [
-  { path: '/', heading: /Public beta access for the Roster MCP server control plane/i },
-  { path: '/getting-started', heading: /Sign in to continue setup/i },
-  { path: '/library', heading: /Prompt search, filtering, and beta-ready editing/i },
-  { path: '/library/new', heading: /New prompt/i },
-  { path: '/agents', heading: /Subagents and main agents in one navigation path/i },
-  { path: '/agents/subagents/example-subagent', heading: /example-subagent/i },
-  { path: '/runs', heading: /Execution history, status, and report entry points/i },
-  { path: '/runs/example-run', heading: /example-run/i },
-  { path: '/integrations', heading: /Claude Desktop, Cursor, and generic MCP onboarding/i },
-  { path: '/settings', heading: /Usage, plan visibility, and feedback history/i },
+const CORE_ROUTES = [
+  { path: '/', heading: /Turn waiting work into trusted team workflows/i },
+  { path: '/getting-started', heading: /Your team’s best AI work, ready when you are/i },
+  { path: '/library', heading: /Sign in to open your team’s Library/i },
+  { path: '/library/new', heading: /Sign in to open your team’s Library/i },
+  { path: '/my-work', heading: /Sign in to continue your saved work/i },
+  { path: '/approvals', heading: /Sign in to review team work/i },
+  { path: '/integrations', heading: /Sign in to open the Setup Center/i },
+  { path: '/workspace-admin', heading: /Sign in to manage Library settings/i },
+  { path: '/advanced', heading: /Legacy Advanced tools are unavailable/i },
 ] as const;
 
-test.describe('Phase 3 accessibility', () => {
-  for (const route of ROUTES) {
+test.describe('Brand OS accessibility', () => {
+  for (const route of CORE_ROUTES) {
     test(`route ${route.path} has no critical or serious axe violations`, async ({ page }) => {
-      await page.goto(route.path);
-      await page.waitForLoadState('networkidle');
+      await page.goto(route.path, { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('main')).toBeVisible();
-      await expect(page.getByRole('heading', { level: 1, name: route.heading })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1, name: route.heading })).toBeVisible({
+        timeout: 15_000,
+      });
       await expectNoBlockingAxeViolations(page);
     });
   }
 
-  test('desktop overlays remain accessible', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await page.goto('/library');
-    await page.waitForLoadState('networkidle');
-    await page.getByRole('button', { name: /open command palette/i }).click();
-    await expect(page.getByRole('dialog', { name: /command palette/i })).toBeVisible();
+  test('the public first-use path is keyboard reachable', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const firstUseLink = page.getByRole('link', { name: /see how governance works/i });
+    await firstUseLink.focus();
+    await expect(firstUseLink).toBeFocused();
     await expectNoBlockingAxeViolations(page);
-    await page.keyboard.press('Escape');
-
-    await page.getByRole('button', { name: /share beta feedback/i }).click();
-    await expect(page.getByRole('dialog', { name: /beta feedback/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /sign in to send feedback/i })).toBeVisible();
-    await expectNoBlockingAxeViolations(page);
+    await firstUseLink.click();
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: /Your team’s best AI work, ready when you are/i,
+      }),
+    ).toBeVisible();
   });
 
-  test('mobile navigation drawer remains accessible', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await page.getByRole('button', { name: /menu/i }).click();
-    await expect(page.getByRole('dialog', { name: /primary navigation/i })).toBeVisible();
-    await expectNoBlockingAxeViolations(page);
-  });
+  test('core entry pages stay responsive on mobile and tablet', async ({ page }) => {
+    const assertions = [
+      { path: '/', heading: /Turn waiting work into trusted team workflows/i },
+      { path: '/getting-started', heading: /Your team’s best AI work, ready when you are/i },
+      { path: '/library', heading: /Sign in to open your team’s Library/i },
+      { path: '/integrations', heading: /Sign in to open the Setup Center/i },
+    ];
 
-  test('public beta entry stays responsive on mobile and tablet', async ({ page }) => {
     for (const viewport of [
-      { width: 390, height: 844 },
+      { width: 320, height: 720 },
       { width: 768, height: 1024 },
+      { width: 1024, height: 900 },
+      { width: 1440, height: 1000 },
     ]) {
       await page.setViewportSize(viewport);
-      await page.goto('/');
-      await page.waitForLoadState('networkidle');
-      await expect(
-        page.getByRole('heading', {
-          level: 1,
-          name: /Public beta access for the Roster MCP server control plane/i,
-        }),
-      ).toBeVisible();
-      const hasHorizontalOverflow = await page.evaluate(
-        () => document.documentElement.scrollWidth > window.innerWidth + 1,
-      );
-      expect(hasHorizontalOverflow).toBe(false);
+
+      for (const assertion of assertions) {
+        await page.goto(assertion.path, { waitUntil: 'domcontentloaded' });
+        await expect(
+          page.getByRole('heading', {
+            level: 1,
+            name: assertion.heading,
+          }),
+        ).toBeVisible({ timeout: 15_000 });
+        const hasHorizontalOverflow = await page.evaluate(
+          () => document.documentElement.scrollWidth > window.innerWidth + 1,
+        );
+        expect(hasHorizontalOverflow).toBe(false);
+      }
     }
   });
 });

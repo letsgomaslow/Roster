@@ -16,6 +16,7 @@ import { DynamoDBClient, GetItemCommand, UpdateItemCommand } from '@aws-sdk/clie
 import { PaymentService } from './core/services/payment.service';
 import { clerkMiddleware, getAuth, requireAuth } from '@clerk/express';
 import { convexAuthStorage, getCanonicalConvexOwnerId } from './lib/convex-auth-context.js';
+import { getLegacyAdvancedRuntimeAccess } from './lib/legacy-advanced-access.js';
 import { createPromptsSdkMcpServer } from './mcp/prompts-sdk-mcp-server.js';
 import { registerStreamableMcpRoutes } from './mcp/register-streamable-mcp.js';
 import { SlashCommandsService } from './core/services/slash-commands.service.js';
@@ -259,9 +260,6 @@ async function startServer() {
       app.use(cors());
       app.use(express.json());
 
-      // Serve static files
-      app.use(express.static('public'));
-
       // Health check endpoint (no auth)
       app.get('/health', async (req, res) => {
         try {
@@ -348,6 +346,39 @@ async function startServer() {
       });
 
       app.use(actualRateLimit);
+
+      const requireLegacyAdvancedRuntime = (
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+      ) => {
+        const runtimeAuth = hasClerkKeys ? getAuth(req) : null;
+        const access = getLegacyAdvancedRuntimeAccess({
+          enabledValue: process.env.ROSTER_LEGACY_ADVANCED_ENABLED,
+          environment: process.env.NODE_ENV,
+          hasClerkKeys,
+          insecureLocalValue: process.env.ROSTER_LEGACY_ADVANCED_ALLOW_INSECURE_LOCAL,
+          userId: runtimeAuth?.userId ?? undefined,
+          orgId: runtimeAuth?.orgId ?? undefined,
+          orgRole: runtimeAuth?.orgRole ?? undefined,
+        });
+        if (!access.allowed) {
+          res.status(access.status).json({ error: access.error });
+          return;
+        }
+        next();
+      };
+
+      // The legacy MCP/control-plane runtime is a single default-off boundary.
+      // Keep the signed Stripe webhook outside it; every other legacy route is gated here.
+      app.use('/mcp', requireLegacyAdvancedRuntime);
+      app.use('/v1', (req, res, next) => {
+        if (req.path === '/webhook/stripe') {
+          next();
+          return;
+        }
+        requireLegacyAdvancedRuntime(req, res, next);
+      });
 
       // MCP capabilities endpoint
       app.get('/mcp', (req, res) => {

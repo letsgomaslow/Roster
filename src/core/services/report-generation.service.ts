@@ -169,41 +169,47 @@ export class ReportGenerationService {
     html += `<!DOCTYPE html>\n<html>\n<head>\n`;
     html += `  <meta charset="UTF-8">\n`;
     html += `  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n`;
-    html += `  <title>Analysis Report - ${report.projectPath}</title>\n`;
+    html += `  <title>Analysis Report - ${this.escapeHtml(report.projectPath)}</title>\n`;
     html += `  <style>\n`;
-    html += `    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 40px; line-height: 1.6; }\n`;
-    html += `    .header { border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }\n`;
-    html += `    .metadata { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }\n`;
-    html += `    .metadata-item { background: #f5f5f5; padding: 15px; border-radius: 5px; }\n`;
-    html += `    .metadata-label { font-weight: bold; color: #666; }\n`;
-    html += `    h2 { border-left: 4px solid #0066cc; padding-left: 15px; margin-top: 40px; }\n`;
-    html += `    h3 { color: #333; }\n`;
-    html += `    .phase-result { background: #f9f9f9; padding: 20px; border-radius: 5px; margin-bottom: 15px; }\n`;
-    html += `    .recommendation { background: #fff; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 15px; }\n`;
-    html += `    .high { border-left-color: #dc3545; }\n`;
-    html += `    .medium { border-left-color: #ffc107; }\n`;
-    html += `    .low { border-left-color: #28a745; }\n`;
-    html += `    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }\n`;
-    html += `    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }\n`;
-    html += `    th { background-color: #f5f5f5; font-weight: bold; }\n`;
-    html += `    .confidence { display: inline-block; background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 3px; font-size: 0.9em; }\n`;
-    html += `    .error { background: #ffebee; color: #c62828; padding: 15px; border-radius: 5px; border-left: 4px solid #c62828; }\n`;
-    html += `    footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 0.9em; }\n`;
+    html += `    :root { --navy: #192332; --navy-deep: #121D35; --ink: #191F32; --text: #333333; --muted: #666666; --line: #E1E1E1; --off-white: #F6F7F9; --white: #FFFFFF; --pink: #EE7BB3; --purple: #654C8F; --success: #1E7C38; --error: #B42318; }\n`;
+    html += `    * { box-sizing: border-box; }\n`;
+    html += `    body { background: var(--off-white); color: var(--text); font-family: Manrope, Arial, sans-serif; margin: 0; line-height: 1.6; }\n`;
+    html += `    main { margin: 0 auto; max-width: 1200px; padding: 48px 32px; }\n`;
+    html += `    h1, h2, h3, h4 { color: var(--navy); font-family: "DM Sans", Manrope, Arial, sans-serif; }\n`;
+    html += `    .header { background: var(--navy); border-left: 5px solid var(--pink); color: var(--white); padding: 32px; margin-bottom: 24px; }\n`;
+    html += `    .header h1 { color: var(--white); margin: 0; }\n`;
+    html += `    .header p { color: #B8C4D9; margin-bottom: 0; }\n`;
+    html += `    .metadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin-bottom: 30px; background: var(--line); border: 1px solid var(--line); }\n`;
+    html += `    .metadata-item { background: var(--white); padding: 16px; }\n`;
+    html += `    .metadata-label, .confidence, code { color: var(--purple); font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }\n`;
+    html += `    h2 { border-left: 4px solid var(--pink); padding-left: 14px; margin-top: 40px; }\n`;
+    html += `    .phase-result, .recommendation { background: var(--white); border: 1px solid var(--line); padding: 20px; margin-bottom: 15px; }\n`;
+    html += `    .recommendation { border-left: 4px solid var(--purple); }\n`;
+    html += `    .high { border-left-color: var(--error); }\n`;
+    html += `    .medium { border-left-color: #7A5410; }\n`;
+    html += `    .low { border-left-color: var(--success); }\n`;
+    html += `    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; background: var(--white); }\n`;
+    html += `    th, td { border: 1px solid var(--line); padding: 12px; text-align: left; }\n`;
+    html += `    th { background-color: var(--navy); color: var(--white); font-family: "IBM Plex Mono", monospace; font-weight: 500; }\n`;
+    html += `    .confidence { display: inline-block; border: 1px solid var(--line); padding: 4px 8px; }\n`;
+    html += `    .error { background: var(--white); color: var(--error); padding: 15px; border: 1px solid var(--line); border-left: 4px solid var(--error); }\n`;
+    html += `    footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9em; }\n`;
+    html += `    @media (max-width: 640px) { main { padding: 24px 16px; } .metadata { grid-template-columns: 1fr; } }\n`;
     html += `  </style>\n`;
-    html += `</head>\n<body>\n`;
+    html += `</head>\n<body>\n<main>\n`;
 
     // Header
     html += `<div class="header">\n`;
     html += `  <h1>Analysis Report</h1>\n`;
-    html += `  <p>Comprehensive analysis results for ${report.projectPath}</p>\n`;
+    html += `  <p>Comprehensive analysis results for ${this.escapeHtml(report.projectPath)}</p>\n`;
     html += `</div>\n`;
 
     // Metadata
     html += `<div class="metadata">\n`;
     html += `  <div class="metadata-item"><span class="metadata-label">Project Path</span><br>${this.escapeHtml(report.projectPath)}</div>\n`;
-    html += `  <div class="metadata-item"><span class="metadata-label">Project Type</span><br>${report.projectType}</div>\n`;
-    html += `  <div class="metadata-item"><span class="metadata-label">Mode</span><br>${report.mode}</div>\n`;
-    html += `  <div class="metadata-item"><span class="metadata-label">Status</span><br><strong>${report.status}</strong></div>\n`;
+    html += `  <div class="metadata-item"><span class="metadata-label">Project Type</span><br>${this.escapeHtml(report.projectType)}</div>\n`;
+    html += `  <div class="metadata-item"><span class="metadata-label">Mode</span><br>${this.escapeHtml(report.mode)}</div>\n`;
+    html += `  <div class="metadata-item"><span class="metadata-label">Status</span><br><strong>${this.escapeHtml(report.status)}</strong></div>\n`;
     html += `</div>\n`;
 
     // Summary
@@ -284,7 +290,7 @@ export class ReportGenerationService {
     }
     html += `</footer>\n`;
 
-    html += `</body>\n</html>\n`;
+    html += `</main>\n</body>\n</html>\n`;
 
     return html;
   }
@@ -336,7 +342,7 @@ export class ReportGenerationService {
    */
   private formatValue(value: any): string {
     if (value === null || value === undefined) {
-      return '—';
+      return 'Not available';
     }
     if (typeof value === 'boolean') {
       return value ? 'Yes' : 'No';

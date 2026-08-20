@@ -2,249 +2,416 @@
 
 import Link from 'next/link';
 import { useDeferredValue, useState } from 'react';
-import { useQuery, useConvexAuth } from 'convex/react';
+import { useConvexAuth, useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { EmptyState, PageIntro, Panel, Badge } from '@/app/components/control-plane/primitives';
-import { useTrackPageView } from '@/app/components/control-plane/useProductEvents';
-import { convexEnabled } from '@/lib/convex-client';
-import { cx } from '@/lib/cx';
-import { formatNumber, formatPercent, formatRelativeDate, titleCase } from '@/lib/formatters';
+import { useWorkspace } from '@/app/components/work-library/WorkspaceContext';
+import {
+  ActionButton,
+  Badge,
+  EmptyState,
+  PageIntro,
+  Panel,
+  SkeletonList,
+  SurfaceNotice,
+} from '@/app/components/control-plane/primitives';
+import { formatRelativeDate } from '@/lib/formatters';
+import { buildWorkDescriptionPreview } from '@/lib/work-description';
+import {
+  activeTaxonomySelection,
+  activeTaxonomyTerms,
+  getActiveTaxonomyLabel,
+  getLibraryCardAction,
+  type WorkspaceTaxonomyTerm,
+} from '@/lib/work-library-ui';
+import { RouteStatusScreen } from './RouteStatusScreen';
 
-const PROMPT_TYPES = [
-  { value: '', label: 'All types' },
-  { value: 'standard', label: 'Standard' },
-  { value: 'subagent_registry', label: 'Subagents' },
-  { value: 'main_agent_template', label: 'Main agents' },
-  { value: 'project_orchestration_template', label: 'Project templates' },
-] as const;
+type LibraryScope = 'library' | 'my_work' | 'approvals';
 
-export function LibraryScreen() {
-  useTrackPageView('library_view', { route: '/library' });
+const SCOPE_COPY = {
+  library: {
+    eyebrow: 'Team library',
+    title: 'Find work worth reusing',
+    description:
+      'Search by the outcome you need, then use the team-approved version in your preferred AI tool.',
+  },
+  my_work: {
+    eyebrow: 'My work',
+    title: 'Keep drafts moving',
+    description:
+      'Return to work you own, improve it, and share it when it is ready for another person to use.',
+  },
+  approvals: {
+    eyebrow: 'Approvals',
+    title: 'Review work before the team trusts it',
+    description:
+      'Check the exact saved version, its purpose, and its evidence before approving it for wider use.',
+  },
+} as const;
 
+function trustLabel(state: string): string {
+  if (state === 'workspace_approved' || state === 'team_approved') return 'Approved';
+  if (state === 'shared') return 'Ready for review';
+  if (state === 'archived') return 'Archived';
+  return 'Private draft';
+}
+
+function trustTone(state: string): 'brand' | 'strategy' | 'info' | 'default' | 'warning' {
+  if (state === 'workspace_approved') return 'brand';
+  if (state === 'team_approved') return 'strategy';
+  if (state === 'shared') return 'info';
+  if (state === 'archived') return 'warning';
+  return 'default';
+}
+
+function LibraryCard({
+  item,
+  scope,
+  taxonomyTerms,
+}: {
+  item: {
+    assetId: string;
+    title: string;
+    purpose?: string;
+    kind: 'prompt' | 'playbook';
+    teamKey?: string;
+    jobKey?: string;
+    reviewState: string;
+    lastVerifiedAt: number | null;
+    updatedAt: number;
+    versionNumber: number;
+  };
+  scope: LibraryScope;
+  taxonomyTerms: readonly WorkspaceTaxonomyTerm[] | undefined;
+}) {
+  const action = getLibraryCardAction(scope, item.assetId);
+  const isReview = scope === 'approvals';
+  const purposePreview = buildWorkDescriptionPreview(item.purpose);
+  const teamLabel = getActiveTaxonomyLabel(taxonomyTerms, 'team', item.teamKey);
+  const jobLabel = getActiveTaxonomyLabel(taxonomyTerms, 'work_type', item.jobKey);
+  return (
+    <article
+      className={`flex h-full min-w-0 flex-col border border-[var(--line)] bg-white p-5 ${isReview ? 'border-l-4 border-l-[var(--attention)]' : ''}`}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge tone={item.kind === 'playbook' ? 'info' : 'default'}>
+          {item.kind === 'playbook' ? 'Playbook' : 'AI work'}
+        </Badge>
+        <Badge tone={trustTone(item.reviewState)}>{trustLabel(item.reviewState)}</Badge>
+      </div>
+      <div className="mt-5 flex-1">
+        <h2 className="line-clamp-2 font-heading text-xl tracking-[-0.035em] text-[var(--ink)] [overflow-wrap:anywhere]">{item.title}</h2>
+        {purposePreview.summary ? (
+          <p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--ink-soft)] [overflow-wrap:anywhere]">
+            {purposePreview.summary}
+          </p>
+        ) : null}
+      </div>
+      {teamLabel || jobLabel ? (
+        <dl className="mt-5 grid gap-3 border-t border-[var(--line)] pt-4 text-sm sm:grid-cols-2">
+          {teamLabel ? (
+            <div>
+              <dt className="text-xs text-[var(--muted)]">Team</dt>
+              <dd className="mt-1 font-medium text-[var(--ink)]">{teamLabel}</dd>
+            </div>
+          ) : null}
+          {jobLabel ? (
+            <div>
+              <dt className="text-xs text-[var(--muted)]">Work type</dt>
+              <dd className="mt-1 font-medium text-[var(--ink)]">{jobLabel}</dd>
+            </div>
+          ) : null}
+        </dl>
+      ) : null}
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone={item.lastVerifiedAt ? 'info' : 'warning'}>
+            {item.lastVerifiedAt
+              ? `Verified ${formatRelativeDate(item.lastVerifiedAt)}`
+              : 'Not yet verified'}
+          </Badge>
+          <Badge tone="default">Version {item.versionNumber}</Badge>
+          {!item.lastVerifiedAt ? (
+            <span className="text-xs text-[var(--muted)]">
+              Updated {formatRelativeDate(item.updatedAt)}
+            </span>
+          ) : null}
+        </div>
+        <ActionButton href={action.href} tone="primary">
+          {action.label}
+        </ActionButton>
+      </div>
+    </article>
+  );
+}
+
+function TaxonomyFilters({
+  teamKey,
+  jobKey,
+  setTeamKey,
+  setJobKey,
+  taxonomyTerms,
+}: {
+  teamKey: string;
+  jobKey: string;
+  setTeamKey: (value: string) => void;
+  setJobKey: (value: string) => void;
+  taxonomyTerms: readonly WorkspaceTaxonomyTerm[] | undefined;
+}) {
+  const selectClass =
+    'min-h-12 w-full border border-[var(--line-strong)] bg-white px-4 text-sm outline-none focus:border-[var(--strategy-strong)] focus:ring-2 focus:ring-[var(--focus-ring)] disabled:cursor-wait disabled:opacity-60';
+  const teamTerms = activeTaxonomyTerms(taxonomyTerms, 'team');
+  const jobTerms = activeTaxonomyTerms(taxonomyTerms, 'work_type');
+  const taxonomyLoading = taxonomyTerms === undefined;
+  return (
+    <>
+      <label className="space-y-2 text-sm font-medium text-[var(--ink)]">
+        Team
+        <select className={selectClass} disabled={taxonomyLoading} onChange={(event) => setTeamKey(event.target.value)} value={teamKey}>
+          <option value="">All teams</option>
+          {teamTerms.map((term) => <option key={term.key} value={term.key}>{term.label}</option>)}
+        </select>
+      </label>
+      <label className="space-y-2 text-sm font-medium text-[var(--ink)]">
+        Work type
+        <select className={selectClass} disabled={taxonomyLoading} onChange={(event) => setJobKey(event.target.value)} value={jobKey}>
+          <option value="">All outcomes</option>
+          {jobTerms.map((term) => <option key={term.key} value={term.key}>{term.label}</option>)}
+        </select>
+      </label>
+    </>
+  );
+}
+
+export function LibraryScreen({ scope = 'library' }: { scope?: LibraryScope }) {
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  const workspace = useWorkspace();
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
-  const [promptType, setPromptType] = useState<(typeof PROMPT_TYPES)[number]['value']>('');
-  const [layout, setLayout] = useState<'grid' | 'list'>('grid');
+  const [teamKey, setTeamKey] = useState('');
+  const [jobKey, setJobKey] = useState('');
   const deferredSearch = useDeferredValue(search.trim());
-
-  const { isAuthenticated } = useConvexAuth();
+  const hostedAuthConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
+  const taxonomyTerms = useQuery(
+    api.workLibrary.listTaxonomyTerms,
+    workspace.status === 'ready' ? {} : 'skip',
+  );
+  const activeTeamKey = activeTaxonomySelection(taxonomyTerms, 'team', teamKey);
+  const activeJobKey = activeTaxonomySelection(taxonomyTerms, 'work_type', jobKey);
   const library = useQuery(
-    api.prompts.listLibrary,
-    convexEnabled && isAuthenticated
+    api.workLibrary.listLibrary,
+    workspace.status === 'ready'
       ? {
+          scope,
           search: deferredSearch || undefined,
-          category: category || undefined,
-          promptType: (promptType || undefined) as
-            | 'standard'
-            | 'subagent_registry'
-            | 'main_agent_template'
-            | 'project_orchestration_template'
-            | undefined,
-          limit: 120,
+          teamKey: activeTeamKey || undefined,
+          jobKey: activeJobKey || undefined,
+          limit: 80,
         }
       : 'skip',
   );
+  const copy = SCOPE_COPY[scope];
 
-  const items = library?.items ?? [];
-  const categoryEntries = Object.entries(library?.facets.categories ?? {}).sort(
-    (a, b) => b[1] - a[1],
-  );
+  if (
+    workspace.status !== 'error' &&
+    (authLoading || (!isAuthenticated && workspace.status === 'bootstrapping'))
+  ) {
+    return (
+      <div className="space-y-8">
+        <PageIntro
+          description="Your signed-in workspace is connecting. This page will stay in place while the Library becomes available."
+          eyebrow="Team library"
+          title="Preparing your Library"
+        />
+        <SkeletonList rows={5} />
+      </div>
+    );
+  }
+
+  if (workspace.status === 'error') {
+    return (
+      <div className="space-y-8">
+        <PageIntro
+          description={copy.description}
+          eyebrow={copy.eyebrow}
+          title={copy.title}
+        />
+        <SurfaceNotice
+          description="Roster could not verify your workspace access. Reload and try again."
+          title="Your workspace could not be prepared"
+          tone="error"
+        />
+        {workspace.retry ? (
+          <ActionButton onClick={workspace.retry} tone="primary">
+            Reload workspace
+          </ActionButton>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="signed_out"
+        pathname={scope === 'library' ? '/library' : `/${scope.replace('_', '-')}`}
+      />
+    );
+  }
+
+  const canSave = workspace.status === 'ready' && workspace.role !== 'viewer';
+  const loading =
+    workspace.status === 'bootstrapping' || library === undefined || taxonomyTerms === undefined;
+  const canApprove =
+    workspace.role === 'owner' || workspace.role === 'admin' || workspace.role === 'curator';
+  const visibleItems = library?.items ?? [];
+
+  if (scope === 'approvals' && workspace.status === 'ready' && !canApprove) {
+    return (
+      <div className="space-y-8">
+        <PageIntro
+          description="Team curators and workspace admins review shared work before it becomes trusted."
+          eyebrow="Approvals"
+          title="Approval access is role-based"
+        />
+        <SurfaceNotice
+          description="You can still share your own work from My Work. A curator will see it here when it is ready."
+          title="Your current role does not include approvals"
+          tone="info"
+        />
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <PageIntro description={copy.description} eyebrow={copy.eyebrow} title={copy.title} />
+        <section aria-busy="true" aria-live="polite">
+          <p className="mb-4 text-sm font-semibold text-[var(--ink)]">
+            {scope === 'approvals' ? 'Loading review queue' : 'Loading useful work'}
+          </p>
+          <SkeletonList rows={5} />
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
       <PageIntro
         actions={
-          <>
-            <button
-              aria-pressed={layout === 'list'}
-              className="inline-flex items-center justify-center rounded-full border border-[var(--line)] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
-              onClick={() => setLayout((current) => (current === 'grid' ? 'list' : 'grid'))}
-              type="button"
-            >
-              {layout === 'grid' ? 'List view' : 'Grid view'}
-            </button>
-            <Link
-              className="inline-flex items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
-              href="/library/new"
-            >
-              New prompt
-            </Link>
-          </>
+          scope === 'approvals' || !canSave ? undefined : (
+            <ActionButton href="/library/new" tone="primary">
+              Save new work
+            </ActionButton>
+          )
         }
-        description="This is the read-heavy part of the beta. It uses direct Convex reads for instant filtering and keeps the editor and template actions on the BFF so write flows still respect the backend contract."
-        eyebrow="Prompt Library"
-        title="Prompt search, filtering, and beta-ready editing"
+        description={copy.description}
+        eyebrow={copy.eyebrow}
+        title={copy.title}
       />
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_280px]">
-        <div className="space-y-5">
-          <Panel
-            subtitle="Everything important should be reachable with one search field and one visible primary action."
-            title="Filters"
-            tone="strategy"
-          >
-            <div className="grid gap-3 lg:grid-cols-[1.4fr_0.7fr_0.7fr]">
-              <label className="space-y-2 text-sm">
-                <span className="text-[var(--muted)]">Search library</span>
-                <input
-                  className="w-full rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Prompt name, tag, template text"
-                  value={search}
-                />
-              </label>
-              <label className="space-y-2 text-sm">
-                <span className="text-[var(--muted)]">Prompt type</span>
-                <select
-                  className="w-full rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
-                  onChange={(event) => setPromptType(event.target.value as typeof promptType)}
-                  value={promptType}
-                >
-                  {PROMPT_TYPES.map((item) => (
-                    <option key={item.value || 'all'} value={item.value}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="space-y-2 text-sm">
-                <span className="text-[var(--muted)]">Category</span>
-                <select
-                  className="w-full rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
-                  onChange={(event) => setCategory(event.target.value)}
-                  value={category}
-                >
-                  <option value="">All categories</option>
-                  {categoryEntries.map(([name, count]) => (
-                    <option key={name} value={name}>
-                      {name} ({count})
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </Panel>
+      <Panel
+        subtitle="Start with the result you need. Narrow by the team-owned categories only when helpful."
+        title={scope === 'approvals' ? 'Choose work to review' : 'What do you need to get done?'}
+        tone="strategy"
+      >
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_240px]">
+          <label className="space-y-2 text-sm font-medium text-[var(--ink)]">
+            Search by outcome
+            <input
+              className="min-h-12 w-full border border-[var(--line-strong)] bg-white px-4 text-sm outline-none transition-colors focus:border-[var(--strategy-strong)] focus:ring-2 focus:ring-[var(--focus-ring)]"
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Describe the result you need…"
+              type="search"
+              value={search}
+            />
+          </label>
+          <div className="hidden lg:contents">
+            <TaxonomyFilters
+              jobKey={activeJobKey}
+              setJobKey={setJobKey}
+              setTeamKey={setTeamKey}
+              taxonomyTerms={taxonomyTerms}
+              teamKey={activeTeamKey}
+            />
+          </div>
+        </div>
+        <details className="mt-4 border border-[var(--line-strong)] bg-white lg:hidden">
+          <summary className="min-h-12 cursor-pointer px-4 py-3 text-sm font-semibold text-[var(--ink)] focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-[var(--focus-ring-solid)] focus-visible:outline-offset-2">
+            Filters
+          </summary>
+          <div className="grid gap-4 border-t border-[var(--line)] p-4">
+            <TaxonomyFilters
+              jobKey={activeJobKey}
+              setJobKey={setJobKey}
+              setTeamKey={setTeamKey}
+              taxonomyTerms={taxonomyTerms}
+              teamKey={activeTeamKey}
+            />
+          </div>
+        </details>
+      </Panel>
 
-          <Panel
-            action={<Badge tone="info">{formatNumber(items.length)} visible</Badge>}
-            subtitle="Click into any item to edit, preview variables, and inspect version history."
-            title="Results"
-          >
-            {items.length ? (
-              <div
-                className={cx('gap-4', layout === 'grid' ? 'grid md:grid-cols-2' : 'flex flex-col')}
-              >
-                {items.map((item) => (
-                  <Link
-                    className={cx(
-                      'rounded-[26px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 transition hover:-translate-y-0.5 hover:bg-white',
-                      layout === 'list' && 'grid grid-cols-[1.1fr_0.5fr_0.4fr] items-center gap-4',
-                    )}
-                    href={`/library/${encodeURIComponent(item.promptId)}`}
-                    key={item.promptId}
-                  >
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-medium text-[var(--ink)]">{item.name}</p>
-                        <Badge>{titleCase(item.promptType)}</Badge>
-                        <Badge tone="info">{item.category}</Badge>
-                      </div>
-                      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                        {item.description || 'No description yet.'}
-                      </p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {item.tags.slice(0, 4).map((tag) => (
-                          <span
-                            className="rounded-full border border-[var(--line)] px-2 py-1 text-[11px] text-[var(--muted)]"
-                            key={tag}
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center gap-3 text-sm text-[var(--muted)] md:mt-0 md:flex-col md:items-start">
-                      <span>{formatNumber(item.variableCount)} variables</span>
-                      <span>{formatNumber(item.executionCount)} executions</span>
-                      <span>{formatPercent(item.successRate)}</span>
-                    </div>
-                    <p className="mt-4 text-xs text-[var(--muted)] md:mt-0">
-                      Updated {formatRelativeDate(item.updatedAt)}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                action={
-                  <Link
-                    className="inline-flex items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
-                    href="/library/new"
-                  >
-                    Create a prompt
-                  </Link>
-                }
-                description="No items matched the current filters. The beta library should always give users an obvious way to recover by clearing filters or creating a new prompt."
-                title="No prompts match this view"
-              />
-            )}
-          </Panel>
+      <section aria-live="polite">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[var(--ink)]">
+              {visibleItems.length} {visibleItems.length === 1 ? 'item' : 'items'}
+            </p>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              {workspace.name ? `In ${workspace.name}` : 'Preparing your workspace'}
+            </p>
+          </div>
+          {search || activeTeamKey || activeJobKey ? (
+            <button
+              className="min-h-11 border border-[var(--line)] px-4 text-sm font-medium text-[var(--ink)]"
+              onClick={() => {
+                setSearch('');
+                setTeamKey('');
+                setJobKey('');
+              }}
+              type="button"
+            >
+              Clear filters
+            </button>
+          ) : null}
         </div>
 
-        <div className="space-y-5">
-          <Panel
-            subtitle="These facets should stay useful even when the library grows."
-            title="Category facets"
-            tone="tech"
-          >
-            {categoryEntries.length ? (
-              <div className="space-y-2">
-                {categoryEntries.slice(0, 12).map(([name, count]) => (
-                  <button
-                    className={cx(
-                      'flex w-full items-center justify-between rounded-[18px] border px-3 py-3 text-left transition',
-                      category === name
-                        ? 'border-[var(--strategy-soft)] bg-[var(--strategy-wash)]'
-                        : 'border-[var(--line)] bg-[var(--panel-soft)] hover:bg-white',
-                    )}
-                    key={name}
-                    onClick={() => setCategory((current) => (current === name ? '' : name))}
-                    type="button"
-                  >
-                    <span className="text-sm font-medium text-[var(--ink)]">{name}</span>
-                    <span className="text-xs text-[var(--muted)]">{formatNumber(count)}</span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                description="Facet counts appear once Convex is seeded with prompt data."
-                title="No categories yet"
+        {visibleItems.length ? (
+          <div className={scope === 'approvals' ? 'space-y-4' : 'grid gap-5 xl:grid-cols-2'}>
+            {visibleItems.map((item) => (
+              <LibraryCard
+                item={item}
+                key={item.assetId}
+                scope={scope}
+                taxonomyTerms={taxonomyTerms}
               />
-            )}
-          </Panel>
-
-          <Panel
-            subtitle="The beta should make specialized prompt types obvious, not hidden in docs."
-            title="Prompt type mix"
-            tone="strategy"
-          >
-            <div className="space-y-3">
-              {Object.entries(library?.facets.promptTypes ?? {}).map(([name, count]) => (
-                <div
-                  className="rounded-[18px] border border-[var(--line)] bg-[var(--panel-soft)] px-3 py-3"
-                  key={name}
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            action={
+              scope === 'approvals' || !canSave ? undefined : (
+                <Link
+                  className="inline-flex min-h-11 items-center bg-[var(--button-primary)] px-4 text-sm font-semibold text-[var(--button-primary-ink)]"
+                  href="/library/new"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-[var(--ink)]">{titleCase(name)}</span>
-                    <span className="text-xs text-[var(--muted)]">{formatNumber(count)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        </div>
-      </div>
+                  Save your first AI work
+                </Link>
+              )
+            }
+            description={
+              scope === 'approvals'
+                ? 'Shared work appears here when a contributor asks the team to review it.'
+                : canSave
+                  ? 'Paste AI instructions or work your team already uses.'
+                  : 'Try a different filter, or ask a contributor to add work your team can reuse.'
+            }
+            title={scope === 'approvals' ? 'Nothing is waiting for review' : 'No work matches this view'}
+          />
+        )}
+      </section>
     </div>
   );
 }

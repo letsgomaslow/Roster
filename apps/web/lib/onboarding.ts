@@ -1,114 +1,110 @@
-import type { DashboardApiPayload, DashboardSnapshot } from './roster-types';
-
-export type ChecklistStepId =
-  | 'connect_host'
-  | 'verify_setup'
-  | 'create_prompt'
-  | 'run_orchestration';
-
-export type UserOnboardingState = {
-  ownerUserId: string;
-  checklistStepStates: {
-    connectHostCompletedAt?: number;
-    verifySetupCompletedAt?: number;
-    createPromptCompletedAt?: number;
-    runOrchestrationCompletedAt?: number;
-  };
-  checklistDismissedAt: number | null;
-  onboardingCompletedAt: number | null;
-  updatedAt: number | null;
-};
-
-export type OnboardingStep = {
-  id: ChecklistStepId;
+export type FirstUseChoice = {
+  id: 'use_trusted_work' | 'save_my_work' | 'browse_library';
   title: string;
   description: string;
-  href: string;
+  href: '/library' | '/library/new';
+  actionLabel: string;
+};
+
+const FIRST_USE_CHOICES: FirstUseChoice[] = [
+  {
+    id: 'use_trusted_work',
+    title: 'Use trusted work',
+    description: 'Fill in a few details and use work your team already shared.',
+    href: '/library',
+    actionLabel: 'Find trusted work',
+  },
+  {
+    id: 'save_my_work',
+    title: 'Save my work',
+    description: 'Paste a prompt or upload a document you want to reuse.',
+    href: '/library/new',
+    actionLabel: 'Save useful work',
+  },
+  {
+    id: 'browse_library',
+    title: 'Browse the Library',
+    description: 'Explore reusable work from across your workspace.',
+    href: '/library',
+    actionLabel: 'Browse the Library',
+  },
+];
+
+export function getFirstUseChoices(): FirstUseChoice[] {
+  return FIRST_USE_CHOICES.map((choice) => ({ ...choice }));
+}
+
+export type OwnerSetupStep = {
+  id: 'workspace' | 'starter' | 'invite';
+  title: string;
+  description: string;
   complete: boolean;
-  completionSource: 'manual' | 'live';
-  ctaLabel: string;
+  optional: boolean;
 };
 
-type BuildArgs = {
-  profile?: UserOnboardingState | null;
-  snapshot?: DashboardSnapshot | null;
-  dashboard?: DashboardApiPayload | null;
-};
-
-export function buildOnboardingSteps({
-  profile,
-  snapshot,
-  dashboard,
-}: BuildArgs): OnboardingStep[] {
-  const toolCount = dashboard?.tools?.data?.length ?? 0;
-  const runCount = dashboard?.runs?.data?.executions?.length ?? 0;
-  const hasHealthyServer = dashboard?.health?.data?.status === 'healthy';
-  const verifySetupComplete =
-    Boolean(profile?.checklistStepStates.verifySetupCompletedAt) ||
-    (hasHealthyServer && toolCount > 0);
-  const createPromptComplete =
-    Boolean(profile?.checklistStepStates.createPromptCompletedAt) ||
-    (snapshot?.counts.total ?? 0) > 0;
-  const runOrchestrationComplete =
-    Boolean(profile?.checklistStepStates.runOrchestrationCompletedAt) || runCount > 0;
-
+export function buildOwnerSetupSteps({
+  workspaceReady,
+  usefulWorkReady,
+  teammateReady,
+}: {
+  workspaceReady: boolean;
+  usefulWorkReady: boolean;
+  teammateReady: boolean;
+}): OwnerSetupStep[] {
   return [
     {
-      id: 'connect_host',
-      title: 'Connect an MCP host',
-      description:
-        'Generate a host config, point Claude Desktop or Cursor at the server, and confirm the app knows you reached setup.',
-      href: '/integrations',
-      complete: Boolean(profile?.checklistStepStates.connectHostCompletedAt),
-      completionSource: 'manual',
-      ctaLabel: 'Open integrations',
+      id: 'workspace',
+      title: 'Workspace ready',
+      description: 'Roster keeps your team’s reusable work together in one private workspace.',
+      complete: workspaceReady,
+      optional: false,
     },
     {
-      id: 'verify_setup',
-      title: 'Verify server health and tool discovery',
-      description:
-        'The server should answer `/health` and expose at least one MCP tool before beta users continue.',
-      href: '/integrations',
-      complete: verifySetupComplete,
-      completionSource: 'live',
-      ctaLabel: 'Check setup status',
+      id: 'starter',
+      title: 'Save first work',
+      description: 'Start with reviewable examples so your Library is useful from day one.',
+      complete: usefulWorkReady,
+      optional: false,
     },
     {
-      id: 'create_prompt',
-      title: 'Create the first prompt',
-      description:
-        'A real beta account should be able to create and save a prompt without leaving the product.',
-      href: '/library/new',
-      complete: createPromptComplete,
-      completionSource: 'live',
-      ctaLabel: 'Create prompt',
-    },
-    {
-      id: 'run_orchestration',
-      title: 'Run the first orchestration',
-      description:
-        'Execution history should show at least one traceable run so the workspace reads like a working control plane.',
-      href: '/runs',
-      complete: runOrchestrationComplete,
-      completionSource: 'live',
-      ctaLabel: 'Open runs',
+      id: 'invite',
+      title: 'Invite a teammate',
+      description: 'Bring someone in when there is useful work ready for them. You can do this later.',
+      complete: teammateReady,
+      optional: true,
     },
   ];
 }
 
-export function isOnboardingComplete(steps: OnboardingStep[]) {
-  return steps.every((step) => step.complete);
+export function getOwnerPrimaryStep(steps: OwnerSetupStep[]): OwnerSetupStep | null {
+  return steps.find((step) => !step.complete && !step.optional) ?? null;
 }
 
-export function shouldShowOnboardingModule(
-  profile: UserOnboardingState | null | undefined,
-  steps: OnboardingStep[],
-) {
-  if (!steps.some((step) => !step.complete)) {
-    return false;
-  }
-  if (profile?.onboardingCompletedAt) {
-    return false;
-  }
-  return !profile?.checklistDismissedAt;
+export type HomeGalleryItem = {
+  assetId: string;
+  title: string;
+  purpose?: string;
+  reviewState: string;
+  updatedAt: number;
+  versionNumber?: number;
+  isFavorite?: boolean;
+};
+
+export function selectHomeGalleryItems({
+  library,
+  myWork,
+}: {
+  library: HomeGalleryItem[];
+  myWork: HomeGalleryItem[];
+}) {
+  const byRecent = (left: HomeGalleryItem, right: HomeGalleryItem) =>
+    right.updatedAt - left.updatedAt;
+  const approved = (item: HomeGalleryItem) =>
+    item.reviewState === 'team_approved' || item.reviewState === 'workspace_approved';
+
+  return {
+    continueWorking: [...myWork].sort(byRecent).slice(0, 3),
+    favorites: library.filter((item) => item.isFavorite).sort(byRecent).slice(0, 3),
+    recentlyApproved: library.filter(approved).sort(byRecent).slice(0, 3),
+  };
 }

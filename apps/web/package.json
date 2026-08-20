@@ -15,10 +15,16 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.8",
-    "convex": "^1.34.1",
+    "@maslow-ai/brand-os": "file:../../vendor/maslow-brand-os",
+    "convex": "^1.44.0",
+    "fflate": "0.8.3",
+    "mammoth": "1.12.1",
     "next": "16.2.2",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-markdown": "10.1.0",
+    "remark-gfm": "4.0.1",
+    "unpdf": "1.8.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
@@ -30,6 +36,7 @@
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vite": "^8.2.2",
     "vitest": "^4.1.2"
   }
 }

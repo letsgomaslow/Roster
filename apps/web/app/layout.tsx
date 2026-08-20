@@ -4,15 +4,15 @@ import { getClerkEnvironmentDiagnostic } from '@/lib/clerk-diagnostics';
 import { AppProviders } from '@/app/components/AppProviders';
 import { ClerkBootstrapBoundary } from '@/app/components/ClerkBootstrapBoundary';
 import { ControlPlaneShell } from '@/app/components/control-plane/ControlPlaneShell';
-import { manrope } from './fonts';
+import { dmSans, ibmPlexMono, manrope } from './fonts';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Roster | Maslow AI',
+    default: 'Roster | AI Work Library | Maslow AI',
     template: '%s | Roster',
   },
-  description: 'Maslow AI control plane for the Roster MCP server',
+  description: 'Save reusable AI work once, review it as a team, and use it across your AI tools.',
 };
 
 const AFTER_AUTH_URL =
@@ -33,19 +33,19 @@ const clerkAppearance = {
     colorInputText: '#192332',
     colorDanger: '#8c2222',
     fontFamily: 'var(--font-ui)',
-    borderRadius: '20px',
+    borderRadius: '0px',
   },
   elements: {
-    card: 'shadow-none border border-[#e1e6ef] rounded-[28px] bg-white',
+    card: 'shadow-none border border-[#e1e6ef] rounded-none bg-white',
     headerTitle: 'text-[#192332]',
     headerSubtitle: 'text-[#666666]',
     socialButtonsBlockButton:
-      'rounded-full border border-[#d7dde8] min-h-11 text-[#192332] hover:bg-[#f6f7f9]',
+      'rounded-none border border-[#d7dde8] min-h-11 text-[#192332] hover:bg-[#f6f7f9]',
     socialButtonsBlockButtonText: 'font-semibold',
     formButtonPrimary:
-      'rounded-full min-h-11 bg-[#192332] text-white shadow-none hover:bg-[#243356]',
+      'rounded-none min-h-11 bg-[#192332] text-white shadow-none hover:bg-[#243356]',
     formFieldInput:
-      'rounded-[20px] border border-[#d7dde8] bg-white text-[#192332] focus:ring-[#73c1ae]',
+      'rounded-none border border-[#d7dde8] bg-white text-[#192332] focus:ring-[#73c1ae]',
     footerActionLink: 'text-[#654c8f] font-semibold',
     formFieldLabel: 'text-[#4b5565] font-medium',
     identityPreviewEditButton: 'text-[#654c8f] font-semibold',
@@ -59,7 +59,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${manrope.variable} min-h-screen`}>
+      <body className={`${manrope.variable} ${dmSans.variable} ${ibmPlexMono.variable} min-h-screen`}>
         {clerkEnabled ? (
           <ClerkProvider
             afterSignOutUrl="/"

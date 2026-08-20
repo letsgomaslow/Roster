@@ -1,19 +1,19 @@
 import type { Metadata } from 'next';
 
-import { PromptDetailScreen } from '@/app/components/screens/PromptDetailScreen';
+import { AssetDetailScreen } from '@/app/components/screens/AssetDetailScreen';
 
 type PageProps = {
   params: Promise<{ promptId: string }>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { promptId } = await params;
+  await params;
   return {
-    title: promptId === 'new' ? 'New Prompt' : 'Prompt Detail',
+    title: 'Work Detail',
   };
 }
 
 export default async function PromptDetailPage({ params }: PageProps) {
   const { promptId } = await params;
-  return <PromptDetailScreen promptId={promptId} />;
+  return <AssetDetailScreen assetId={promptId} />;
 }

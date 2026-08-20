@@ -164,7 +164,7 @@ function FeedbackDrawerInner({
         aria-labelledby={titleId}
         aria-modal="true"
         className={cx(
-          'fixed inset-y-4 right-4 z-50 w-[min(92vw,460px)] rounded-[32px] border border-[var(--line)] bg-[var(--panel)] p-5 shadow-[var(--shadow-panel-strong)] backdrop-blur-xl transition duration-300',
+          'fixed inset-y-4 right-4 z-50 w-[min(92vw,460px)] border border-[var(--line)] bg-[var(--panel)] p-5 shadow-[var(--shadow-panel-strong)] backdrop-blur-xl transition duration-300',
           open ? 'translate-x-0 opacity-100' : 'translate-x-6 opacity-0 pointer-events-none',
         )}
         hidden={!open}
@@ -187,7 +187,7 @@ function FeedbackDrawerInner({
             </p>
           </div>
           <button
-            className="min-h-11 rounded-full border border-[var(--line)] bg-white/70 px-3 py-1.5 text-sm text-[var(--muted)] transition hover:bg-white"
+            className="min-h-11 border border-[var(--line)] bg-white/70 px-3 py-1.5 text-sm text-[var(--muted)] transition hover:bg-white"
             onClick={() => setOpen(false)}
             ref={closeButtonRef}
             type="button"
@@ -198,7 +198,7 @@ function FeedbackDrawerInner({
 
         {!isSignedIn ? (
           <div className="mt-5 space-y-5">
-            <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+            <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
               <p className="font-medium text-[var(--ink)]">
                 {state.micro
                   ? 'Sign in before reporting the blocked step.'
@@ -224,7 +224,7 @@ function FeedbackDrawerInner({
                 Type
               </span>
               <select
-                className="w-full rounded-2xl border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
                 id={typeId}
                 onChange={(event) =>
                   setState((current) => ({
@@ -244,7 +244,7 @@ function FeedbackDrawerInner({
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Severity</span>
               <select
-                className="w-full rounded-2xl border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
                 id={severityId}
                 onChange={(event) =>
                   setState((current) => ({
@@ -267,7 +267,7 @@ function FeedbackDrawerInner({
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Page</span>
               <input
-                className="w-full rounded-2xl border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
                 id={pageId}
                 onChange={(event) =>
                   setState((current) => ({ ...current, page: event.target.value }))
@@ -278,7 +278,7 @@ function FeedbackDrawerInner({
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Route</span>
               <input
-                className="w-full rounded-2xl border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 font-mono text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 font-mono text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
                 id={routeId}
                 onChange={(event) =>
                   setState((current) => ({ ...current, route: event.target.value }))
@@ -293,7 +293,7 @@ function FeedbackDrawerInner({
             <textarea
               aria-describedby={error ? errorId : statusId}
               aria-invalid={error ? 'true' : 'false'}
-              className="min-h-40 w-full rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
+              className="min-h-40 w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] outline-none transition focus:border-[var(--focus-ring-solid)]"
               id={messageId}
               onChange={(event) =>
                 setState((current) => ({ ...current, message: event.target.value }))
@@ -306,7 +306,7 @@ function FeedbackDrawerInner({
 
           {error ? (
             <div
-              className="rounded-2xl border border-[var(--error-soft)] bg-[rgba(213,44,44,0.08)] px-4 py-3 text-sm text-[var(--error)]"
+              className="border border-[var(--error-soft)] bg-[rgba(213,44,44,0.08)] px-4 py-3 text-sm text-[var(--error)]"
               id={errorId}
               role="alert"
             >
@@ -328,7 +328,7 @@ function FeedbackDrawerInner({
                   : 'Stored with route metadata and optional entity context.'}
             </p>
             <button
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)] disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)] disabled:opacity-60"
               disabled={status === 'saving' || state.message.trim().length < 10}
               type="submit"
             >

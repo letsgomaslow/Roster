@@ -157,7 +157,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       />
       <div
         className={cx(
-          'fixed left-1/2 top-20 z-[60] w-[min(92vw,840px)] -translate-x-1/2 rounded-[34px] border border-[var(--line)] bg-[var(--panel)] p-4 shadow-[var(--shadow-panel-strong)] backdrop-blur-xl transition duration-300',
+          'fixed left-1/2 top-20 z-[60] w-[min(92vw,840px)] -translate-x-1/2 border border-[var(--line)] bg-[var(--panel)] p-4 shadow-[var(--shadow-panel-strong)] backdrop-blur-xl transition duration-300',
           open ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none',
         )}
         aria-describedby={descriptionId}
@@ -182,7 +182,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             </p>
           </div>
         </div>
-        <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3">
+        <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3">
           <label className="sr-only" htmlFor={inputId}>
             Search commands and prompts
           </label>
@@ -198,14 +198,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         </div>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="rounded-[28px] border border-[var(--strategy-soft)] bg-[linear-gradient(180deg,rgba(160,112,166,0.1),rgba(255,255,255,0.9))] p-3">
+          <section className="border border-[var(--strategy-soft)] bg-[var(--panel-soft)] p-3">
             <p className="px-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
               Navigation
             </p>
             <div className="mt-2 space-y-1">
               {staticMatches.map((item) => (
                 <Link
-                  className="block rounded-[20px] px-3 py-3 transition hover:bg-white/90"
+                  className="block px-3 py-3 transition hover:bg-white/90"
                   href={item.href}
                   key={item.id}
                   onClick={() => closePalette()}
@@ -218,14 +218,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           </section>
 
           <section className="grid gap-4">
-            <div className="rounded-[28px] border border-[var(--tech-soft)] bg-[linear-gradient(180deg,rgba(115,193,174,0.1),rgba(255,255,255,0.9))] p-3">
+            <div className="border border-[var(--tech-soft)] bg-[var(--panel-soft)] p-3">
               <p className="px-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                 Actions
               </p>
               <div className="mt-2 space-y-1">
                 {actionMatches.map((item) => (
                   <button
-                    className="block w-full rounded-[20px] px-3 py-3 text-left transition hover:bg-white/90"
+                    className="block w-full px-3 py-3 text-left transition hover:bg-white/90"
                     key={item.id}
                     onClick={item.action}
                     type="button"
@@ -237,7 +237,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-[var(--line)] bg-[var(--panel-soft)] p-3">
+            <div className="border border-[var(--line)] bg-[var(--panel-soft)] p-3">
               <div className="flex items-center justify-between px-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                   Prompt Search
@@ -250,7 +250,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 {library?.items?.length ? (
                   library.items.slice(0, 6).map((item) => (
                     <button
-                      className="block w-full rounded-[20px] px-3 py-3 text-left transition hover:bg-white/90"
+                      className="block w-full px-3 py-3 text-left transition hover:bg-white/90"
                       key={item.promptId}
                       onClick={() => {
                         closePalette();
@@ -260,7 +260,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                     >
                       <div className="flex items-center justify-between gap-3">
                         <p className="font-medium text-[var(--ink)]">{item.name}</p>
-                        <span className="rounded-full border border-[var(--line)] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
+                        <span className="border border-[var(--line)] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
                           {titleCase(item.promptType)}
                         </span>
                       </div>
@@ -273,7 +273,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                     </button>
                   ))
                 ) : (
-                  <div className="rounded-[20px] px-3 py-5 text-sm text-[var(--muted)]">
+                  <div className="px-3 py-5 text-sm text-[var(--muted)]">
                     {convexEnabled
                       ? 'Type to search the prompt library.'
                       : 'Set NEXT_PUBLIC_CONVEX_URL to enable instant prompt search.'}

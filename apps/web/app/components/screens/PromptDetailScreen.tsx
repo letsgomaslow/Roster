@@ -10,6 +10,8 @@ import {
   PageIntro,
   Panel,
   Badge,
+  SkeletonList,
+  SurfaceNotice,
 } from '@/app/components/control-plane/primitives';
 import {
   useTrackPageView,
@@ -19,6 +21,7 @@ import { openMicroFeedback } from '@/lib/control-plane-events';
 import { convexEnabled } from '@/lib/convex-client';
 import { formatRelativeDate, titleCase } from '@/lib/formatters';
 import { rosterFetchEnvelope } from '@/lib/roster-client';
+import { RouteStatusScreen } from './RouteStatusScreen';
 
 type FormState = {
   promptId: string;
@@ -60,6 +63,12 @@ const EMPTY_FORM: FormState = {
   systemPrompt: '',
 };
 
+function createInitialForm(isNew: boolean): FormState {
+  return isNew
+    ? { ...EMPTY_FORM, promptId: `prompt_${Date.now().toString(36)}` }
+    : EMPTY_FORM;
+}
+
 function parseList(value: string) {
   return value
     .split(',')
@@ -89,12 +98,13 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
   });
 
   const { isAuthenticated } = useConvexAuth();
+  const hostedAuthConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
   const detail = useQuery(
     api.prompts.getPromptDetail,
     convexEnabled && isAuthenticated && !isNew ? { promptId } : 'skip',
   );
 
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [form, setForm] = useState<FormState>(() => createInitialForm(isNew));
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [applyState, setApplyState] = useState<'idle' | 'applying' | 'error'>('idle');
   const [applyPreview, setApplyPreview] = useState('');
@@ -103,17 +113,13 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
 
   useEffect(() => {
     if (!detail?.prompt) {
-      if (isNew) {
-        setForm((current) =>
-          current.promptId
-            ? current
-            : { ...EMPTY_FORM, promptId: `prompt_${Date.now().toString(36)}` },
-        );
-      }
       return;
     }
 
     const prompt = detail.prompt;
+    // This legacy editor hydrates once from the asynchronously loaded Convex record.
+    // The AI Work Library editor replaces this with a keyed form boundary.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm({
       promptId: prompt.promptId,
       name: prompt.name,
@@ -143,6 +149,63 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
   }, [detail, isNew]);
 
   const variableNames = parseVariables(form.variables);
+
+  if (!isAuthenticated) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="signed_out"
+        pathname={isNew ? '/library/new' : `/library/${promptId}`}
+      />
+    );
+  }
+
+  if (!isNew && detail === undefined) {
+    return (
+      <div className="space-y-8">
+        <PageIntro
+          description="The editor route is keeping metadata, template content, and apply-preview in one place while the prompt record loads."
+          eyebrow="Prompt Detail"
+          title="Loading prompt detail"
+        />
+        <SurfaceNotice
+          description="Prompt detail is loading from Convex. The route stays visible so the editor never looks like an empty new-prompt form by accident."
+          title="Loading prompt record"
+          tone="info"
+        />
+        <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+          <Panel subtitle="Metadata and template fields are loading." title="Editor" tone="strategy">
+            <SkeletonList rows={6} />
+          </Panel>
+          <div className="space-y-5">
+            <Panel subtitle="Advanced configuration is loading with the prompt record." title="Agent configuration" tone="strategy">
+              <SkeletonList rows={5} />
+            </Panel>
+            <Panel subtitle="Preview inputs and output load after the prompt record." title="Apply preview" tone="tech">
+              <SkeletonList rows={4} />
+            </Panel>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isNew && detail?.prompt === null) {
+    return (
+      <div className="space-y-8">
+        <PageIntro
+          description="The requested prompt record was not returned by the backend."
+          eyebrow="Prompt Detail"
+          title="Prompt not found"
+        />
+        <EmptyState
+          action={null}
+          description="Return to the library to choose another prompt or create a new one."
+          title="This prompt is not available in the current workspace"
+        />
+      </div>
+    );
+  }
 
   async function onSave() {
     setSaveState('saving');
@@ -270,7 +333,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
           <>
             {!isNew ? (
               <button
-                className="inline-flex items-center justify-center rounded-full border border-[var(--line)] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
+                className="inline-flex items-center justify-center border border-[var(--line)] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
                 onClick={onDelete}
                 type="button"
               >
@@ -278,7 +341,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               </button>
             ) : null}
             <button
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
+              className="inline-flex min-h-11 items-center justify-center bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
               onClick={onSave}
               type="button"
             >
@@ -293,7 +356,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
 
       {error ? (
         <div
-          className="rounded-[24px] border border-[color:color-mix(in_oklab,var(--error)_28%,white)] bg-[color:color-mix(in_oklab,var(--error)_9%,white)] px-4 py-4 text-sm text-[var(--error-strong)]"
+          className="border border-[color:color-mix(in_oklab,var(--error)_28%,white)] bg-[color:color-mix(in_oklab,var(--error)_9%,white)] px-4 py-4 text-sm text-[var(--error-strong)]"
           role="alert"
         >
           {error}
@@ -320,7 +383,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Prompt ID</span>
               <input
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, promptId: event.target.value }))
                 }
@@ -330,7 +393,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Name</span>
               <input
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, name: event.target.value }))
                 }
@@ -340,7 +403,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Category</span>
               <input
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, category: event.target.value }))
                 }
@@ -350,7 +413,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Access level</span>
               <select
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, accessLevel: event.target.value }))
                 }
@@ -364,7 +427,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm md:col-span-2">
               <span className="text-[var(--muted)]">Description</span>
               <textarea
-                className="min-h-28 w-full rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="min-h-28 w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, description: event.target.value }))
                 }
@@ -374,7 +437,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Prompt type</span>
               <select
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
@@ -394,7 +457,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Tags</span>
               <input
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, tags: event.target.value }))
                 }
@@ -405,7 +468,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm md:col-span-2">
               <span className="text-[var(--muted)]">Variables</span>
               <input
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, variables: event.target.value }))
                 }
@@ -416,7 +479,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm md:col-span-2">
               <span className="text-[var(--muted)]">Template</span>
               <textarea
-                className="min-h-[360px] w-full rounded-[28px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 font-mono text-sm text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="min-h-[360px] w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 font-mono text-sm text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, template: event.target.value }))
                 }
@@ -447,7 +510,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">Model</span>
                   <input
-                    className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, model: event.target.value }))
                     }
@@ -458,7 +521,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">Tools</span>
                   <input
-                    className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, tools: event.target.value }))
                     }
@@ -469,7 +532,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">MCP servers</span>
                   <input
-                    className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, mcpServers: event.target.value }))
                     }
@@ -480,7 +543,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">Compatible project types</span>
                   <input
-                    className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, compatibleWith: event.target.value }))
                     }
@@ -491,7 +554,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">Subagents</span>
                   <input
-                    className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, subagents: event.target.value }))
                     }
@@ -502,7 +565,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">System prompt</span>
                   <textarea
-                    className="min-h-36 w-full rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="min-h-36 w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, systemPrompt: event.target.value }))
                     }
@@ -520,7 +583,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                   {titleCase(applyState)}
                 </Badge>
                 <button
-                  className="inline-flex min-h-11 items-center rounded-full border border-[color:color-mix(in_oklab,var(--tech)_45%,white)] bg-[var(--tech-wash)] px-4 py-2 text-sm font-medium text-[var(--tech-strong)] transition hover:brightness-95"
+                  className="inline-flex min-h-11 items-center border border-[color:color-mix(in_oklab,var(--tech)_45%,white)] bg-[var(--tech-wash)] px-4 py-2 text-sm font-medium text-[var(--tech-strong)] transition hover:brightness-95"
                   onClick={onApplyPreview}
                   type="button"
                 >
@@ -538,7 +601,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                   <label className="block space-y-2 text-sm" key={variable}>
                     <span className="text-[var(--muted)]">{variable}</span>
                     <input
-                      className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                      className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                       onChange={(event) =>
                         setApplyInputs((current) => ({
                           ...current,
@@ -568,7 +631,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               <div className="space-y-3">
                 {detail.versions.map((version) => (
                   <div
-                    className="rounded-[18px] border border-[var(--line)] bg-[var(--panel-soft)] px-3 py-3"
+                    className="border border-[var(--line)] bg-[var(--panel-soft)] px-3 py-3"
                     key={version.version}
                   >
                     <div className="flex items-center justify-between gap-3">
