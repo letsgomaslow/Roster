@@ -2,7 +2,7 @@ import fs from 'node:fs';
 
 import { defineConfig, devices } from '@playwright/test';
 
-// Chromium can hit net::ERR_NAME_NOT_RESOLVED for localhost if system proxy env breaks loopback.
+// Keep loopback traffic direct while preserving localhost for Clerk's development handshake.
 for (const k of [
   'HTTP_PROXY',
   'HTTPS_PROXY',
@@ -15,7 +15,7 @@ for (const k of [
 }
 
 const port = process.env.PW_PORT ?? '3100';
-const baseURL = `http://127.0.0.1:${port}`;
+const baseURL = `http://localhost:${port}`;
 const storagePath = process.env.E2E_STORAGE_STATE;
 const storageState = storagePath && fs.existsSync(storagePath) ? storagePath : undefined;
 const skipWebServer = process.env.PW_SKIP_WEB_SERVER === '1';

@@ -9,6 +9,7 @@
  */
 
 import type * as lib_starterAssets from "../lib/starterAssets.js";
+import type * as lib_workLibraryTaxonomy from "../lib/workLibraryTaxonomy.js";
 import type * as lib_workLibraryValidators from "../lib/workLibraryValidators.js";
 import type * as onboarding from "../onboarding.js";
 import type * as prompts from "../prompts.js";
@@ -22,6 +23,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "lib/starterAssets": typeof lib_starterAssets;
+  "lib/workLibraryTaxonomy": typeof lib_workLibraryTaxonomy;
   "lib/workLibraryValidators": typeof lib_workLibraryValidators;
   onboarding: typeof onboarding;
   prompts: typeof prompts;

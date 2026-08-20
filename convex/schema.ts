@@ -8,6 +8,7 @@ import {
   visibilityValidator,
   workspaceRoleValidator,
 } from './lib/workLibraryValidators';
+import { taxonomyKindValidator, taxonomyStatusValidator } from './lib/workLibraryTaxonomy';
 
 export default defineSchema({
   workspaces: defineTable({
@@ -31,18 +32,47 @@ export default defineSchema({
   })
     .index('by_workspace_id_and_user_id', ['workspaceId', 'userId'])
     .index('by_user_id_and_workspace_id', ['userId', 'workspaceId']),
+  taxonomyTerms: defineTable({
+    workspaceId: v.id('workspaces'),
+    kind: taxonomyKindValidator,
+    key: v.string(),
+    label: v.string(),
+    normalizedLabel: v.string(),
+    status: taxonomyStatusValidator,
+    sortOrder: v.number(),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_workspace_id_and_kind_and_key', ['workspaceId', 'kind', 'key'])
+    .index('by_workspace_id_and_kind_and_normalized_label', [
+      'workspaceId',
+      'kind',
+      'normalizedLabel',
+    ])
+    .index('by_workspace_id_and_kind_and_status_and_sort_order', [
+      'workspaceId',
+      'kind',
+      'status',
+      'sortOrder',
+    ]),
   assets: defineTable({
     workspaceId: v.id('workspaces'),
     kind: assetKindValidator,
     title: v.string(),
-    purpose: v.string(),
+    purpose: v.optional(v.string()),
     searchText: v.string(),
-    teamKey: v.string(),
-    jobKey: v.string(),
+    // Optional during the widen/backfill window so existing assets remain deployable.
+    pendingSearchText: v.optional(v.string()),
+    teamKey: v.optional(v.string()),
+    jobKey: v.optional(v.string()),
     visibility: visibilityValidator,
     reviewState: reviewStateValidator,
     ownerUserId: v.string(),
     currentVersionId: v.optional(v.id('assetVersions')),
+    approvedVersionId: v.optional(v.id('assetVersions')),
+    approvedVersionNumber: v.optional(v.number()),
+    approvedReviewState: v.optional(reviewStateValidator),
     starterKey: v.optional(v.string()),
     latestVersionNumber: v.number(),
     lastVerifiedAt: v.optional(v.number()),
@@ -50,20 +80,184 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index('by_workspace_id_and_updated_at', ['workspaceId', 'updatedAt'])
+    .index('by_workspace_id_and_visibility_and_updated_at', [
+      'workspaceId',
+      'visibility',
+      'updatedAt',
+    ])
+    .index('by_workspace_id_and_visibility_and_team_key_and_updated_at', [
+      'workspaceId',
+      'visibility',
+      'teamKey',
+      'updatedAt',
+    ])
+    .index('by_workspace_id_and_visibility_and_job_key_and_updated_at', [
+      'workspaceId',
+      'visibility',
+      'jobKey',
+      'updatedAt',
+    ])
+    .index('by_workspace_visibility_team_job_updated', [
+      'workspaceId',
+      'visibility',
+      'teamKey',
+      'jobKey',
+      'updatedAt',
+    ])
     .index('by_workspace_id_and_owner_user_id_and_updated_at', [
       'workspaceId',
       'ownerUserId',
       'updatedAt',
     ])
+    .index('by_workspace_id_and_owner_user_id_and_team_key_and_updated_at', [
+      'workspaceId',
+      'ownerUserId',
+      'teamKey',
+      'updatedAt',
+    ])
+    .index('by_workspace_id_and_owner_user_id_and_job_key_and_updated_at', [
+      'workspaceId',
+      'ownerUserId',
+      'jobKey',
+      'updatedAt',
+    ])
+    .index('by_workspace_owner_team_job_updated', [
+      'workspaceId',
+      'ownerUserId',
+      'teamKey',
+      'jobKey',
+      'updatedAt',
+    ])
+    .index('by_workspace_id_and_owner_user_id_and_visibility_and_updated_at', [
+      'workspaceId',
+      'ownerUserId',
+      'visibility',
+      'updatedAt',
+    ])
+    .index('by_workspace_owner_visibility_team_updated', [
+      'workspaceId',
+      'ownerUserId',
+      'visibility',
+      'teamKey',
+      'updatedAt',
+    ])
+    .index('by_workspace_owner_visibility_job_updated', [
+      'workspaceId',
+      'ownerUserId',
+      'visibility',
+      'jobKey',
+      'updatedAt',
+    ])
+    .index(
+      'by_workspace_owner_visibility_team_job_updated',
+      ['workspaceId', 'ownerUserId', 'visibility', 'teamKey', 'jobKey', 'updatedAt'],
+    )
     .index('by_workspace_id_and_starter_key', ['workspaceId', 'starterKey'])
     .index('by_workspace_id_and_review_state_and_updated_at', [
       'workspaceId',
       'reviewState',
       'updatedAt',
     ])
+    .index('by_ws_visibility_review_updated', [
+      'workspaceId',
+      'visibility',
+      'reviewState',
+      'updatedAt',
+    ])
+    .index('by_ws_visibility_review_team_updated', [
+      'workspaceId',
+      'visibility',
+      'reviewState',
+      'teamKey',
+      'updatedAt',
+    ])
+    .index('by_ws_visibility_review_job_updated', [
+      'workspaceId',
+      'visibility',
+      'reviewState',
+      'jobKey',
+      'updatedAt',
+    ])
+    .index('by_ws_visibility_review_team_job_updated', [
+      'workspaceId',
+      'visibility',
+      'reviewState',
+      'teamKey',
+      'jobKey',
+      'updatedAt',
+    ])
+    .index('by_ws_visibility_approved_updated', [
+      'workspaceId',
+      'visibility',
+      'approvedReviewState',
+      'updatedAt',
+    ])
+    .index('by_ws_visibility_approved_team_updated', [
+      'workspaceId',
+      'visibility',
+      'approvedReviewState',
+      'teamKey',
+      'updatedAt',
+    ])
+    .index('by_ws_visibility_approved_job_updated', [
+      'workspaceId',
+      'visibility',
+      'approvedReviewState',
+      'jobKey',
+      'updatedAt',
+    ])
+    .index('by_ws_visibility_approved_team_job_updated', [
+      'workspaceId',
+      'visibility',
+      'approvedReviewState',
+      'teamKey',
+      'jobKey',
+      'updatedAt',
+    ])
+    .index('by_workspace_id_and_review_state_and_team_key_and_updated_at', [
+      'workspaceId',
+      'reviewState',
+      'teamKey',
+      'updatedAt',
+    ])
+    .index('by_workspace_id_and_review_state_and_job_key_and_updated_at', [
+      'workspaceId',
+      'reviewState',
+      'jobKey',
+      'updatedAt',
+    ])
+    .index('by_workspace_review_team_job_updated', [
+      'workspaceId',
+      'reviewState',
+      'teamKey',
+      'jobKey',
+      'updatedAt',
+    ])
     .searchIndex('search_by_workspace', {
       searchField: 'searchText',
-      filterFields: ['workspaceId', 'kind', 'teamKey', 'jobKey', 'reviewState'],
+      filterFields: [
+        'workspaceId',
+        'kind',
+        'teamKey',
+        'jobKey',
+        'reviewState',
+        'approvedReviewState',
+        'visibility',
+        'ownerUserId',
+      ],
+    })
+    .searchIndex('search_pending_by_workspace', {
+      searchField: 'pendingSearchText',
+      filterFields: [
+        'workspaceId',
+        'kind',
+        'teamKey',
+        'jobKey',
+        'reviewState',
+        'approvedReviewState',
+        'visibility',
+        'ownerUserId',
+      ],
     }),
   assetVersions: defineTable({
     workspaceId: v.id('workspaces'),

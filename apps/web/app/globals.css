@@ -89,6 +89,7 @@
 
 html {
   min-height: 100%;
+  scrollbar-gutter: stable;
   background:
     radial-gradient(circle at top left, rgba(109, 196, 173, 0.08), transparent 42%),
     linear-gradient(180deg, #fafbfd 0%, #f4f6fa 100%);
@@ -170,19 +171,8 @@ select {
   transform: translateY(0);
 }
 
-@keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-main > div {
-  animation: rise-in 260ms ease-out;
+.animate-pulse {
+  animation: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -193,9 +183,5 @@ main > div {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-  }
-
-  main > div {
-    animation: none;
   }
 }

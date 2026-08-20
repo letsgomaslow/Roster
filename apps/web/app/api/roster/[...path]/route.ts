@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { buildRosterBffHeaders } from '@/lib/roster-bff-headers';
 import { forwardRosterRequest, getRosterBaseUrl } from '@/lib/roster-forward';
+import { getLegacyAdvancedRouteAccess } from '@/lib/legacy-advanced-access';
 
 type RouteContext = {
   params: Promise<{ path: string[] }>;
@@ -51,6 +53,40 @@ function buildEnvelope(path: string, out: Awaited<ReturnType<typeof forwardRoste
 }
 
 async function handle(request: Request, context: RouteContext) {
+  const { path: rawPath } = await context.params;
+  const mappedPath = mapRosterPath(rawPath);
+  if (!mappedPath) {
+    return NextResponse.json(
+      {
+        success: false,
+        rosterStatus: 404,
+        error: 'Unsupported roster route',
+        data: null,
+      },
+      { status: 404 },
+    );
+  }
+
+  const root = rawPath[0] ?? '';
+  const requiresAdvancedAccess = root !== 'health';
+  if (requiresAdvancedAccess) {
+    const access = getLegacyAdvancedRouteAccess(
+      await auth(),
+      process.env.ROSTER_LEGACY_ADVANCED_ENABLED,
+    );
+    if (!access.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          rosterStatus: access.status,
+          error: access.error,
+          data: null,
+        },
+        { status: access.status },
+      );
+    }
+  }
+
   const base = getRosterBaseUrl();
   if (!base) {
     return NextResponse.json(
@@ -74,20 +110,6 @@ async function handle(request: Request, context: RouteContext) {
         data: null,
       },
       { status: 401 },
-    );
-  }
-
-  const { path: rawPath } = await context.params;
-  const mappedPath = mapRosterPath(rawPath);
-  if (!mappedPath) {
-    return NextResponse.json(
-      {
-        success: false,
-        rosterStatus: 404,
-        error: 'Unsupported roster route',
-        data: null,
-      },
-      { status: 404 },
     );
   }
 
@@ -133,4 +155,3 @@ export async function PUT(request: Request, context: RouteContext) {
 export async function DELETE(request: Request, context: RouteContext) {
   return handle(request, context);
 }
-

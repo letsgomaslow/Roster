@@ -1,4 +1,5 @@
 import type { AuthSurfaceState } from './auth-surface';
+import type { WorkspaceRole } from './work-library-navigation';
 
 export type GettingStartedViewState =
   | 'clerk_loading'
@@ -7,6 +8,14 @@ export type GettingStartedViewState =
   | 'convex_loading'
   | 'convex_error'
   | 'ready';
+
+export type GettingStartedAudience = 'owner' | 'teammate';
+
+export function resolveGettingStartedAudience(
+  role?: WorkspaceRole,
+): GettingStartedAudience {
+  return role === 'owner' ? 'owner' : 'teammate';
+}
 
 export function resolveGettingStartedViewState({
   authSurfaceState,

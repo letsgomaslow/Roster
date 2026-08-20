@@ -31,7 +31,7 @@ export function ClerkBootstrapFallback({
       <RouteStatusScreen
         authSurfaceState={authSurfaceState}
         diagnostic={diagnostic}
-        mode={authSurfaceState === 'loading' ? 'loading' : 'failed'}
+        mode={authSurfaceState === 'loading' ? 'signed_out' : 'failed'}
         pathname={pathname}
       />
     );

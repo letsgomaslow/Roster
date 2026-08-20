@@ -1,161 +1,215 @@
 'use client';
 
+import type { ReactNode } from 'react';
+import Link from 'next/link';
 import { useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { useWorkspace } from '@/app/components/work-library/WorkspaceContext';
 import {
   ActionButton,
   Badge,
-  EmptyState,
   PageIntro,
-  Panel,
-  SkeletonList,
   SurfaceNotice,
 } from '@/app/components/control-plane/primitives';
-import { formatRelativeDate, titleCase } from '@/lib/formatters';
+import { formatRelativeDate } from '@/lib/formatters';
+import { selectHomeGalleryItems, type HomeGalleryItem } from '@/lib/onboarding';
+import { buildWorkDescriptionPreview } from '@/lib/work-description';
+
+function AssetCard({ item, actionLabel }: { item: HomeGalleryItem; actionLabel: string }) {
+  const approved = item.reviewState.includes('approved');
+  const purposePreview = buildWorkDescriptionPreview(item.purpose);
+  const trustLabel =
+    item.reviewState === 'workspace_approved'
+      ? 'Workspace approved'
+      : item.reviewState === 'team_approved'
+        ? 'Team approved'
+        : item.reviewState === 'shared'
+          ? 'Ready for review'
+          : item.reviewState === 'draft'
+            ? 'Private draft'
+            : 'Archived';
+
+  return (
+    <Link
+      className="group flex min-h-52 min-w-0 flex-col border border-[var(--line)] bg-[var(--panel)] p-5 hover:border-[var(--line-strong)] hover:bg-[var(--panel-soft)]"
+      href={`/library/${item.assetId}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <Badge tone={approved ? 'strategy' : 'default'}>{trustLabel}</Badge>
+        <span className="text-xs text-[var(--muted)]">{formatRelativeDate(item.updatedAt)}</span>
+      </div>
+      <h3 className="mt-5 line-clamp-2 text-lg font-semibold tracking-[-0.02em] text-[var(--ink)] [overflow-wrap:anywhere]">
+        {item.title}
+      </h3>
+      {purposePreview.summary ? (
+        <p className="mt-2 line-clamp-3 text-sm leading-7 text-[var(--muted)] [overflow-wrap:anywhere]">
+          {purposePreview.summary}
+        </p>
+      ) : null}
+      <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[var(--ink)]">
+        {actionLabel}
+        <span aria-hidden="true">→</span>
+      </span>
+    </Link>
+  );
+}
+
+function GalleryLoading() {
+  return (
+    <div aria-busy="true" aria-label="Loading saved work" className="grid gap-3 md:grid-cols-3" role="status">
+      {[0, 1, 2].map((item) => (
+        <div
+          aria-hidden="true"
+          className="min-h-52 border border-[var(--line)] bg-[var(--panel-soft)]"
+          key={item}
+        />
+      ))}
+    </div>
+  );
+}
+
+function GallerySection({
+  title,
+  description,
+  items,
+  actionLabel,
+  loading,
+  empty,
+}: {
+  title: string;
+  description: string;
+  items: HomeGalleryItem[];
+  actionLabel: string;
+  loading: boolean;
+  empty: ReactNode;
+}) {
+  return (
+    <section aria-labelledby={`gallery-${title.toLowerCase().replaceAll(' ', '-')}`}>
+      <div className="mb-4 flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h2
+            className="text-xl font-semibold tracking-[-0.025em] text-[var(--ink)]"
+            id={`gallery-${title.toLowerCase().replaceAll(' ', '-')}`}
+          >
+            {title}
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{description}</p>
+        </div>
+      </div>
+      {loading ? (
+        <GalleryLoading />
+      ) : items.length ? (
+        <div className="grid gap-3 md:grid-cols-3">
+          {items.map((item) => (
+            <AssetCard actionLabel={actionLabel} item={item} key={item.assetId} />
+          ))}
+        </div>
+      ) : (
+        <div className="min-h-36 border border-dashed border-[var(--line-strong)] bg-[var(--panel-soft)] p-5 text-sm leading-7 text-[var(--muted)]">
+          {empty}
+        </div>
+      )}
+    </section>
+  );
+}
 
 export function WorkLibraryHomeScreen() {
   const workspace = useWorkspace();
-  const recent = useQuery(
+  const library = useQuery(
     api.workLibrary.listLibrary,
-    workspace.status === 'ready' ? { scope: 'library', limit: 6 } : 'skip',
+    workspace.status === 'ready' ? { scope: 'library', limit: 24 } : 'skip',
   );
   const myWork = useQuery(
     api.workLibrary.listLibrary,
-    workspace.status === 'ready' ? { scope: 'my_work', limit: 4 } : 'skip',
+    workspace.status === 'ready' ? { scope: 'my_work', limit: 6 } : 'skip',
   );
-  const loading = workspace.status === 'bootstrapping' || recent === undefined || myWork === undefined;
+  const loading =
+    workspace.status === 'bootstrapping' || library === undefined || myWork === undefined;
+  const gallery = selectHomeGalleryItems({
+    library: library?.items ?? [],
+    myWork: myWork?.items ?? [],
+  });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <PageIntro
         actions={
-          <ActionButton href="/library/new" tone="primary">
-            Save new work
-          </ActionButton>
+          <Link
+            className="inline-flex min-h-12 items-center justify-center bg-[var(--button-primary)] px-5 py-3 text-sm font-semibold text-[var(--button-primary-ink)] hover:bg-[var(--button-primary-hover)]"
+            href="/library"
+          >
+            Browse the Library
+          </Link>
         }
-        description="Save reusable work once, review it as a team, and use the trusted version across your AI tools."
+        description="Choose trusted work, pick up a draft, or return to something you use often."
         eyebrow={workspace.name ?? 'Roster workspace'}
-        title="Your team’s useful AI work, in one place"
+        title="What would you like to get done?"
       />
 
       {workspace.status === 'error' ? (
-        <SurfaceNotice
-          description={workspace.error ?? 'Ask a workspace admin to check the organization setup.'}
-          title="Your workspace needs attention"
-          tone="error"
-        />
-      ) : null}
-
-      <section className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-        <Panel
-          subtitle="Start with a prompt your team already keeps in a document or notes app."
-          title="Save something worth reusing"
-          tone="strategy"
-        >
-          <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
-            <div>
-              <Badge tone="brand">Best first step</Badge>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--ink-soft)]">
-                Paste it, describe the outcome, and save a private draft. Roster can detect friendly fill-in fields without changing your words.
-              </p>
-            </div>
-            <ActionButton href="/library/new" tone="secondary">Paste a prompt</ActionButton>
-          </div>
-        </Panel>
-
-        <Panel
-          subtitle="The first bounded playbook turns discovery material into a review-ready document."
-          title="Proposal and SOW"
-          tone="tech"
-        >
-          <Badge tone="info">Lighthouse playbook</Badge>
-          <p className="mt-4 text-sm leading-7 text-[var(--ink-soft)]">
-            Upload notes and a template, draft scope and exclusions, check consistency, approve, then download DOCX.
-          </p>
-          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-            Bounded workflow foundation in progress
-          </p>
-        </Panel>
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <Panel
-          subtitle="Only real saved work appears here—no simulated execution or success statistics."
-          title="Recently useful"
-          tone="strategy"
-        >
-          {loading ? (
-            <SkeletonList rows={4} />
-          ) : recent.items.length ? (
-            <div className="space-y-3">
-              {recent.items.map((item) => (
-                <a
-                  className="block rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] p-4 transition hover:border-[var(--line-strong)] hover:bg-white"
-                  href={`/library/${item.assetId}`}
-                  key={item.assetId}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-[var(--ink)]">{item.title}</p>
-                      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{item.purpose}</p>
-                    </div>
-                    <Badge tone={item.reviewState.includes('approved') ? 'strategy' : 'default'}>
-                      {titleCase(item.reviewState)}
-                    </Badge>
-                  </div>
-                  <p className="mt-3 text-xs text-[var(--muted)]">
-                    {titleCase(item.teamKey)} · Updated {formatRelativeDate(item.updatedAt)}
-                  </p>
-                </a>
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              action={<ActionButton href="/library/new" tone="primary">Save your first prompt</ActionButton>}
-              description="The library begins with work your team already knows is useful."
-              title="Your workspace is ready"
-            />
-          )}
-        </Panel>
-
-        <div className="space-y-6">
-          <Panel subtitle="A simple lifecycle makes trust visible." title="How work becomes trusted" tone="tech">
-            <ol className="space-y-3">
-              {[
-                ['1', 'Private draft', 'Only the author and curators can work on it.'],
-                ['2', 'Team shared', 'Another person can use it and provide feedback.'],
-                ['3', 'Approved', 'A curator or admin approves one exact version.'],
-              ].map(([number, title, description]) => (
-                <li className="flex gap-3 rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] p-4" key={number}>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--strategy-wash)] text-xs font-semibold text-[var(--strategy-strong)]">{number}</span>
-                  <div>
-                    <p className="font-medium text-[var(--ink)]">{title}</p>
-                    <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{description}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </Panel>
-
-          <Panel subtitle="Continue where you left off." title="My work" tone="strategy">
-            {loading ? (
-              <SkeletonList dense rows={3} />
-            ) : myWork.items.length ? (
-              <div className="space-y-2">
-                {myWork.items.slice(0, 3).map((item) => (
-                  <a className="block rounded-[18px] border border-[var(--line)] px-3 py-3 text-sm font-medium text-[var(--ink)] hover:bg-[var(--panel-soft)]" href={`/library/${item.assetId}`} key={item.assetId}>
-                    {item.title}
-                  </a>
-                ))}
-                <ActionButton href="/my-work" tone="ghost">Open all my work</ActionButton>
-              </div>
-            ) : (
-              <p className="text-sm leading-6 text-[var(--muted)]">Your private drafts and authored work will appear here.</p>
-            )}
-          </Panel>
+        <div className="space-y-4">
+          <SurfaceNotice
+            description="Roster could not verify your workspace access. Reload and try again."
+            title="Your workspace needs attention"
+            tone="error"
+          />
+          {workspace.retry ? (
+            <ActionButton onClick={workspace.retry} tone="primary">
+              Reload workspace
+            </ActionButton>
+          ) : null}
         </div>
-      </section>
+      ) : (
+        <div className="space-y-10">
+          <GallerySection
+            actionLabel="Continue"
+            description="Your most recently edited work."
+            empty={
+              <>
+                Work you save will appear here.{' '}
+                <Link className="font-semibold text-[var(--ink)] underline underline-offset-4" href="/library/new">
+                  Save useful work
+                </Link>
+              </>
+            }
+            items={gallery.continueWorking}
+            loading={loading}
+            title="Continue working"
+          />
+
+          <GallerySection
+            actionLabel="Open favorite"
+            description="The work you want close at hand."
+            empty={
+              <>
+                Mark useful work as a favorite and it will stay easy to find.{' '}
+                <Link className="font-semibold text-[var(--ink)] underline underline-offset-4" href="/library">
+                  Browse the Library
+                </Link>
+              </>
+            }
+            items={gallery.favorites}
+            loading={loading}
+            title="Favorites"
+          />
+
+          <GallerySection
+            actionLabel="Use"
+            description="Work reviewed for team or workspace use."
+            empty={
+              <>
+                Approved work will appear here after a curator reviews it.{' '}
+                <Link className="font-semibold text-[var(--ink)] underline underline-offset-4" href="/library">
+                  See all shared work
+                </Link>
+              </>
+            }
+            items={gallery.recentlyApproved}
+            loading={loading}
+            title="Recently approved"
+          />
+        </div>
+      )}
     </div>
   );
 }

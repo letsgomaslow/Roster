@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useDeferredValue, useState } from 'react';
 import { useQuery, useConvexAuth } from 'convex/react';
 import { api } from '@convex/_generated/api';
+import { useWorkspace } from '@/app/components/work-library/WorkspaceContext';
 import {
   EmptyState,
   PageIntro,
@@ -18,8 +19,78 @@ import { convexEnabled } from '@/lib/convex-client';
 import { cx } from '@/lib/cx';
 import { formatNumber, formatPercent, formatRelativeDate } from '@/lib/formatters';
 import { RouteStatusScreen } from './RouteStatusScreen';
+import { LegacyAdvancedUnavailable } from './LegacyAdvancedUnavailable';
+import { isLegacyAdvancedEnabled } from '@/lib/legacy-advanced-access';
 
 export function AgentsScreen() {
+  if (!isLegacyAdvancedEnabled(process.env.NEXT_PUBLIC_LEGACY_ADVANCED_ENABLED)) {
+    return <LegacyAdvancedUnavailable />;
+  }
+  return <EnabledAgentsScreen />;
+}
+
+function EnabledAgentsScreen() {
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  const workspace = useWorkspace();
+  const hostedAuthConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
+
+  if (
+    workspace.status !== 'error' &&
+    (authLoading || (!isAuthenticated && workspace.status === 'bootstrapping'))
+  ) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="loading"
+        pathname="/agents"
+      />
+    );
+  }
+
+  if (workspace.status === 'error') {
+    return (
+      <SurfaceNotice
+        description={workspace.error ?? 'Roster could not verify your workspace role.'}
+        title="Advanced access needs attention"
+        tone="error"
+      />
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="signed_out"
+        pathname="/agents"
+      />
+    );
+  }
+
+  if (workspace.status !== 'ready') {
+    return (
+      <SurfaceNotice
+        description="Roster is confirming your workspace role before opening technical tools."
+        title="Checking advanced access"
+        tone="info"
+      />
+    );
+  }
+
+  if (workspace.role !== 'owner' && workspace.role !== 'admin') {
+    return (
+      <SurfaceNotice
+        description="Your everyday Library stays available. Ask a workspace owner or admin if you need the technical agent catalog."
+        title="Advanced access is limited to workspace owners and admins"
+        tone="info"
+      />
+    );
+  }
+
+  return <AuthorizedAgentsScreen />;
+}
+
+function AuthorizedAgentsScreen() {
   useTrackPageView('agents_view', { route: '/agents' });
 
   const [tab, setTab] = useState<'subagents' | 'main-agents'>('subagents');

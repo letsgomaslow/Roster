@@ -1,17 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
-import { useMutation, useQuery, useConvexAuth } from 'convex/react';
+import { useConvexAuth, useMutation, useQuery } from 'convex/react';
 import { api } from '@convex/_generated/api';
 import { convexEnabled } from '@/lib/convex-client';
-import {
-  buildOnboardingSteps,
-  isOnboardingComplete,
-  shouldShowOnboardingModule,
-} from '@/lib/onboarding';
+import { getFirstUseChoices } from '@/lib/onboarding';
 import type { DashboardApiPayload, DashboardSnapshot } from '@/lib/roster-types';
-import { Badge, Panel, SkeletonList } from './primitives';
+import { Badge, Panel } from './primitives';
 
 type OnboardingChecklistProps = {
   snapshot?: DashboardSnapshot | null;
@@ -24,13 +19,11 @@ type OnboardingChecklistProps = {
 };
 
 export function OnboardingChecklist({
-  snapshot,
-  dashboard,
   forceVisible = false,
   showDismiss = false,
   showContinue = false,
-  title = 'Finish setup and reach a working control plane',
-  subtitle = 'The public beta should guide a new user from account creation to a working prompt and a real run.',
+  title = 'Start with something useful',
+  subtitle = 'Choose the path that gets you to useful team work fastest. You can explore setup later.',
 }: OnboardingChecklistProps) {
   const { isAuthenticated } = useConvexAuth();
   const onboarding = useQuery(
@@ -39,145 +32,86 @@ export function OnboardingChecklist({
   );
   const markOnboardingStep = useMutation(api.onboarding.markOnboardingStep);
   const dismissOnboarding = useMutation(api.onboarding.dismissOnboarding);
+  const completed = Boolean(onboarding?.onboardingCompletedAt);
+  const dismissed = Boolean(onboarding?.checklistDismissedAt);
+  const visible = forceVisible || (!completed && !dismissed);
 
-  const steps = buildOnboardingSteps({
-    profile: onboarding ?? null,
-    snapshot: snapshot ?? null,
-    dashboard: dashboard ?? null,
-  });
-  const completed = isOnboardingComplete(steps) || Boolean(onboarding?.onboardingCompletedAt);
-  const isVisible = forceVisible || shouldShowOnboardingModule(onboarding ?? null, steps);
-
-  useEffect(() => {
-    if (!convexEnabled || !isAuthenticated || !onboarding) return;
-
-    for (const step of steps) {
-      if (step.completionSource !== 'live' || !step.complete) continue;
-      const fieldMap = {
-        verify_setup: onboarding.checklistStepStates.verifySetupCompletedAt,
-        create_prompt: onboarding.checklistStepStates.createPromptCompletedAt,
-        run_orchestration: onboarding.checklistStepStates.runOrchestrationCompletedAt,
-      } as const;
-      if (step.id === 'connect_host') continue;
-      if (!fieldMap[step.id]) {
-        void markOnboardingStep({ step: step.id, completed: true });
-      }
-    }
-
-    if (steps.every((step) => step.complete) && !onboarding.onboardingCompletedAt) {
-      void markOnboardingStep({ step: 'onboarding_complete', completed: true });
-    }
-  }, [isAuthenticated, markOnboardingStep, onboarding, steps]);
-
-  if (!isAuthenticated || !isVisible) {
+  if (!isAuthenticated || !visible) {
     return null;
   }
 
   if (onboarding === undefined) {
     return (
       <Panel
-        action={<Badge tone="info">Loading checklist</Badge>}
-        subtitle={subtitle}
-        title={title}
-        tone="tech"
+        action={<Badge tone="info">Preparing</Badge>}
+        subtitle="We’re opening the shortest path to your team’s useful work."
+        title="Getting your Library ready"
+        tone="strategy"
       >
-        <SkeletonList rows={4} />
+        <p aria-live="polite" className="min-h-16 text-sm leading-7 text-[var(--muted)]">
+          Your workspace will stay on this page until your choices are ready.
+        </p>
       </Panel>
     );
   }
 
+  const finishOnboarding = () => {
+    void markOnboardingStep({ step: 'onboarding_complete', completed: true });
+  };
+
   return (
     <Panel
-      action={
-        <Badge tone={completed ? 'success' : 'strategy'}>
-          {completed ? 'Ready for dashboard' : 'Beta checklist'}
-        </Badge>
-      }
+      action={<Badge tone="strategy">First useful action</Badge>}
       subtitle={subtitle}
       title={title}
-      tone="tech"
+      tone="strategy"
     >
-      <div className="grid gap-4 xl:grid-cols-2">
-        {steps.map((step, index) => (
+      <div className="grid gap-3 lg:grid-cols-3">
+        {getFirstUseChoices().map((choice) => (
           <section
-            className="rounded-[24px] border border-[var(--line)] bg-[var(--panel)] p-5 shadow-[var(--shadow-card)]"
-            key={step.id}
+            className="flex min-h-48 flex-col border border-[var(--line)] bg-[var(--panel)] p-5"
+            key={choice.id}
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-soft)] text-sm font-semibold text-[var(--ink)]">
-                  0{index + 1}
-                </span>
-                <div>
-                  <h2 className="text-lg font-semibold text-[var(--ink)]">{step.title}</h2>
-                  <p className="mt-2 text-sm leading-7 text-[var(--muted)]">{step.description}</p>
-                </div>
-              </div>
-              <Badge tone={step.complete ? 'success' : 'warning'}>
-                {step.complete ? 'Complete' : 'Pending'}
-              </Badge>
-            </div>
-
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
-                href={step.href}
-              >
-                {step.ctaLabel}
-              </Link>
-              {step.id === 'connect_host' && !step.complete ? (
-                <button
-                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--line)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
-                  onClick={() => void markOnboardingStep({ step: 'connect_host', completed: true })}
-                  type="button"
-                >
-                  I connected a host
-                </button>
-              ) : null}
-            </div>
+            <h3 className="text-base font-semibold text-[var(--ink)]">{choice.title}</h3>
+            <p className="mt-2 flex-1 text-sm leading-6 text-[var(--muted)]">
+              {choice.description}
+            </p>
+            <Link
+              className="mt-5 inline-flex min-h-11 items-center justify-center bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] hover:bg-[var(--button-primary-hover)]"
+              href={choice.href}
+              onClick={finishOnboarding}
+            >
+              {choice.actionLabel}
+            </Link>
           </section>
         ))}
       </div>
 
-      {(showDismiss || showContinue) && !completed ? (
+      {showDismiss || showContinue ? (
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] pt-5">
-          <p aria-live="polite" className="text-sm text-[var(--muted)]">
-            Finish the checklist or continue anyway. The incomplete state will remain visible on the
-            dashboard until you dismiss it.
+          <p className="text-sm text-[var(--muted)]">
+            You can come back to these choices from Home at any time.
           </p>
           <div className="flex flex-wrap gap-3">
             {showDismiss ? (
               <button
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--line)] bg-white px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
+                className="inline-flex min-h-11 items-center justify-center border border-[var(--line)] bg-[var(--panel)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] hover:bg-[var(--panel-soft)]"
                 onClick={() => void dismissOnboarding()}
                 type="button"
               >
-                Dismiss checklist
+                Hide this guide
               </button>
             ) : null}
             {showContinue ? (
               <Link
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-white"
+                className="inline-flex min-h-11 items-center justify-center border border-[var(--line)] bg-[var(--panel)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] hover:bg-[var(--panel-soft)]"
                 href="/"
+                onClick={finishOnboarding}
               >
-                Continue to dashboard
+                Go to Home
               </Link>
             ) : null}
           </div>
-        </div>
-      ) : null}
-
-      {completed && showContinue ? (
-        <div className="mt-6 flex items-center justify-between gap-3 border-t border-[var(--line)] pt-5">
-          <p className="text-sm text-[var(--muted)]">
-            Setup is complete. The control plane can now act as the default landing surface.
-          </p>
-          <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
-            href="/"
-          >
-            Continue to dashboard
-          </Link>
         </div>
       ) : null}
     </Panel>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useConvexAuth } from 'convex/react';
+import { useWorkspace } from '@/app/components/work-library/WorkspaceContext';
 import {
   ActionButton,
   Badge,
@@ -21,8 +22,78 @@ import { formatRelativeDate, titleCase } from '@/lib/formatters';
 import { rosterFetchEnvelope, useRosterResource, type RosterEnvelope } from '@/lib/roster-client';
 import type { RunSummary } from '@/lib/roster-types';
 import { RouteStatusScreen } from './RouteStatusScreen';
+import { LegacyAdvancedUnavailable } from './LegacyAdvancedUnavailable';
+import { isLegacyAdvancedEnabled } from '@/lib/legacy-advanced-access';
 
 export function RunsScreen() {
+  if (!isLegacyAdvancedEnabled(process.env.NEXT_PUBLIC_LEGACY_ADVANCED_ENABLED)) {
+    return <LegacyAdvancedUnavailable />;
+  }
+  return <EnabledRunsScreen />;
+}
+
+function EnabledRunsScreen() {
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  const workspace = useWorkspace();
+  const hostedAuthConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
+
+  if (
+    workspace.status !== 'error' &&
+    (authLoading || (!isAuthenticated && workspace.status === 'bootstrapping'))
+  ) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="loading"
+        pathname="/runs"
+      />
+    );
+  }
+
+  if (workspace.status === 'error') {
+    return (
+      <SurfaceNotice
+        description={workspace.error ?? 'Roster could not verify your workspace role.'}
+        title="Advanced access needs attention"
+        tone="error"
+      />
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="signed_out"
+        pathname="/runs"
+      />
+    );
+  }
+
+  if (workspace.status !== 'ready') {
+    return (
+      <SurfaceNotice
+        description="Roster is confirming your workspace role before opening technical tools."
+        title="Checking advanced access"
+        tone="info"
+      />
+    );
+  }
+
+  if (workspace.role !== 'owner' && workspace.role !== 'admin') {
+    return (
+      <SurfaceNotice
+        description="Your everyday Library stays available. Ask a workspace owner or admin if you need orchestration runs."
+        title="Advanced access is limited to workspace owners and admins"
+        tone="info"
+      />
+    );
+  }
+
+  return <AuthorizedRunsScreen />;
+}
+
+function AuthorizedRunsScreen() {
   const router = useRouter();
   const track = useTrackProductEvent();
   const [projectPath, setProjectPath] = useState('');
