@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { buildRosterBffHeaders } from '@/lib/roster-bff-headers';
+import { getLegacyAdvancedRouteAccess } from '@/lib/legacy-advanced-access';
 import { forwardRosterRequest, getRosterBaseUrl } from '@/lib/roster-forward';
 
 async function read(baseUrl: string, path: string, headers: HeadersInit) {
@@ -23,6 +25,17 @@ async function read(baseUrl: string, path: string, headers: HeadersInit) {
 }
 
 export async function GET() {
+  const access = getLegacyAdvancedRouteAccess(
+    await auth(),
+    process.env.ROSTER_LEGACY_ADVANCED_ENABLED,
+  );
+  if (!access.allowed) {
+    return NextResponse.json(
+      { success: false, rosterStatus: access.status, error: access.error, data: null },
+      { status: access.status },
+    );
+  }
+
   const base = getRosterBaseUrl();
   if (!base) {
     return NextResponse.json(
@@ -69,4 +82,3 @@ export async function GET() {
     },
   });
 }
-

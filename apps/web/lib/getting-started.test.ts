@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { resolveGettingStartedViewState } from './getting-started';
+import {
+  resolveGettingStartedAudience,
+  resolveGettingStartedViewState,
+} from './getting-started';
 
 describe('resolveGettingStartedViewState', () => {
   it('holds the page in loading while Clerk is still resolving the browser session', () => {
@@ -67,4 +70,17 @@ describe('resolveGettingStartedViewState', () => {
       }),
     ).toBe('ready');
   });
+});
+
+describe('resolveGettingStartedAudience', () => {
+  it('gives only the workspace owner the workspace setup path', () => {
+    expect(resolveGettingStartedAudience('owner')).toBe('owner');
+  });
+
+  it.each(['admin', 'curator', 'contributor', 'viewer', undefined] as const)(
+    'takes %s directly to the teammate first-value path',
+    (role) => {
+      expect(resolveGettingStartedAudience(role)).toBe('teammate');
+    },
+  );
 });

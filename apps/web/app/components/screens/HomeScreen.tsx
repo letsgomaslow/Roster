@@ -10,6 +10,9 @@ import {
   StatCard,
   ActionButton,
   EmptyState,
+  SkeletonCardGrid,
+  SkeletonList,
+  SurfaceNotice,
 } from '@/app/components/control-plane/primitives';
 import { OnboardingChecklist } from '@/app/components/control-plane/OnboardingChecklist';
 import { useTrackPageView } from '@/app/components/control-plane/useProductEvents';
@@ -27,6 +30,8 @@ export function HomeScreen() {
     convexEnabled && isAuthenticated ? { promptLimit: 6, agentLimit: 4 } : 'skip',
   );
   const dashboard = useRosterResource<RosterEnvelope<DashboardApiPayload>>('/api/roster/dashboard');
+  const dashboardLoading = dashboard.loading || snapshot === undefined;
+  const dashboardFailed = Boolean(dashboard.error);
 
   const health = dashboard.data?.data?.health;
   const tools = dashboard.data?.data?.tools;
@@ -49,10 +54,26 @@ export function HomeScreen() {
             </ActionButton>
           </>
         }
-        description="Roster should read like a working control plane, not a landing page. This view keeps connection status and workspace momentum side by side so beta users can tell whether the MCP server is ready and whether their library is actually moving."
+        description="This view should answer two questions immediately: is the MCP server truly ready, and is the workspace doing real work yet."
         eyebrow="Operational Overview"
         title="Private beta control plane for the Roster MCP server"
       />
+
+      {dashboardFailed ? (
+        <SurfaceNotice
+          action={
+            <ActionButton onClick={dashboard.reload} tone="ghost">
+              Reload dashboard
+            </ActionButton>
+          }
+          description={
+            dashboard.error ||
+            'Roster could not load the current dashboard snapshot. The shell stays visible so setup and recovery actions remain obvious.'
+          }
+          title="Dashboard data is temporarily unavailable"
+          tone="warning"
+        />
+      ) : null}
 
       {isAuthenticated ? (
         <OnboardingChecklist
@@ -67,8 +88,8 @@ export function HomeScreen() {
       <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
         <Panel
           action={
-            <Badge tone={healthStatus ? 'success' : 'warning'}>
-              {healthStatus ? 'Connected' : 'Needs attention'}
+            <Badge tone={dashboardLoading ? 'info' : healthStatus ? 'success' : 'warning'}>
+              {dashboardLoading ? 'Loading readiness' : healthStatus ? 'Connected' : 'Needs attention'}
             </Badge>
           }
           className="overflow-hidden"
@@ -76,108 +97,134 @@ export function HomeScreen() {
           title="Integration readiness"
           tone="dark"
         >
-          <div className="grid gap-4 md:grid-cols-3">
-            <StatCard
-              accent="strong"
-              detail={
-                health?.success
-                  ? 'BFF can reach the Roster server.'
-                  : 'Health check is not healthy yet.'
-              }
-              label="Server health"
-              value={healthStatus ? 'Healthy' : 'Check'}
-            />
-            <StatCard
-              accent="strong"
-              detail="Listed from the MCP tool endpoint."
-              label="Available tools"
-              value={formatNumber(toolList.length)}
-            />
-            <StatCard
-              accent="strong"
-              detail={
-                subscription?.subscriptionTier
-                  ? `${titleCase(subscription.subscriptionTier)} tier`
-                  : 'Plan unavailable'
-              }
-              label="Rate window"
-              value={subscription?.rateLimit ? `${subscription.rateLimit.requests}/hr` : 'Unknown'}
-            />
-          </div>
-
-          <div className="mt-5 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
-                Quick-start clients
-              </p>
-              <div className="mt-4 grid gap-3">
-                {[
-                  {
-                    name: 'Claude Desktop',
-                    summary: 'Generate a desktop config and test one tool call.',
-                    href: '/integrations#claude',
-                  },
-                  {
-                    name: 'Cursor',
-                    summary: 'Use the same server definition with the beta-friendly copy path.',
-                    href: '/integrations#cursor',
-                  },
-                  {
-                    name: 'Generic host',
-                    summary: 'Keep a JSON reference ready for any MCP-compatible runtime.',
-                    href: '/integrations#generic',
-                  },
-                ].map((item) => (
-                  <Link
-                    className="rounded-[20px] border border-white/10 bg-black/10 px-4 py-4 transition hover:bg-black/20"
-                    href={item.href}
-                    key={item.name}
-                  >
-                    <p className="font-medium text-white">{item.name}</p>
-                    <p className="mt-1 text-sm leading-6 text-white/85">{item.summary}</p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
-                MCP readiness checklist
-              </p>
-              <div className="mt-4 space-y-3">
-                {[
-                  {
-                    label: 'Server responds to `/health`',
-                    status: healthStatus,
-                  },
-                  {
-                    label: 'MCP tools are discoverable',
-                    status: toolList.length > 0,
-                  },
-                  {
-                    label: 'Prompt catalog is loaded',
-                    status: Boolean(snapshot?.counts.total),
-                  },
-                  {
-                    label: 'Usage state is visible',
-                    status: Boolean(subscription?.rateLimit),
-                  },
-                ].map((item) => (
-                  <div
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/10 px-4 py-3"
-                    key={item.label}
-                  >
-                    <span className="max-w-[22rem] text-sm leading-6 text-white/90">
-                      {item.label}
-                    </span>
-                    <Badge tone={item.status ? 'success' : 'warning'}>
-                      {item.status ? 'Ready' : 'Missing'}
-                    </Badge>
+          {dashboardLoading ? (
+            <>
+              <SkeletonCardGrid count={3} detail />
+              <div className="mt-5 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+                <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
+                    Quick-start clients
+                  </p>
+                  <div className="mt-4 space-y-3">
+                    <SkeletonList dense rows={3} />
                   </div>
-                ))}
+                </div>
+                <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
+                    MCP readiness checklist
+                  </p>
+                  <div className="mt-4 space-y-3">
+                    <SkeletonList dense rows={4} />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </>
+          ) : (
+            <>
+              <div className="grid gap-4 md:grid-cols-3">
+                <StatCard
+                  accent="strong"
+                  detail={
+                    health?.success
+                      ? 'BFF can reach the Roster server.'
+                      : 'Health check is not healthy yet.'
+                  }
+                  label="Server health"
+                  value={healthStatus ? 'Healthy' : 'Check'}
+                />
+                <StatCard
+                  accent="strong"
+                  detail="Listed from the MCP tool endpoint."
+                  label="Available tools"
+                  value={formatNumber(toolList.length)}
+                />
+                <StatCard
+                  accent="strong"
+                  detail={
+                    subscription?.subscriptionTier
+                      ? `${titleCase(subscription.subscriptionTier)} tier`
+                      : 'Plan unavailable'
+                  }
+                  label="Rate window"
+                  value={subscription?.rateLimit ? `${subscription.rateLimit.requests}/hr` : 'Unknown'}
+                />
+              </div>
+
+              <div className="mt-5 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+                <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
+                    Quick-start clients
+                  </p>
+                  <div className="mt-4 grid gap-3">
+                    {[
+                      {
+                        name: 'Claude Desktop',
+                        summary: 'Generate a desktop config and test one tool call.',
+                        href: '/integrations#claude',
+                      },
+                      {
+                        name: 'Cursor',
+                        summary: 'Use the same server definition with the beta-friendly copy path.',
+                        href: '/integrations#cursor',
+                      },
+                      {
+                        name: 'Generic host',
+                        summary: 'Keep a JSON reference ready for any MCP-compatible runtime.',
+                        href: '/integrations#generic',
+                      },
+                    ].map((item) => (
+                      <Link
+                        className="rounded-[20px] border border-white/10 bg-black/10 px-4 py-4 transition hover:bg-black/20"
+                        href={item.href}
+                        key={item.name}
+                      >
+                        <p className="font-medium text-white">{item.name}</p>
+                        <p className="mt-1 text-sm leading-6 text-white/85">{item.summary}</p>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
+                    MCP readiness checklist
+                  </p>
+                  <div className="mt-4 space-y-3">
+                    {[
+                      {
+                        label: 'Server responds to `/health`',
+                        status: healthStatus,
+                      },
+                      {
+                        label: 'MCP tools are discoverable',
+                        status: toolList.length > 0,
+                      },
+                      {
+                        label: 'Prompt catalog is loaded',
+                        status: Boolean(snapshot?.counts.total),
+                      },
+                      {
+                        label: 'Usage state is visible',
+                        status: Boolean(subscription?.rateLimit),
+                      },
+                    ].map((item) => (
+                      <div
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/10 px-4 py-3"
+                        key={item.label}
+                      >
+                        <span className="max-w-[22rem] text-sm leading-6 text-white/90">
+                          {item.label}
+                        </span>
+                        <Badge tone={item.status ? 'success' : 'warning'}>
+                          {item.status ? 'Ready' : 'Missing'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </Panel>
 
         <Panel
@@ -185,28 +232,32 @@ export function HomeScreen() {
           title="Workspace activity"
           tone="strategy"
         >
-          <div className="grid gap-4 md:grid-cols-2">
-            <StatCard
-              detail="Direct Convex read"
-              label="Library items"
-              value={formatNumber(snapshot?.counts.total)}
-            />
-            <StatCard
-              detail="Recent feedback count"
-              label="Feedback signals"
-              value={formatNumber(snapshot?.recentFeedbackCount)}
-            />
-            <StatCard
-              detail="Non-standard prompts"
-              label="Agents registered"
-              value={formatNumber(snapshot?.recentAgents.length)}
-            />
-            <StatCard
-              detail="From the orchestration endpoint"
-              label="Runs tracked"
-              value={formatNumber(runs.length)}
-            />
-          </div>
+          {dashboardLoading ? (
+            <SkeletonCardGrid count={4} detail />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              <StatCard
+                detail="Direct Convex read"
+                label="Library items"
+                value={formatNumber(snapshot?.counts.total)}
+              />
+              <StatCard
+                detail="Recent feedback count"
+                label="Feedback signals"
+                value={formatNumber(snapshot?.recentFeedbackCount)}
+              />
+              <StatCard
+                detail="Non-standard prompts"
+                label="Agents registered"
+                value={formatNumber(snapshot?.recentAgents.length)}
+              />
+              <StatCard
+                detail="From the orchestration endpoint"
+                label="Runs tracked"
+                value={formatNumber(runs.length)}
+              />
+            </div>
+          )}
         </Panel>
       </div>
 
@@ -223,7 +274,9 @@ export function HomeScreen() {
           subtitle="Recent prompt activity should prove that beta users can move from setup into actual authoring."
           title="Recent prompts"
         >
-          {snapshot?.recentPrompts?.length ? (
+          {dashboardLoading ? (
+            <SkeletonList rows={4} />
+          ) : snapshot?.recentPrompts?.length ? (
             <div className="space-y-3">
               {snapshot.recentPrompts.map((item) => (
                 <Link
@@ -281,7 +334,9 @@ export function HomeScreen() {
           subtitle="The orchestration list should immediately tell you whether the backend is producing traceable, inspectable work."
           title="Recent runs"
         >
-          {runs.length ? (
+          {dashboardLoading ? (
+            <SkeletonList rows={4} />
+          ) : runs.length ? (
             <div className="space-y-3">
               {runs.map((run) => (
                 <Link
@@ -325,58 +380,62 @@ export function HomeScreen() {
           title="Usage and catalog signals"
           tone="strategy"
         >
-          <div className="space-y-4">
-            <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-                Plan
-              </p>
-              <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
-                {subscription?.subscriptionTier
-                  ? titleCase(subscription.subscriptionTier)
-                  : 'Unavailable'}
-              </p>
-              <p className="mt-2 text-sm text-[var(--muted)]">
-                {subscription?.rateLimit
-                  ? `${formatNumber(subscription.rateLimit.requests)} requests every ${Math.round(subscription.rateLimit.windowMs / 3_600_000)} hour(s).`
-                  : 'Rate limit details are not currently available.'}
-              </p>
-            </div>
+          {dashboardLoading ? (
+            <SkeletonCardGrid count={3} detail />
+          ) : (
+            <div className="space-y-4">
+              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
+                  Plan
+                </p>
+                <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
+                  {subscription?.subscriptionTier
+                    ? titleCase(subscription.subscriptionTier)
+                    : 'Unavailable'}
+                </p>
+                <p className="mt-2 text-sm text-[var(--muted)]">
+                  {subscription?.rateLimit
+                    ? `${formatNumber(subscription.rateLimit.requests)} requests every ${Math.round(subscription.rateLimit.windowMs / 3_600_000)} hour(s).`
+                    : 'Rate limit details are not currently available.'}
+                </p>
+              </div>
 
-            <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-                Library mix
-              </p>
-              <div className="mt-4 space-y-3">
-                {Object.entries(snapshot?.counts.byPromptType ?? {})
-                  .slice(0, 4)
-                  .map(([key, value]) => (
-                    <div className="flex items-center justify-between text-sm" key={key}>
-                      <span className="text-[var(--muted)]">{titleCase(key)}</span>
-                      <span className="font-medium text-[var(--ink)]">{formatNumber(value)}</span>
-                    </div>
-                  ))}
+              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
+                  Library mix
+                </p>
+                <div className="mt-4 space-y-3">
+                  {Object.entries(snapshot?.counts.byPromptType ?? {})
+                    .slice(0, 4)
+                    .map(([key, value]) => (
+                      <div className="flex items-center justify-between text-sm" key={key}>
+                        <span className="text-[var(--muted)]">{titleCase(key)}</span>
+                        <span className="font-medium text-[var(--ink)]">{formatNumber(value)}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
+                  Agent health
+                </p>
+                <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+                  {stats?.subagents?.total
+                    ? `${formatNumber(stats.subagents.total)} subagents are indexed across ${formatNumber(stats.subagents.categories?.length ?? 0)} categories.`
+                    : 'Subagent statistics are not available yet.'}
+                </p>
+                {snapshot?.recentAgents?.[0] ? (
+                  <p className="mt-3 text-sm text-[var(--ink)]">
+                    Most recent agent success rate:{' '}
+                    <span className="font-medium">
+                      {formatPercent(snapshot.recentAgents[0].successRate)}
+                    </span>
+                  </p>
+                ) : null}
               </div>
             </div>
-
-            <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-                Agent health
-              </p>
-              <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-                {stats?.subagents?.total
-                  ? `${formatNumber(stats.subagents.total)} subagents are indexed across ${formatNumber(stats.subagents.categories?.length ?? 0)} categories.`
-                  : 'Subagent statistics are not available yet.'}
-              </p>
-              {snapshot?.recentAgents?.[0] ? (
-                <p className="mt-3 text-sm text-[var(--ink)]">
-                  Most recent agent success rate:{' '}
-                  <span className="font-medium">
-                    {formatPercent(snapshot.recentAgents[0].successRate)}
-                  </span>
-                </p>
-              ) : null}
-            </div>
-          </div>
+          )}
         </Panel>
       </div>
     </div>

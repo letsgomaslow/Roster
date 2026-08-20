@@ -1,6 +1,21 @@
-# Roster MCP
+# Roster — AI Work Library
 
-**Prompt management MCP server by [Maslow AI](https://www.npmjs.com/org/maslowai).**
+**Save reusable work once. Review it as a team. Use it across your AI tools.**
+
+Roster is pivoting from a technical MCP control plane to a calm, library-first workspace for
+prompts and bounded playbooks. The current alpha adds workspace isolation, immutable versions,
+role-based approvals, reviewed file import, exact rendering, open export, and real reuse events.
+The original MCP server, agent catalog, and traces remain available in the role-gated Advanced
+area while the new product is validated.
+
+See [AI Work Library alpha](docs/designs/ai-work-library-alpha.md) for the implemented boundary,
+rollout flag, and verification commands.
+
+## Legacy MCP package
+
+The published `@maslowai/roster` package remains compatible while the workspace-scoped remote MCP
+surface is developed. The documentation below describes that legacy package and should not be read
+as a claim that the new multi-tenant MCP endpoint or playbook runtime is already live.
 
 <div align="center">
 
@@ -9,7 +24,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
 [![MCP](https://img.shields.io/badge/MCP-1.18-green)](https://modelcontextprotocol.io/)
 
-A production-ready [Model Context Protocol](https://modelcontextprotocol.io/) server for managing, versioning, and serving prompts and templates for LLM applications—with **file**, **memory**, **PostgreSQL**, **Convex** (hosted), and optional **AWS** (DynamoDB, S3, SQS) storage.
+A legacy [Model Context Protocol](https://modelcontextprotocol.io/) server for managing, versioning, and serving prompts and templates for LLM applications—with **file**, **memory**, **PostgreSQL**, **Convex** (hosted), and optional **AWS** (DynamoDB, S3, SQS) storage.
 
 [Features](#features) • [Installation](#installation) • [Quick Start](#quick-start) • [Convex (hosted)](#convex-hosted-storage) • [Configuration](#configuration) • [Operations](OPERATIONS.md) • [Docker](#docker)
 

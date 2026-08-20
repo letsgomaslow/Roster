@@ -22,6 +22,7 @@ import { ReportGenerationService } from '../core/services/report-generation.serv
 import { createSubagentsRouter } from './routes/subagents.router';
 import { createMainAgentsRouter } from './routes/main-agents.router';
 import { createOrchestrateRouter } from './routes/orchestrate.router';
+import { getLegacyAdvancedRuntimeAccess } from '../lib/legacy-advanced-access';
 
 export async function createServerWithAgents(): Promise<express.Application> {
   const app = express();
@@ -86,6 +87,20 @@ export async function createServerWithAgents(): Promise<express.Application> {
         timestamp: new Date().toISOString(),
       });
     }
+  });
+
+  const legacyAccess = getLegacyAdvancedRuntimeAccess({
+    enabledValue: process.env.ROSTER_LEGACY_ADVANCED_ENABLED,
+    environment: process.env.NODE_ENV,
+    hasClerkKeys: false,
+    insecureLocalValue: process.env.ROSTER_LEGACY_ADVANCED_ALLOW_INSECURE_LOCAL,
+  });
+  app.use('/v1', (_req, res, next) => {
+    if (!legacyAccess.allowed) {
+      res.status(legacyAccess.status).json({ error: legacyAccess.error });
+      return;
+    }
+    next();
   });
 
   // API info endpoint
@@ -213,12 +228,12 @@ export async function createServerWithAgents(): Promise<express.Application> {
 
 // Start server if run directly
 if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
-  const HOST = process.env.HOST || '0.0.0.0';
+  const PORT = Number.parseInt(process.env.PORT ?? '3000', 10);
+  const HOST = process.env.HOST || '127.0.0.1';
 
   createServerWithAgents()
     .then((app) => {
-      app.listen(PORT, () => {
+      app.listen(PORT, HOST, () => {
         console.log(`🚀 MCP Prompts Server (with agents) listening on http://${HOST}:${PORT}`);
         console.log(
           `   Prompts directory: ${process.env.PROMPTS_DIR || path.join(process.cwd(), 'data', 'prompts')}`,

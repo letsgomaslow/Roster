@@ -25,7 +25,7 @@ function authButtonClassName({
   className?: string;
 }) {
   return cx(
-    'inline-flex min-h-11 items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold transition',
+    'inline-flex min-h-11 items-center justify-center px-4 py-2.5 text-sm font-semibold transition-colors',
     tone === 'primary'
       ? 'bg-[var(--button-primary)] text-[var(--button-primary-ink)] hover:bg-[var(--button-primary-hover)]'
       : 'border border-[var(--line)] bg-white/85 text-[var(--ink)] hover:bg-white',
@@ -63,7 +63,7 @@ export function AuthCtas({
   authSurfaceState,
   layout = 'row',
   signInLabel = 'Sign in',
-  signUpLabel = 'Create account',
+  signUpLabel = 'Create workspace',
   className,
 }: AuthCtasProps) {
   const wrapperClassName = cx(

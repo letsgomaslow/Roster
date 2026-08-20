@@ -10,6 +10,8 @@ import {
   PageIntro,
   Panel,
   Badge,
+  SkeletonList,
+  SurfaceNotice,
 } from '@/app/components/control-plane/primitives';
 import {
   useTrackPageView,
@@ -19,6 +21,7 @@ import { openMicroFeedback } from '@/lib/control-plane-events';
 import { convexEnabled } from '@/lib/convex-client';
 import { formatRelativeDate, titleCase } from '@/lib/formatters';
 import { rosterFetchEnvelope } from '@/lib/roster-client';
+import { RouteStatusScreen } from './RouteStatusScreen';
 
 type FormState = {
   promptId: string;
@@ -60,6 +63,12 @@ const EMPTY_FORM: FormState = {
   systemPrompt: '',
 };
 
+function createInitialForm(isNew: boolean): FormState {
+  return isNew
+    ? { ...EMPTY_FORM, promptId: `prompt_${Date.now().toString(36)}` }
+    : EMPTY_FORM;
+}
+
 function parseList(value: string) {
   return value
     .split(',')
@@ -89,12 +98,13 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
   });
 
   const { isAuthenticated } = useConvexAuth();
+  const hostedAuthConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
   const detail = useQuery(
     api.prompts.getPromptDetail,
     convexEnabled && isAuthenticated && !isNew ? { promptId } : 'skip',
   );
 
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [form, setForm] = useState<FormState>(() => createInitialForm(isNew));
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [applyState, setApplyState] = useState<'idle' | 'applying' | 'error'>('idle');
   const [applyPreview, setApplyPreview] = useState('');
@@ -103,17 +113,13 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
 
   useEffect(() => {
     if (!detail?.prompt) {
-      if (isNew) {
-        setForm((current) =>
-          current.promptId
-            ? current
-            : { ...EMPTY_FORM, promptId: `prompt_${Date.now().toString(36)}` },
-        );
-      }
       return;
     }
 
     const prompt = detail.prompt;
+    // This legacy editor hydrates once from the asynchronously loaded Convex record.
+    // The AI Work Library editor replaces this with a keyed form boundary.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm({
       promptId: prompt.promptId,
       name: prompt.name,
@@ -143,6 +149,63 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
   }, [detail, isNew]);
 
   const variableNames = parseVariables(form.variables);
+
+  if (!isAuthenticated) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="signed_out"
+        pathname={isNew ? '/library/new' : `/library/${promptId}`}
+      />
+    );
+  }
+
+  if (!isNew && detail === undefined) {
+    return (
+      <div className="space-y-8">
+        <PageIntro
+          description="The editor route is keeping metadata, template content, and apply-preview in one place while the prompt record loads."
+          eyebrow="Prompt Detail"
+          title="Loading prompt detail"
+        />
+        <SurfaceNotice
+          description="Prompt detail is loading from Convex. The route stays visible so the editor never looks like an empty new-prompt form by accident."
+          title="Loading prompt record"
+          tone="info"
+        />
+        <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+          <Panel subtitle="Metadata and template fields are loading." title="Editor" tone="strategy">
+            <SkeletonList rows={6} />
+          </Panel>
+          <div className="space-y-5">
+            <Panel subtitle="Advanced configuration is loading with the prompt record." title="Agent configuration" tone="strategy">
+              <SkeletonList rows={5} />
+            </Panel>
+            <Panel subtitle="Preview inputs and output load after the prompt record." title="Apply preview" tone="tech">
+              <SkeletonList rows={4} />
+            </Panel>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isNew && detail?.prompt === null) {
+    return (
+      <div className="space-y-8">
+        <PageIntro
+          description="The requested prompt record was not returned by the backend."
+          eyebrow="Prompt Detail"
+          title="Prompt not found"
+        />
+        <EmptyState
+          action={null}
+          description="Return to the library to choose another prompt or create a new one."
+          title="This prompt is not available in the current workspace"
+        />
+      </div>
+    );
+  }
 
   async function onSave() {
     setSaveState('saving');

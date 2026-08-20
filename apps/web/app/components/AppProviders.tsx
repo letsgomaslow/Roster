@@ -3,42 +3,24 @@
 import type { ReactNode } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { ConvexProviderWithAuth } from 'convex/react';
+import { ConvexProviderWithClerk } from 'convex/react-clerk';
+import { ClerkWorkspaceBootstrap } from '@/app/components/work-library/WorkspaceContext';
 import { convex } from '@/lib/convex-client';
 
-function useClerkBackedConvexAuth() {
-  const { isLoaded, isSignedIn, getToken, sessionClaims } = useAuth();
-  // Default to Clerk's "convex" JWT template so local auth works without an extra public env var.
-  const template =
-    process.env.NEXT_PUBLIC_CLERK_CONVEX_JWT_TEMPLATE?.trim() ||
-    process.env.NEXT_PUBLIC_CLERK_JWT_TEMPLATE?.trim() ||
-    'convex';
-  const hasNativeConvexAudience = sessionClaims?.aud === 'convex';
-
-  return {
-    isLoading: !isLoaded,
-    isAuthenticated: Boolean(isSignedIn && (hasNativeConvexAudience || template)),
-    fetchAccessToken: async ({ forceRefreshToken }: { forceRefreshToken: boolean }) => {
-      try {
-        if (hasNativeConvexAudience) {
-          return await getToken({ skipCache: forceRefreshToken });
-        }
-        if (!template) {
-          return null;
-        }
-        return await getToken({ template, skipCache: forceRefreshToken });
-      } catch {
-        return null;
-      }
-    },
-  };
-}
+const anonymousAuthState = {
+  isLoading: false,
+  isAuthenticated: false,
+  fetchAccessToken: async () => null,
+};
 
 function useAnonymousConvexAuth() {
-  return {
-    isLoading: false,
-    isAuthenticated: false,
-    fetchAccessToken: async () => null,
-  };
+  return anonymousAuthState;
+}
+
+function SignedInWorkspaceBoundary({ children }: { children: ReactNode }) {
+  const { isLoaded, isSignedIn } = useAuth();
+  if (!isLoaded || !isSignedIn) return children;
+  return <ClerkWorkspaceBootstrap>{children}</ClerkWorkspaceBootstrap>;
 }
 
 export function AppProviders({
@@ -48,10 +30,16 @@ export function AppProviders({
   children: ReactNode;
   clerkEnabled: boolean;
 }) {
-  const useAuthHook = clerkEnabled ? useClerkBackedConvexAuth : useAnonymousConvexAuth;
+  if (clerkEnabled) {
+    return (
+      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+        <SignedInWorkspaceBoundary>{children}</SignedInWorkspaceBoundary>
+      </ConvexProviderWithClerk>
+    );
+  }
 
   return (
-    <ConvexProviderWithAuth client={convex} useAuth={useAuthHook}>
+    <ConvexProviderWithAuth client={convex} useAuth={useAnonymousConvexAuth}>
       {children}
     </ConvexProviderWithAuth>
   );

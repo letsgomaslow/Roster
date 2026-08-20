@@ -5,6 +5,7 @@ import type { ClerkEnvironmentDiagnostic } from '@/lib/clerk-diagnostics';
 import type { AuthSurfaceState } from '@/lib/auth-surface';
 import { GettingStartedScreen } from './screens/GettingStartedScreen';
 import { PublicBetaHomeScreen } from './screens/PublicBetaHomeScreen';
+import { RouteStatusScreen } from './screens/RouteStatusScreen';
 
 export function ClerkBootstrapFallback({
   authSurfaceState,
@@ -21,6 +22,17 @@ export function ClerkBootstrapFallback({
         authSurfaceState={authSurfaceState}
         diagnostic={diagnostic}
         signedIn={false}
+      />
+    );
+  }
+
+  if (pathname !== '/') {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={authSurfaceState}
+        diagnostic={diagnostic}
+        mode={authSurfaceState === 'loading' ? 'signed_out' : 'failed'}
+        pathname={pathname}
       />
     );
   }
