@@ -1,7 +1,154 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
+import {
+  assetKindValidator,
+  inputDefinitionValidator,
+  promptVariantValidator,
+  reviewStateValidator,
+  visibilityValidator,
+  workspaceRoleValidator,
+} from './lib/workLibraryValidators';
 
 export default defineSchema({
+  workspaces: defineTable({
+    externalId: v.string(),
+    slug: v.string(),
+    name: v.string(),
+    createdByUserId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_external_id', ['externalId'])
+    .index('by_slug', ['slug']),
+  memberships: defineTable({
+    workspaceId: v.id('workspaces'),
+    userId: v.string(),
+    role: workspaceRoleValidator,
+    displayName: v.string(),
+    email: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_workspace_id_and_user_id', ['workspaceId', 'userId'])
+    .index('by_user_id_and_workspace_id', ['userId', 'workspaceId']),
+  assets: defineTable({
+    workspaceId: v.id('workspaces'),
+    kind: assetKindValidator,
+    title: v.string(),
+    purpose: v.string(),
+    searchText: v.string(),
+    teamKey: v.string(),
+    jobKey: v.string(),
+    visibility: visibilityValidator,
+    reviewState: reviewStateValidator,
+    ownerUserId: v.string(),
+    currentVersionId: v.optional(v.id('assetVersions')),
+    starterKey: v.optional(v.string()),
+    latestVersionNumber: v.number(),
+    lastVerifiedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_workspace_id_and_updated_at', ['workspaceId', 'updatedAt'])
+    .index('by_workspace_id_and_owner_user_id_and_updated_at', [
+      'workspaceId',
+      'ownerUserId',
+      'updatedAt',
+    ])
+    .index('by_workspace_id_and_starter_key', ['workspaceId', 'starterKey'])
+    .index('by_workspace_id_and_review_state_and_updated_at', [
+      'workspaceId',
+      'reviewState',
+      'updatedAt',
+    ])
+    .searchIndex('search_by_workspace', {
+      searchField: 'searchText',
+      filterFields: ['workspaceId', 'kind', 'teamKey', 'jobKey', 'reviewState'],
+    }),
+  assetVersions: defineTable({
+    workspaceId: v.id('workspaces'),
+    assetId: v.id('assets'),
+    versionNumber: v.number(),
+    body: v.string(),
+    inputs: v.array(inputDefinitionValidator),
+    variants: v.array(promptVariantValidator),
+    changeNote: v.string(),
+    authorUserId: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_asset_id_and_version_number', ['assetId', 'versionNumber'])
+    .index('by_workspace_id_and_created_at', ['workspaceId', 'createdAt']),
+  assetApprovals: defineTable({
+    workspaceId: v.id('workspaces'),
+    assetId: v.id('assets'),
+    versionId: v.id('assetVersions'),
+    versionNumber: v.number(),
+    scope: v.union(v.literal('team'), v.literal('workspace')),
+    reviewerUserId: v.string(),
+    note: v.string(),
+    testedModels: v.array(v.string()),
+    createdAt: v.number(),
+  })
+    .index('by_asset_id_and_created_at', ['assetId', 'createdAt'])
+    .index('by_version_id_and_scope', ['versionId', 'scope']),
+  assetFavorites: defineTable({
+    workspaceId: v.id('workspaces'),
+    assetId: v.id('assets'),
+    userId: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_asset_id_and_user_id', ['assetId', 'userId'])
+    .index('by_workspace_id_and_user_id_and_created_at', ['workspaceId', 'userId', 'createdAt']),
+  assetComments: defineTable({
+    workspaceId: v.id('workspaces'),
+    assetId: v.id('assets'),
+    versionId: v.id('assetVersions'),
+    versionNumber: v.number(),
+    authorUserId: v.string(),
+    body: v.string(),
+    createdAt: v.number(),
+  }).index('by_asset_id_and_created_at', ['assetId', 'createdAt']),
+  adoptionEvents: defineTable({
+    workspaceId: v.id('workspaces'),
+    assetId: v.optional(v.id('assets')),
+    actorUserId: v.string(),
+    assetOwnerUserId: v.optional(v.string()),
+    eventType: v.union(
+      v.literal('asset_created'),
+      v.literal('asset_shared'),
+      v.literal('asset_approved'),
+      v.literal('asset_used'),
+    ),
+    source: v.union(
+      v.literal('web'),
+      v.literal('copy'),
+      v.literal('export'),
+      v.literal('mcp'),
+      v.literal('test'),
+      v.literal('playbook'),
+    ),
+    versionNumber: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index('by_workspace_id_and_created_at', ['workspaceId', 'createdAt'])
+    .index('by_asset_id_and_created_at', ['assetId', 'createdAt'])
+    .index('by_workspace_id_and_actor_user_id_and_created_at', [
+      'workspaceId',
+      'actorUserId',
+      'createdAt',
+    ]),
+  dailyAdoptionAggregates: defineTable({
+    workspaceId: v.id('workspaces'),
+    date: v.string(),
+    eventType: v.union(
+      v.literal('asset_created'),
+      v.literal('asset_shared'),
+      v.literal('asset_approved'),
+      v.literal('asset_used'),
+    ),
+    count: v.number(),
+    updatedAt: v.number(),
+  }).index('by_workspace_id_and_date_and_event_type', ['workspaceId', 'date', 'eventType']),
   prompts: defineTable({
     promptId: v.string(),
     ownerUserId: v.string(),

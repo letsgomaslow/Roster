@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { expectNoBlockingAxeViolations } from './a11y';
 
 const ROUTES = [
-  { path: '/', heading: /Public beta access for the Roster MCP server control plane/i },
+  { path: '/', heading: /Save reusable work once. Use it across your AI tools./i },
   { path: '/getting-started', heading: /Sign in to continue setup/i },
   { path: '/library', heading: /Sign in to continue to prompt library/i },
   { path: '/library/new', heading: /Sign in to continue to prompt library/i },
@@ -52,7 +52,7 @@ test.describe('Phase 3 accessibility', () => {
 
   test('public beta entry stays responsive on mobile and tablet', async ({ page }) => {
     const assertions = [
-      { path: '/', heading: /Public beta access for the Roster MCP server control plane/i },
+      { path: '/', heading: /Save reusable work once. Use it across your AI tools./i },
       { path: '/getting-started', heading: /Sign in to continue setup/i },
       { path: '/library', heading: /Sign in to continue to prompt library/i },
       { path: '/integrations', heading: /Sign in to continue to integrations/i },

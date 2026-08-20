@@ -3,24 +3,18 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserButton, useAuth } from '@clerk/nextjs';
+import { OrganizationSwitcher, UserButton, useAuth } from '@clerk/nextjs';
 import { openFeedback } from '@/lib/control-plane-events';
 import { cx } from '@/lib/cx';
+import { getWorkLibraryNavigation } from '@/lib/work-library-navigation';
+import { isWorkLibraryEnabled } from '@/lib/work-library-flags';
 import { authSurfaceAllowsHostedUi, type AuthSurfaceState } from '@/lib/auth-surface';
+import { useWorkspace } from '@/app/components/work-library/WorkspaceContext';
 import { AuthCtas } from './AuthCtas';
 import { MaslowRosterLogo } from './MaslowRosterLogo';
 import { CommandPalette } from './CommandPalette';
 import { AuthSurfaceFeedbackDrawer, ClerkFeedbackDrawer, FeedbackDrawer } from './FeedbackDrawer';
 import { useDialogA11y } from './useDialogA11y';
-
-const NAV_ITEMS = [
-  { href: '/', label: 'Home', caption: 'Overview' },
-  { href: '/library', label: 'Library', caption: 'Prompts' },
-  { href: '/agents', label: 'Agents', caption: 'Catalog' },
-  { href: '/runs', label: 'Runs', caption: 'Execution' },
-  { href: '/integrations', label: 'Integrations', caption: 'MCP setup' },
-  { href: '/settings', label: 'Settings', caption: 'Usage' },
-];
 
 function isActive(pathname: string, href: string) {
   if (href === '/') return pathname === '/';
@@ -28,11 +22,15 @@ function isActive(pathname: string, href: string) {
 }
 
 function describePathname(pathname: string) {
-  if (pathname === '/') return 'Operational overview';
+  if (pathname === '/') return 'Team work overview';
   if (pathname === '/getting-started') return 'Setup checklist';
-  if (pathname.startsWith('/library/new')) return 'New prompt';
-  if (pathname.startsWith('/library/')) return 'Prompt detail';
-  if (pathname === '/library') return 'Prompt library';
+  if (pathname.startsWith('/library/new')) return 'Save new work';
+  if (pathname.startsWith('/library/')) return 'Work detail';
+  if (pathname === '/library') return 'AI Work Library';
+  if (pathname === '/my-work') return 'My drafts and saved work';
+  if (pathname === '/approvals') return 'Team approvals';
+  if (pathname === '/workspace-admin') return 'Workspace administration';
+  if (pathname === '/advanced') return 'Advanced tools';
   if (pathname.startsWith('/agents/')) return 'Agent detail';
   if (pathname === '/agents') return 'Agent catalog';
   if (pathname.startsWith('/runs/')) return 'Run detail';
@@ -58,14 +56,17 @@ function ClerkAuthSection({ authSurfaceState }: { authSurfaceState: AuthSurfaceS
   }
 
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[var(--muted)]">
-          Session
+            Workspace
         </p>
-        <p className="mt-1 text-sm text-[var(--ink)]">Private beta workspace</p>
+          <p className="mt-1 text-sm text-[var(--ink)]">Your team library</p>
+        </div>
+        <UserButton />
       </div>
-      <UserButton />
+      <OrganizationSwitcher />
     </div>
   );
 }
@@ -110,6 +111,11 @@ export function ControlPlaneShell({
   signedIn: boolean;
 }) {
   const pathname = usePathname();
+  const workspace = useWorkspace();
+  const navItems = getWorkLibraryNavigation(
+    workspace.role,
+    isWorkLibraryEnabled(process.env.NEXT_PUBLIC_WORK_LIBRARY_ENABLED),
+  );
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const mobileNavRef = useRef<HTMLDivElement | null>(null);
@@ -230,7 +236,7 @@ export function ControlPlaneShell({
               </div>
 
               <nav aria-label="Primary" className="mt-8 space-y-2">
-                {NAV_ITEMS.map((item) => {
+                {navItems.map((item) => {
                   const active = isActive(pathname, item.href);
                   return (
                     <Link
@@ -261,14 +267,14 @@ export function ControlPlaneShell({
 
               <div className="mt-8 rounded-[28px] border border-[rgba(255,255,255,0.12)] bg-[var(--panel-strong)] px-4 py-4 text-white [background-image:var(--panel-strong-gradient)]">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-white/85">
-                  Beta posture
+                  AI Work Library
                 </p>
                 <p className="mt-3 text-lg font-medium tracking-[-0.03em]">
-                  Setup, prompts, and execution now share one operating surface.
+                  Save useful work once. Improve it together. Use it in any AI tool.
                 </p>
                 <p className="mt-2 text-sm leading-6 text-white/90">
-                  The shell keeps primary actions obvious, secondary work visible, and recovery
-                  paths close to the workflows they unblock.
+                  Prompts and playbooks stay readable for the team, with trust and technical depth
+                  available when people need them.
                 </p>
                 <button
                   className="mt-4 min-h-11 rounded-full bg-[var(--button-primary)] px-4 py-2 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
@@ -313,11 +319,11 @@ export function ControlPlaneShell({
                 </Link>
                 <div className="space-y-1">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-[var(--strategy-strong)]">
-                    Control plane
+                    AI Work Library
                   </p>
                   <p className="text-sm text-[var(--ink)]">{describePathname(pathname)}</p>
                   <p className="text-sm text-[var(--muted)]">
-                    One primary action per screen, with setup and recovery kept visible.
+                    Outcome-first work, team review, and portable use across AI tools.
                   </p>
                 </div>
               </div>

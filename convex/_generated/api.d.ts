@@ -8,8 +8,11 @@
  * @module
  */
 
-import type * as prompts from "../prompts.js";
+import type * as lib_starterAssets from "../lib/starterAssets.js";
+import type * as lib_workLibraryValidators from "../lib/workLibraryValidators.js";
 import type * as onboarding from "../onboarding.js";
+import type * as prompts from "../prompts.js";
+import type * as workLibrary from "../workLibrary.js";
 
 import type {
   ApiFromModules,
@@ -18,8 +21,11 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "lib/starterAssets": typeof lib_starterAssets;
+  "lib/workLibraryValidators": typeof lib_workLibraryValidators;
   onboarding: typeof onboarding;
   prompts: typeof prompts;
+  workLibrary: typeof workLibrary;
 }>;
 
 /**

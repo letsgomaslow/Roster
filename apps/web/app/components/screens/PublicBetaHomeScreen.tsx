@@ -21,34 +21,33 @@ export function PublicBetaHomeScreen({
           <div className="flex flex-wrap items-center gap-3">
             <Badge tone="brand">Public beta</Badge>
             <p className="text-sm text-[var(--muted)]">
-              Open signup for teams validating MCP setup, prompt inventory, and run visibility.
+              For teams that already use more than one AI tool.
             </p>
           </div>
           <div className="space-y-4">
             <p className="text-[0.72rem] font-semibold uppercase tracking-[0.32em] text-[var(--strategy-strong)]">
-              Beta Entry
+              Roster · AI Work Library
             </p>
             <h1 className="max-w-4xl font-heading text-balance text-4xl tracking-[-0.06em] text-[var(--ink)] md:text-6xl">
-              Public beta access for the Roster MCP server control plane
+              Save reusable work once. Use it across your AI tools.
             </h1>
             <p className="max-w-3xl text-base leading-8 text-[var(--muted)] md:text-lg">
-              Roster is the operational surface for teams shipping MCP-backed prompts and agent
-              workflows. Sign in to connect a host, prove server health, create a first prompt, and
-              open a traceable run without leaving the product.
+              Turn the prompts people keep in documents and notes into team-owned work that is easy
+              to find, review, and use in ChatGPT, Claude, Gemini, Copilot, Codex, and future tools.
             </p>
           </div>
           <AuthCtas
             authSurfaceState={authSurfaceState}
             className="pt-2"
-            signInLabel="Sign in to beta"
-            signUpLabel="Create beta account"
+            signInLabel="Sign in"
+            signUpLabel="Create a workspace"
           />
           {authSurfaceState !== 'ready' ? (
             <AuthSurfaceNotice authSurfaceState={authSurfaceState} diagnostic={diagnostic} />
           ) : null}
           <div className="flex flex-wrap gap-6 text-sm text-[var(--muted)]">
-            <p>Supported auth: Google, GitHub, and email</p>
-            <p>Expected outcome: a working host config and first successful orchestration</p>
+            <p>Prompts and bounded playbooks</p>
+            <p>Open export and MCP retrieval on every plan</p>
           </div>
         </div>
 
@@ -58,9 +57,9 @@ export function PublicBetaHomeScreen({
           </p>
           <ol className="mt-5 space-y-4">
             {[
-              'Connect Claude Desktop, Cursor, or another MCP-compatible host.',
-              'Verify health, tool discovery, and rate visibility in one checklist.',
-              'Create a prompt and run the first orchestration from the same control plane.',
+              'Paste a prompt your team already uses and describe the outcome.',
+              'Share one exact version for another person to review and reuse.',
+              'Copy it or connect Roster to a supported AI tool with MCP.',
             ].map((item, index) => (
               <li
                 className="flex items-start gap-4 rounded-[24px] border border-white/12 bg-white/6 px-4 py-4"
@@ -82,11 +81,11 @@ export function PublicBetaHomeScreen({
             Who beta is for
           </p>
           <p className="mt-4 text-lg font-semibold text-[var(--ink)]">
-            Teams that need an operational view, not a generic prompt gallery.
+            Cross-tool teams of 10–250 people.
           </p>
           <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-            The product is tuned for developers, operators, and prompt owners who need to see setup
-            readiness, prompt creation, and orchestration history in one workflow.
+            Roster is designed for marketers, business developers, client-delivery teams, and the
+            technical admins who support them.
           </p>
         </div>
 
@@ -95,11 +94,11 @@ export function PublicBetaHomeScreen({
             Beta expectations
           </p>
           <p className="mt-4 text-lg font-semibold text-[var(--ink)]">
-            Core setup and execution flows are the priority.
+            The library works without an AI provider.
           </p>
           <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-            You should expect a stable auth path, readable status surfaces, and responsive setup
-            tooling. Broader workflow depth will continue expanding during beta.
+            Save, find, copy, review, and export remain available manually. Optional AI assistance
+            uses credentials owned by your workspace.
           </p>
         </div>
 
@@ -109,14 +108,14 @@ export function PublicBetaHomeScreen({
           </p>
           <p className="mt-4 text-lg font-semibold text-[var(--ink)]">Need help before signup?</p>
           <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-            Use the in-product feedback path once signed in, or review the setup guidance before
-            you connect a host.
+            Sign in to use the guided library. Technical setup and MCP instructions remain in the
+            role-gated Advanced area.
           </p>
           <Link
             className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--line)] px-4 py-2.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-white"
-            href="/integrations"
+            href="/getting-started"
           >
-            Review setup guidance
+            See how Roster works
           </Link>
         </div>
       </section>

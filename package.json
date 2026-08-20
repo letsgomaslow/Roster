@@ -2,7 +2,7 @@
   "name": "@maslowai/roster",
   "version": "3.14.0",
   "packageManager": "pnpm@10.30.3",
-  "description": "Roster — MCP server for managing, versioning, and serving prompts and templates for LLM applications, with optional AWS integration",
+  "description": "Roster — an AI Work Library for saving, reviewing, and reusing prompts and bounded playbooks across AI tools",
   "main": "dist/mcp-server-standalone.js",
   "types": "dist/mcp-server-standalone.d.ts",
   "bin": {
@@ -101,7 +101,7 @@
     "@clerk/express": "2.0.8",
     "@modelcontextprotocol/sdk": "^1.25.1",
     "commander": "^12.0.0",
-    "convex": "1.34.1",
+    "convex": "1.44.0",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "flatbuffers": "25.9.23",
@@ -115,6 +115,7 @@
     "zod": "^3.25.71"
   },
   "devDependencies": {
+    "@edge-runtime/vm": "5.0.0",
     "@swc/cli": "^0.1.65",
     "@swc/core": "^1.13.5",
     "@types/aws-lambda": "^8.10.153",
@@ -123,10 +124,12 @@
     "@types/morgan": "^1.9.10",
     "@types/node": "^20.19.17",
     "@types/uuid": "^10.0.0",
+    "convex-test": "0.0.56",
     "nodemon": "^3.1.10",
     "stripe": "^14.17.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
+    "vite": "^5.4.20",
     "vitest": "^1.6.1"
   },
   "engines": {

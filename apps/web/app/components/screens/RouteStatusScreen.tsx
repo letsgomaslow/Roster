@@ -29,18 +29,18 @@ type RouteMeta = {
 function getRouteMeta(pathname: string): RouteMeta {
   if (pathname.startsWith('/library')) {
     return {
-      eyebrow: 'Prompt Library',
-      title: 'Prompt search, filtering, and editing stay behind sign-in',
+      eyebrow: 'AI Work Library',
+      title: 'Your team library stays behind sign-in',
       summary:
-        'The library is where beta users search prompt inventory, inspect prompt types, and move into authoring without leaving the web app.',
+        'The library is where your team saves, finds, reviews, and reuses prompts and bounded playbooks.',
       bullets: [
-        'Search prompt names, tags, and template content.',
-        'Filter by prompt type and category.',
-        'Open detail views for editing and apply preview.',
+        'Search by outcome, team, owner, or content.',
+        'Fill friendly input fields without changing the canonical prompt.',
+        'Review one exact version before marking it trusted.',
       ],
-      supportTitle: 'Need setup before you browse?',
+      supportTitle: 'Want to understand the flow first?',
       supportDescription:
-        'Start with the setup route so your host, tool discovery, and first prompt path are all visible before you enter the library.',
+        'Start with the guided introduction before you save your first private draft.',
       supportHref: '/getting-started',
       supportLabel: 'Open getting started',
     };

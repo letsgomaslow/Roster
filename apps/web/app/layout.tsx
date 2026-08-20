@@ -9,10 +9,10 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Roster | Maslow AI',
+    default: 'Roster — AI Work Library | Maslow AI',
     template: '%s | Roster',
   },
-  description: 'Maslow AI control plane for the Roster MCP server',
+  description: 'Save reusable AI work once, review it as a team, and use it across your AI tools.',
 };
 
 const AFTER_AUTH_URL =

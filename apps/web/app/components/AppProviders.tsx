@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { ConvexProviderWithAuth } from 'convex/react';
 import { convex } from '@/lib/convex-client';
+import { ClerkWorkspaceBootstrap } from '@/app/components/work-library/WorkspaceContext';
 
 function useClerkBackedConvexAuth() {
   const { isLoaded, isSignedIn, getToken, sessionClaims } = useAuth();
@@ -52,7 +53,7 @@ export function AppProviders({
 
   return (
     <ConvexProviderWithAuth client={convex} useAuth={useAuthHook}>
-      {children}
+      {clerkEnabled ? <ClerkWorkspaceBootstrap>{children}</ClerkWorkspaceBootstrap> : children}
     </ConvexProviderWithAuth>
   );
 }
