@@ -16,35 +16,122 @@ import { resolveGettingStartedViewState } from '@/lib/getting-started';
 import { useRosterResource, type RosterEnvelope } from '@/lib/roster-client';
 import type { DashboardApiPayload, DashboardSnapshot } from '@/lib/roster-types';
 
+const CHECKLIST_STEP_LABELS = [
+  {
+    title: 'Connect an MCP host',
+    description: 'Keep the host config visible instead of hiding the first setup dependency.',
+    actionLabel: 'Preparing integrations',
+  },
+  {
+    title: 'Verify health and tool discovery',
+    description: 'The checklist should still read like a workflow while auth and dashboard data load.',
+    actionLabel: 'Checking readiness',
+  },
+  {
+    title: 'Create the first prompt',
+    description: 'A real beta session should end with visible authoring, not just a finished setup shell.',
+    actionLabel: 'Loading library context',
+  },
+  {
+    title: 'Open the first run',
+    description: 'Execution stays in view so setup feels connected to the real product outcome.',
+    actionLabel: 'Loading runs context',
+  },
+] as const;
+
 function SetupChecklistSkeleton({
   title,
   subtitle,
+  statusLabel = 'Preparing checklist',
 }: {
   title: string;
   subtitle: string;
+  statusLabel?: string;
 }) {
   return (
-    <Panel subtitle={subtitle} title={title} tone="tech">
+    <Panel
+      action={<Badge tone="info">{statusLabel}</Badge>}
+      subtitle={subtitle}
+      title={title}
+      tone="tech"
+    >
       <div aria-live="polite" className="grid gap-4 xl:grid-cols-2">
-        {Array.from({ length: 4 }, (_, index) => (
+        {CHECKLIST_STEP_LABELS.map((step, index) => (
           <section
             className="rounded-[24px] border border-[var(--line)] bg-[var(--panel)] p-5 shadow-[var(--shadow-card)]"
-            key={`setup-skeleton-${index + 1}`}
+            key={step.title}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
-                <span className="inline-flex h-10 w-10 shrink-0 animate-pulse rounded-full border border-[var(--line)] bg-[var(--panel-soft)]" />
-                <div className="space-y-3">
-                  <div className="h-5 w-44 animate-pulse rounded-full bg-[var(--panel-soft)]" />
-                  <div className="h-3 w-72 max-w-full animate-pulse rounded-full bg-[var(--panel-soft)]" />
-                  <div className="h-3 w-56 max-w-full animate-pulse rounded-full bg-[var(--panel-soft)]" />
+                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--tech-soft)] bg-[var(--tech-wash)] text-sm font-semibold text-[var(--tech-strong)]">
+                  0{index + 1}
+                </span>
+                <div className="space-y-2">
+                  <p className="text-base font-semibold text-[var(--ink)]">{step.title}</p>
+                  <p className="max-w-[28rem] text-sm leading-6 text-[var(--muted)]">
+                    {step.description}
+                  </p>
+                  <div className="h-3 w-2/3 animate-pulse rounded-full bg-[var(--panel-muted)]" />
                 </div>
               </div>
-              <div className="h-8 w-24 animate-pulse rounded-full bg-[var(--panel-soft)]" />
+              <Badge tone="info">Loading</Badge>
             </div>
-            <div className="mt-5 h-11 w-36 animate-pulse rounded-full bg-[var(--panel-soft)]" />
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <div className="h-11 w-40 animate-pulse rounded-full bg-[var(--panel-muted)]" />
+              <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+                {step.actionLabel}
+              </p>
+            </div>
           </section>
         ))}
+      </div>
+    </Panel>
+  );
+}
+
+function ConvexHandoffState() {
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setTimedOut(true);
+    }, 2500);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, []);
+
+  if (!timedOut) {
+    return (
+      <SetupChecklistSkeleton
+        subtitle="Roster is waiting for the Clerk session to become a Convex-backed product session before the checklist can hydrate."
+        statusLabel="Finishing auth handoff"
+        title="Finishing authenticated setup"
+      />
+    );
+  }
+
+  return (
+    <Panel
+      subtitle="The page kept its signed-in shell, but the Convex-backed setup session never arrived. That blocks the checklist from loading."
+      title="Authenticated setup stalled"
+      tone="attention"
+    >
+      <div className="space-y-4">
+        <p className="text-sm leading-7 text-[var(--muted)]">
+          This route now stays visible instead of collapsing to blank space. In local development,
+          the most common cause is a Clerk session handoff issue such as a mismatched publishable
+          and secret key pair or a missing `convex` JWT template.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <ActionButton onClick={() => window.location.reload()} tone="dark">
+            Reload setup
+          </ActionButton>
+          <ActionButton href="/integrations" tone="ghost">
+            Open integrations
+          </ActionButton>
+        </div>
       </div>
     </Panel>
   );
@@ -61,7 +148,6 @@ export function GettingStartedScreen({
 }) {
   const router = useRouter();
   const { isAuthenticated } = useConvexAuth();
-  const [convexHandoffTimedOut, setConvexHandoffTimedOut] = useState(false);
   const convexSessionReady = convexEnabled ? Boolean(isAuthenticated) : true;
   const onboarding = useQuery(
     api.onboarding.getUserOnboardingState,
@@ -77,21 +163,6 @@ export function GettingStartedScreen({
   );
 
   useEffect(() => {
-    if (authSurfaceState !== 'ready' || !signedIn || convexSessionReady) {
-      setConvexHandoffTimedOut(false);
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      setConvexHandoffTimedOut(true);
-    }, 2500);
-
-    return () => {
-      window.clearTimeout(timeout);
-    };
-  }, [authSurfaceState, convexSessionReady, signedIn]);
-
-  useEffect(() => {
     if (signedIn && onboarding?.onboardingCompletedAt) {
       router.replace('/');
     }
@@ -101,8 +172,10 @@ export function GettingStartedScreen({
     authSurfaceState,
     signedIn,
     convexAuthenticated: convexSessionReady,
-    convexHandoffTimedOut,
+    convexHandoffTimedOut: false,
   });
+  const onboardingDataPending =
+    viewState === 'ready' && (dashboard.loading || snapshot === undefined || onboarding === undefined);
 
   if (viewState === 'clerk_loading') {
     return (
@@ -120,6 +193,7 @@ export function GettingStartedScreen({
 
         <SetupChecklistSkeleton
           subtitle="Keeping setup visible while authentication resolves prevents the new-account flicker into an empty screen."
+          statusLabel="Checking hosted auth"
           title="Loading authenticated setup"
         />
       </div>
@@ -232,43 +306,24 @@ export function GettingStartedScreen({
       </div>
 
       {viewState === 'convex_loading' ? (
-        <SetupChecklistSkeleton
-          subtitle="Roster is waiting for the Clerk session to become a Convex-backed product session before the checklist can hydrate."
-          title="Finishing authenticated setup"
-        />
-      ) : null}
-
-      {viewState === 'convex_error' ? (
-        <Panel
-          subtitle="The page kept its signed-in shell, but the Convex-backed setup session never arrived. That blocks the checklist from loading."
-          title="Authenticated setup stalled"
-          tone="attention"
-        >
-          <div className="space-y-4">
-            <p className="text-sm leading-7 text-[var(--muted)]">
-              This route now stays visible instead of collapsing to blank space. In local
-              development, the most common cause is a Clerk session handoff issue such as a
-              mismatched publishable and secret key pair or a missing `convex` JWT template.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <ActionButton onClick={() => window.location.reload()} tone="dark">
-                Reload setup
-              </ActionButton>
-              <ActionButton href="/integrations" tone="ghost">
-                Open integrations
-              </ActionButton>
-            </div>
-          </div>
-        </Panel>
+        <ConvexHandoffState />
       ) : null}
 
       {viewState === 'ready' ? (
-        <OnboardingChecklist
-          dashboard={dashboard.data?.data}
-          forceVisible
-          showContinue
-          snapshot={(snapshot as DashboardSnapshot | undefined) ?? null}
-        />
+        onboardingDataPending ? (
+          <SetupChecklistSkeleton
+            subtitle="Your signed-in shell is ready. The live onboarding steps are still loading the current host, prompt, and run state before the checklist becomes interactive."
+            statusLabel="Hydrating live checklist"
+            title="Loading workspace setup state"
+          />
+        ) : (
+          <OnboardingChecklist
+            dashboard={dashboard.data?.data}
+            forceVisible
+            showContinue
+            snapshot={(snapshot as DashboardSnapshot | undefined) ?? null}
+          />
+        )
       ) : null}
     </div>
   );

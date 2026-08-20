@@ -1,10 +1,16 @@
 import type { NextConfig } from 'next';
 import path from 'path';
 
+const repoRoot = path.join(__dirname, '../..');
+
 const nextConfig: NextConfig = {
-  // Pin Turbopack to this app so `tailwindcss` resolves from `apps/web/node_modules`.
+  experimental: {
+    externalDir: true,
+  },
+  outputFileTracingRoot: repoRoot,
+  // The web app consumes generated Convex files and workspace dependencies from the repo root.
   turbopack: {
-    root: path.join(__dirname),
+    root: repoRoot,
   },
 };
 

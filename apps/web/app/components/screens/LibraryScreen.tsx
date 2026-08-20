@@ -4,11 +4,19 @@ import Link from 'next/link';
 import { useDeferredValue, useState } from 'react';
 import { useQuery, useConvexAuth } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { EmptyState, PageIntro, Panel, Badge } from '@/app/components/control-plane/primitives';
+import {
+  EmptyState,
+  PageIntro,
+  Panel,
+  Badge,
+  SkeletonList,
+  SurfaceNotice,
+} from '@/app/components/control-plane/primitives';
 import { useTrackPageView } from '@/app/components/control-plane/useProductEvents';
 import { convexEnabled } from '@/lib/convex-client';
 import { cx } from '@/lib/cx';
 import { formatNumber, formatPercent, formatRelativeDate, titleCase } from '@/lib/formatters';
+import { RouteStatusScreen } from './RouteStatusScreen';
 
 const PROMPT_TYPES = [
   { value: '', label: 'All types' },
@@ -28,6 +36,7 @@ export function LibraryScreen() {
   const deferredSearch = useDeferredValue(search.trim());
 
   const { isAuthenticated } = useConvexAuth();
+  const hostedAuthConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
   const library = useQuery(
     api.prompts.listLibrary,
     convexEnabled && isAuthenticated
@@ -46,9 +55,20 @@ export function LibraryScreen() {
   );
 
   const items = library?.items ?? [];
+  const libraryLoading = isAuthenticated && library === undefined;
   const categoryEntries = Object.entries(library?.facets.categories ?? {}).sort(
     (a, b) => b[1] - a[1],
   );
+
+  if (!isAuthenticated) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="signed_out"
+        pathname="/library"
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -71,10 +91,18 @@ export function LibraryScreen() {
             </Link>
           </>
         }
-        description="This is the read-heavy part of the beta. It uses direct Convex reads for instant filtering and keeps the editor and template actions on the BFF so write flows still respect the backend contract."
+        description="The library should stay fast to scan, honest about loading, and clear about how to recover when filters remove everything."
         eyebrow="Prompt Library"
         title="Prompt search, filtering, and beta-ready editing"
       />
+
+      {libraryLoading ? (
+        <SurfaceNotice
+          description="Prompt inventory is loading from Convex. The filters stay visible so the route still reads like the library while the results hydrate."
+          title="Loading prompt inventory"
+          tone="info"
+        />
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[1fr_280px]">
         <div className="space-y-5">
@@ -126,11 +154,17 @@ export function LibraryScreen() {
           </Panel>
 
           <Panel
-            action={<Badge tone="info">{formatNumber(items.length)} visible</Badge>}
+            action={
+              <Badge tone={libraryLoading ? 'info' : 'default'}>
+                {libraryLoading ? 'Loading results' : `${formatNumber(items.length)} visible`}
+              </Badge>
+            }
             subtitle="Click into any item to edit, preview variables, and inspect version history."
             title="Results"
           >
-            {items.length ? (
+            {libraryLoading ? (
+              <SkeletonList rows={5} />
+            ) : items.length ? (
               <div
                 className={cx('gap-4', layout === 'grid' ? 'grid md:grid-cols-2' : 'flex flex-col')}
               >
@@ -197,7 +231,9 @@ export function LibraryScreen() {
             title="Category facets"
             tone="tech"
           >
-            {categoryEntries.length ? (
+            {libraryLoading ? (
+              <SkeletonList dense rows={6} />
+            ) : categoryEntries.length ? (
               <div className="space-y-2">
                 {categoryEntries.slice(0, 12).map(([name, count]) => (
                   <button
@@ -229,19 +265,23 @@ export function LibraryScreen() {
             title="Prompt type mix"
             tone="strategy"
           >
-            <div className="space-y-3">
-              {Object.entries(library?.facets.promptTypes ?? {}).map(([name, count]) => (
-                <div
-                  className="rounded-[18px] border border-[var(--line)] bg-[var(--panel-soft)] px-3 py-3"
-                  key={name}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-[var(--ink)]">{titleCase(name)}</span>
-                    <span className="text-xs text-[var(--muted)]">{formatNumber(count)}</span>
+            {libraryLoading ? (
+              <SkeletonList dense rows={4} />
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(library?.facets.promptTypes ?? {}).map(([name, count]) => (
+                  <div
+                    className="rounded-[18px] border border-[var(--line)] bg-[var(--panel-soft)] px-3 py-3"
+                    key={name}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-[var(--ink)]">{titleCase(name)}</span>
+                      <span className="text-xs text-[var(--muted)]">{formatNumber(count)}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Panel>
         </div>
       </div>

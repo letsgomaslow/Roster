@@ -24,11 +24,12 @@
   --maslow-closed-red: #d52c2c;
   --maslow-gradient-logo: linear-gradient(90deg, #6dc4ad 0%, #a9a1b0 48.6%, #f377b3 100%);
 
-  --background: #f6f7f9;
-  --background-soft: rgba(255, 255, 255, 0.76);
-  --background-muted: rgba(246, 247, 249, 0.92);
-  --panel: rgba(255, 255, 255, 0.84);
-  --panel-soft: rgba(255, 255, 255, 0.7);
+  --background: #f4f6fa;
+  --background-soft: rgba(255, 255, 255, 0.9);
+  --background-muted: #eef2f7;
+  --panel: rgba(255, 255, 255, 0.94);
+  --panel-soft: #f7f9fc;
+  --panel-muted: #eef3f8;
   --panel-strong: var(--maslow-dark-navy);
   --panel-strong-gradient: linear-gradient(
     145deg,
@@ -37,10 +38,10 @@
     var(--maslow-darkish-purple) 100%
   );
   --ink: var(--maslow-dark-navy);
-  --ink-soft: var(--maslow-near-black);
-  --muted: var(--maslow-text-grey);
-  --line: rgba(25, 35, 50, 0.1);
-  --line-strong: rgba(25, 35, 50, 0.18);
+  --ink-soft: #2f3b4d;
+  --muted: #5b6677;
+  --line: rgba(25, 35, 50, 0.14);
+  --line-strong: rgba(25, 35, 50, 0.24);
   --accent: var(--maslow-accent-pink);
   --accent-hover: var(--maslow-hot-pink);
   --accent-strong: #c45e97;
@@ -65,9 +66,9 @@
   --error-soft: rgba(213, 44, 44, 0.14);
   --focus-ring: rgba(115, 193, 174, 0.28);
   --focus-ring-solid: var(--maslow-accent-teal);
-  --shadow-panel: 14px 18px 56px rgba(25, 35, 50, 0.1);
-  --shadow-panel-strong: 18px 24px 82px rgba(25, 35, 50, 0.18);
-  --shadow-card: 12px 14px 38px rgba(25, 35, 50, 0.1);
+  --shadow-panel: 14px 18px 48px rgba(25, 35, 50, 0.08);
+  --shadow-panel-strong: 18px 24px 64px rgba(25, 35, 50, 0.16);
+  --shadow-card: 10px 14px 30px rgba(25, 35, 50, 0.08);
 
   --button-primary: var(--maslow-dark-navy);
   --button-primary-hover: var(--maslow-dark-navy-alt);
@@ -89,13 +90,13 @@
 html {
   min-height: 100%;
   background:
-    radial-gradient(circle at top left, rgba(109, 196, 173, 0.1), transparent 42%),
-    linear-gradient(180deg, #fbfcfd 0%, #f6f7f9 100%);
+    radial-gradient(circle at top left, rgba(109, 196, 173, 0.08), transparent 42%),
+    linear-gradient(180deg, #fafbfd 0%, #f4f6fa 100%);
 }
 
 body {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.14)), var(--background);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.22)), var(--background);
   color: var(--ink);
   font-family: var(--font-ui), 'Manrope', 'Avenir Next', 'Segoe UI', sans-serif;
   text-rendering: optimizeLegibility;

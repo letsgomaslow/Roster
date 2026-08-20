@@ -11,7 +11,7 @@ import {
   shouldShowOnboardingModule,
 } from '@/lib/onboarding';
 import type { DashboardApiPayload, DashboardSnapshot } from '@/lib/roster-types';
-import { Badge, Panel } from './primitives';
+import { Badge, Panel, SkeletonList } from './primitives';
 
 type OnboardingChecklistProps = {
   snapshot?: DashboardSnapshot | null;
@@ -71,6 +71,19 @@ export function OnboardingChecklist({
 
   if (!isAuthenticated || !isVisible) {
     return null;
+  }
+
+  if (onboarding === undefined) {
+    return (
+      <Panel
+        action={<Badge tone="info">Loading checklist</Badge>}
+        subtitle={subtitle}
+        title={title}
+        tone="tech"
+      >
+        <SkeletonList rows={4} />
+      </Panel>
+    );
   }
 
   return (

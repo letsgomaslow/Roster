@@ -1,12 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import { useConvexAuth } from 'convex/react';
 import {
+  ActionButton,
+  Badge,
   CodeBlock,
   EmptyState,
   PageIntro,
   Panel,
-  Badge,
+  SkeletonList,
+  SurfaceNotice,
 } from '@/app/components/control-plane/primitives';
 import {
   useTrackPageView,
@@ -15,6 +19,7 @@ import {
 import { openMicroFeedback } from '@/lib/control-plane-events';
 import { rosterFetchEnvelope, useRosterResource, type RosterEnvelope } from '@/lib/roster-client';
 import type { IntegrationSetupPayload, RosterTool } from '@/lib/roster-types';
+import { RouteStatusScreen } from './RouteStatusScreen';
 
 type ClientId = 'claude' | 'cursor' | 'generic';
 
@@ -25,6 +30,8 @@ export function IntegrationsScreen() {
   const [toolArguments, setToolArguments] = useState('{}');
   const [toolResult, setToolResult] = useState<string>('');
   const [toolError, setToolError] = useState<string | null>(null);
+  const { isAuthenticated } = useConvexAuth();
+  const hostedAuthConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
 
   useTrackPageView('integrations_view', { route: '/integrations' });
 
@@ -59,20 +66,72 @@ export function IntegrationsScreen() {
   }
 
   const toolItems = tools.data?.data ?? [];
+  const integrationsLoading = setup.loading || tools.loading || health.loading;
+  const integrationsError = setup.error || tools.error || health.error;
+
+  if (!isAuthenticated) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="signed_out"
+        pathname="/integrations"
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">
       <PageIntro
-        description="Integrations is the beta setup center. The interface keeps setup payloads, connection status, and tool testing together so users do not have to leave the product to prove that the MCP server works."
+        description="Integrations should keep host setup, server status, and tool smoke tests in one place so the beta path feels provable instead of hopeful."
         eyebrow="Integrations"
         title="Claude Desktop, Cursor, and generic MCP onboarding"
       />
 
+      {integrationsLoading ? (
+        <SurfaceNotice
+          description="Setup payloads and tool metadata are still loading. The screen keeps the correct route and controls visible while the backend hydrates."
+          title="Loading setup data"
+          tone="info"
+        />
+      ) : null}
+
+      {integrationsError ? (
+        <SurfaceNotice
+          action={
+            <ActionButton
+              onClick={() => {
+                setup.reload();
+                tools.reload();
+                health.reload();
+              }}
+              tone="ghost"
+            >
+              Reload integrations
+            </ActionButton>
+          }
+          description={integrationsError}
+          title="Integrations data is temporarily unavailable"
+          tone="warning"
+        />
+      ) : null}
+
       <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
         <Panel
           action={
-            <Badge tone={health.data?.data?.status === 'healthy' ? 'success' : 'warning'}>
-              {health.data?.data?.status === 'healthy' ? 'Healthy' : 'Check server'}
+            <Badge
+              tone={
+                integrationsLoading
+                  ? 'info'
+                  : health.data?.data?.status === 'healthy'
+                    ? 'success'
+                    : 'warning'
+              }
+            >
+              {integrationsLoading
+                ? 'Loading health'
+                : health.data?.data?.status === 'healthy'
+                  ? 'Healthy'
+                  : 'Check server'}
             </Badge>
           }
           subtitle="Setup payloads are generated from one place so the beta user can compare hosts without reading docs."
@@ -104,7 +163,19 @@ export function IntegrationsScreen() {
             ))}
           </div>
 
-          {setup.data?.data ? (
+          {integrationsLoading ? (
+            <div className="mt-5 space-y-5">
+              <SkeletonList rows={3} />
+              <div>
+                <div className="mb-3 h-4 w-40 animate-pulse rounded-full bg-[var(--panel-muted)]" />
+                <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-8">
+                  <div className="h-3 w-full animate-pulse rounded-full bg-[var(--panel-muted)]" />
+                  <div className="mt-3 h-3 w-5/6 animate-pulse rounded-full bg-[var(--panel-muted)]" />
+                  <div className="mt-3 h-3 w-3/4 animate-pulse rounded-full bg-[var(--panel-muted)]" />
+                </div>
+              </div>
+            </div>
+          ) : setup.data?.data ? (
             <div className="mt-5 space-y-5">
               <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <p className="font-medium text-[var(--ink)]">{setup.data.data.title}</p>
@@ -136,14 +207,20 @@ export function IntegrationsScreen() {
         </Panel>
 
         <Panel
-          action={<Badge tone="info">{toolItems.length} tools</Badge>}
+          action={
+            <Badge tone={integrationsLoading ? 'info' : 'default'}>
+              {integrationsLoading ? 'Loading tools' : `${toolItems.length} tools`}
+            </Badge>
+          }
           subtitle="Smoke-test at least one MCP tool from the UI so setup problems surface before the user leaves the page."
           title="MCP tool explorer"
           tone="tech"
         >
           <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="space-y-3">
-              {toolItems.length ? (
+              {integrationsLoading ? (
+                <SkeletonList rows={5} />
+              ) : toolItems.length ? (
                 toolItems.map((tool) => (
                   <button
                     className={`block w-full rounded-[22px] border px-4 py-4 text-left transition ${

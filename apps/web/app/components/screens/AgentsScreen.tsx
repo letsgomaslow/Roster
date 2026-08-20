@@ -4,11 +4,20 @@ import Link from 'next/link';
 import { useDeferredValue, useState } from 'react';
 import { useQuery, useConvexAuth } from 'convex/react';
 import { api } from '@convex/_generated/api';
-import { EmptyState, PageIntro, Panel, Badge } from '@/app/components/control-plane/primitives';
+import {
+  EmptyState,
+  PageIntro,
+  Panel,
+  Badge,
+  SkeletonCardGrid,
+  SkeletonList,
+  SurfaceNotice,
+} from '@/app/components/control-plane/primitives';
 import { useTrackPageView } from '@/app/components/control-plane/useProductEvents';
 import { convexEnabled } from '@/lib/convex-client';
 import { cx } from '@/lib/cx';
 import { formatNumber, formatPercent, formatRelativeDate } from '@/lib/formatters';
+import { RouteStatusScreen } from './RouteStatusScreen';
 
 export function AgentsScreen() {
   useTrackPageView('agents_view', { route: '/agents' });
@@ -18,6 +27,7 @@ export function AgentsScreen() {
   const deferredSearch = useDeferredValue(search.trim());
 
   const { isAuthenticated } = useConvexAuth();
+  const hostedAuthConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
   const subagents = useQuery(
     api.prompts.listAgentCatalog,
     convexEnabled && isAuthenticated && (tab === 'subagents' || !search)
@@ -41,14 +51,36 @@ export function AgentsScreen() {
 
   const active = tab === 'subagents' ? subagents : mainAgents;
   const items = active?.items ?? [];
+  const catalogLoading =
+    isAuthenticated &&
+    ((tab === 'subagents' && subagents === undefined) ||
+      (tab === 'main-agents' && mainAgents === undefined));
+
+  if (!isAuthenticated) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="signed_out"
+        pathname="/agents"
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">
       <PageIntro
-        description="Subagents and main agents are separate surfaces because users need to understand reusable specialists differently from orchestration templates. The summaries come from Convex for fast filtering; the detail views call the backend routes for configuration and validation."
+        description="The catalog should make specialists and orchestration templates easy to compare without hiding critical setup detail in docs."
         eyebrow="Agent Catalog"
         title="Subagents and main agents in one navigation path"
       />
+
+      {catalogLoading ? (
+        <SurfaceNotice
+          description="Agent records are loading from Convex. The current tab stays visible so the catalog never collapses into a fake empty state."
+          title="Loading agent catalog"
+          tone="info"
+        />
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[1fr_300px]">
         <div className="space-y-5">
@@ -97,7 +129,9 @@ export function AgentsScreen() {
             </div>
 
             <div className="mt-5 space-y-3">
-              {items.length ? (
+              {catalogLoading ? (
+                <SkeletonList rows={5} />
+              ) : items.length ? (
                 items.map((item) => (
                   <Link
                     className="block rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 transition hover:-translate-y-0.5 hover:bg-white"
@@ -150,24 +184,28 @@ export function AgentsScreen() {
             title="Snapshot"
             tone="tech"
           >
-            <div className="space-y-3">
-              <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-                  Subagents
-                </p>
-                <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
-                  {formatNumber(subagents?.total)}
-                </p>
+            {catalogLoading ? (
+              <SkeletonCardGrid count={2} detail={false} />
+            ) : (
+              <div className="space-y-3">
+                <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
+                    Subagents
+                  </p>
+                  <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
+                    {formatNumber(subagents?.total)}
+                  </p>
+                </div>
+                <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
+                    Main agents
+                  </p>
+                  <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
+                    {formatNumber(mainAgents?.total)}
+                  </p>
+                </div>
               </div>
-              <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
-                  Main agents
-                </p>
-                <p className="mt-3 font-heading text-3xl tracking-[-0.05em] text-[var(--ink)]">
-                  {formatNumber(mainAgents?.total)}
-                </p>
-              </div>
-            </div>
+            )}
           </Panel>
 
           <Panel

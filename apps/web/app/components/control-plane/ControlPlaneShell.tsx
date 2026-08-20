@@ -27,6 +27,21 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function describePathname(pathname: string) {
+  if (pathname === '/') return 'Operational overview';
+  if (pathname === '/getting-started') return 'Setup checklist';
+  if (pathname.startsWith('/library/new')) return 'New prompt';
+  if (pathname.startsWith('/library/')) return 'Prompt detail';
+  if (pathname === '/library') return 'Prompt library';
+  if (pathname.startsWith('/agents/')) return 'Agent detail';
+  if (pathname === '/agents') return 'Agent catalog';
+  if (pathname.startsWith('/runs/')) return 'Run detail';
+  if (pathname === '/runs') return 'Execution history';
+  if (pathname === '/integrations') return 'Host and MCP setup';
+  if (pathname === '/settings') return 'Usage and feedback';
+  return pathname;
+}
+
 function ClerkAuthSection({ authSurfaceState }: { authSurfaceState: AuthSurfaceState }) {
   const { isSignedIn } = useAuth();
 
@@ -300,9 +315,7 @@ export function ControlPlaneShell({
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-[var(--strategy-strong)]">
                     Control plane
                   </p>
-                  <p className="text-sm text-[var(--ink)]">
-                    {pathname === '/' ? 'Operational overview' : pathname}
-                  </p>
+                  <p className="text-sm text-[var(--ink)]">{describePathname(pathname)}</p>
                   <p className="text-sm text-[var(--muted)]">
                     One primary action per screen, with setup and recovery kept visible.
                   </p>

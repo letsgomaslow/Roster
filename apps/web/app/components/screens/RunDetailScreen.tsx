@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useConvexAuth } from 'convex/react';
 import {
   CodeBlock,
   EmptyState,
   PageIntro,
   Panel,
   Badge,
+  SkeletonCardGrid,
+  SurfaceNotice,
 } from '@/app/components/control-plane/primitives';
 import {
   useTrackPageView,
@@ -16,6 +19,7 @@ import { openMicroFeedback } from '@/lib/control-plane-events';
 import { formatRelativeDate, titleCase } from '@/lib/formatters';
 import { rosterFetchEnvelope, useRosterResource, type RosterEnvelope } from '@/lib/roster-client';
 import type { RunDetail } from '@/lib/roster-types';
+import { RouteStatusScreen } from './RouteStatusScreen';
 
 type ReportState = {
   json: string;
@@ -26,9 +30,13 @@ type ReportState = {
 export function RunDetailScreen({ executionId }: { executionId: string }) {
   const track = useTrackProductEvent();
   const [reports, setReports] = useState<ReportState>({ json: '', markdown: '', html: '' });
+  const [reportsLoading, setReportsLoading] = useState(true);
+  const [reportError, setReportError] = useState<string | null>(null);
   const [activeReport, setActiveReport] = useState<'summary' | 'json' | 'markdown' | 'html'>(
     'summary',
   );
+  const { isAuthenticated } = useConvexAuth();
+  const hostedAuthConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
 
   useTrackPageView('run_detail_view', { route: `/runs/${executionId}`, executionId });
 
@@ -37,7 +45,13 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
   );
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
     const loadReports = async () => {
+      setReportsLoading(true);
+      setReportError(null);
       try {
         const [json, markdown, html] = await Promise.all([
           rosterFetchEnvelope<Record<string, unknown>>(
@@ -63,15 +77,29 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
           route: `/runs/${executionId}`,
           context: { executionId, action: 'view_report' },
         });
-      } catch {
-        // The summary panel still renders from the status endpoint.
+      } catch (loadError) {
+        setReportError(
+          loadError instanceof Error ? loadError.message : 'The run report could not be loaded.',
+        );
+      } finally {
+        setReportsLoading(false);
       }
     };
 
     void loadReports();
-  }, [executionId, track]);
+  }, [executionId, isAuthenticated, track]);
 
   const run = detail.data?.data;
+
+  if (!isAuthenticated) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="signed_out"
+        pathname={`/runs/${executionId}`}
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -80,6 +108,30 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
         eyebrow="Run Detail"
         title={run?.projectType ? `${run.projectType} run` : executionId}
       />
+
+      {detail.loading ? (
+        <SurfaceNotice
+          description="Execution status is loading from the orchestration route. The run detail surface stays visible so the page never looks like a missing execution by mistake."
+          title="Loading execution detail"
+          tone="info"
+        />
+      ) : null}
+
+      {detail.error ? (
+        <SurfaceNotice
+          description={detail.error}
+          title="Execution detail is temporarily unavailable"
+          tone="warning"
+        />
+      ) : null}
+
+      {reportError ? (
+        <SurfaceNotice
+          description={reportError}
+          title="Some report formats are temporarily unavailable"
+          tone="warning"
+        />
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
         <Panel
@@ -94,7 +146,9 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
           title="Execution summary"
           tone="strategy"
         >
-          {run ? (
+          {detail.loading ? (
+            <SkeletonCardGrid count={2} />
+          ) : run ? (
             <div className="space-y-4">
               <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <div className="flex items-center justify-between gap-3">
@@ -166,7 +220,9 @@ export function RunDetailScreen({ executionId }: { executionId: string }) {
           </div>
 
           <div className="mt-5">
-            {activeReport === 'summary' ? (
+            {detail.loading || reportsLoading ? (
+              <SkeletonCardGrid count={2} />
+            ) : activeReport === 'summary' ? (
               <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-sm leading-7 text-[var(--muted)]">
                 <p className="font-medium text-[var(--ink)]">Run summary</p>
                 <p className="mt-3">

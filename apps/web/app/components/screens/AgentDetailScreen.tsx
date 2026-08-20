@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useConvexAuth } from 'convex/react';
 import {
   Badge,
   CodeBlock,
   EmptyState,
   PageIntro,
   Panel,
+  SkeletonCardGrid,
+  SurfaceNotice,
 } from '@/app/components/control-plane/primitives';
 import {
   useTrackPageView,
@@ -15,6 +18,7 @@ import {
 import { titleCase } from '@/lib/formatters';
 import { rosterFetchEnvelope, useRosterResource, type RosterEnvelope } from '@/lib/roster-client';
 import type { AgentRecord } from '@/lib/roster-types';
+import { RouteStatusScreen } from './RouteStatusScreen';
 
 type AgentDetailScreenProps = {
   kind: 'subagents' | 'main-agents';
@@ -27,6 +31,8 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
   const [validation, setValidation] = useState<Record<string, unknown> | null>(null);
   const [preview, setPreview] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useConvexAuth();
+  const hostedAuthConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
 
   useTrackPageView('agent_detail_view', { route: `/agents/${kind}/${agentId}`, kind, agentId });
 
@@ -43,10 +49,22 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
       : '',
     kind === 'main-agents',
   );
+  const secondaryLoading = kind === 'subagents' ? stats.loading : configuration.loading;
+  const secondaryError = kind === 'subagents' ? stats.error : configuration.error;
 
   const agent = (
     kind === 'subagents' ? detail.data?.data?.subagent : detail.data?.data?.mainAgent
   ) as AgentRecord | undefined;
+
+  if (!isAuthenticated) {
+    return (
+      <RouteStatusScreen
+        authSurfaceState={hostedAuthConfigured ? 'ready' : 'disabled'}
+        mode="signed_out"
+        pathname={`/agents/${kind}/${agentId}`}
+      />
+    );
+  }
 
   async function loadValidation() {
     try {
@@ -100,6 +118,30 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
         title={agent?.name ?? agentId}
       />
 
+      {detail.loading ? (
+        <SurfaceNotice
+          description="The catalog record is loading from the backend. The detail route stays visible so it does not collapse into an empty state while the record hydrates."
+          title="Loading agent detail"
+          tone="info"
+        />
+      ) : null}
+
+      {detail.error ? (
+        <SurfaceNotice
+          description={detail.error}
+          title="Agent detail is temporarily unavailable"
+          tone="warning"
+        />
+      ) : null}
+
+      {secondaryError ? (
+        <SurfaceNotice
+          description={secondaryError}
+          title={kind === 'subagents' ? 'Execution statistics are temporarily unavailable' : 'Configuration detail is temporarily unavailable'}
+          tone="warning"
+        />
+      ) : null}
+
       {error ? (
         <div
           className="rounded-[24px] border border-[color:color-mix(in_oklab,var(--error)_28%,white)] bg-[color:color-mix(in_oklab,var(--error)_9%,white)] px-4 py-4 text-sm text-[var(--error-strong)]"
@@ -116,7 +158,9 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
           title="Catalog record"
           tone="strategy"
         >
-          {agent ? (
+          {detail.loading ? (
+            <SkeletonCardGrid count={4} />
+          ) : agent ? (
             <div className="space-y-4">
               <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <p className="font-medium text-[var(--ink)]">
@@ -185,7 +229,11 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
               title="Execution statistics"
               tone="tech"
             >
-              <CodeBlock value={JSON.stringify(stats.data?.data?.stats ?? {}, null, 2)} />
+              {detail.loading || secondaryLoading ? (
+                <SkeletonCardGrid count={2} detail={false} />
+              ) : (
+                <CodeBlock value={JSON.stringify(stats.data?.data?.stats ?? {}, null, 2)} />
+              )}
             </Panel>
           ) : (
             <>
@@ -194,7 +242,11 @@ export function AgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) {
                 title="Configuration"
                 tone="strategy"
               >
-                <CodeBlock value={JSON.stringify(configuration.data?.data ?? {}, null, 2)} />
+                {detail.loading || secondaryLoading ? (
+                  <SkeletonCardGrid count={2} detail={false} />
+                ) : (
+                  <CodeBlock value={JSON.stringify(configuration.data?.data ?? {}, null, 2)} />
+                )}
               </Panel>
 
               <Panel
