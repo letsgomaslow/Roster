@@ -19,10 +19,8 @@ function AssetCard({ item, actionLabel }: { item: HomeGalleryItem; actionLabel: 
   const approved = item.reviewState.includes('approved');
   const purposePreview = buildWorkDescriptionPreview(item.purpose);
   const trustLabel =
-    item.reviewState === 'workspace_approved'
-      ? 'Workspace approved'
-      : item.reviewState === 'team_approved'
-        ? 'Team approved'
+    item.reviewState === 'workspace_approved' || item.reviewState === 'team_approved'
+      ? 'Approved'
         : item.reviewState === 'shared'
           ? 'Ready for review'
           : item.reviewState === 'draft'
@@ -46,6 +44,10 @@ function AssetCard({ item, actionLabel }: { item: HomeGalleryItem; actionLabel: 
           {purposePreview.summary}
         </p>
       ) : null}
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--line)] pt-3">
+        <Badge tone="default">Version {item.versionNumber ?? 'current'}</Badge>
+        <Badge tone="default">Owner recorded</Badge>
+      </div>
       <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-[var(--ink)]">
         {actionLabel}
         <span aria-hidden="true">→</span>
@@ -145,6 +147,20 @@ export function WorkLibraryHomeScreen() {
         eyebrow={workspace.name ?? 'Roster workspace'}
         title="What would you like to get done?"
       />
+
+      <form action="/library" className="grid max-w-3xl grid-cols-[minmax(0,1fr)_auto] border border-[var(--line-strong)] bg-white" method="get" role="search">
+        <label className="sr-only" htmlFor="home-library-search">Search the work Library</label>
+        <input
+          className="min-h-12 min-w-0 bg-transparent px-4 text-sm text-[var(--ink)] outline-none"
+          id="home-library-search"
+          name="q"
+          placeholder="Search by outcome, team, or task"
+          type="search"
+        />
+        <button className="border-l border-[var(--line)] bg-[var(--panel-soft)] px-5 text-sm font-semibold text-[var(--ink)]" type="submit">
+          Search
+        </button>
+      </form>
 
       {workspace.status === 'error' ? (
         <div className="space-y-4">

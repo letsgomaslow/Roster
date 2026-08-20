@@ -61,7 +61,7 @@ export function buildOwnerSetupSteps({
     },
     {
       id: 'starter',
-      title: 'Add useful work',
+      title: 'Save first work',
       description: 'Start with reviewable examples so your Library is useful from day one.',
       complete: usefulWorkReady,
       optional: false,
@@ -86,6 +86,7 @@ export type HomeGalleryItem = {
   purpose?: string;
   reviewState: string;
   updatedAt: number;
+  versionNumber?: number;
   isFavorite?: boolean;
 };
 

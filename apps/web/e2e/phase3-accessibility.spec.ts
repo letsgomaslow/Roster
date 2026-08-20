@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { expectNoBlockingAxeViolations } from './a11y';
 
 const CORE_ROUTES = [
-  { path: '/', heading: /Your team’s best AI work, ready when you need it/i },
+  { path: '/', heading: /Turn waiting work into trusted team workflows/i },
   { path: '/getting-started', heading: /Your team’s best AI work, ready when you are/i },
   { path: '/library', heading: /Sign in to open your team’s Library/i },
   { path: '/library/new', heading: /Sign in to open your team’s Library/i },
@@ -10,10 +10,10 @@ const CORE_ROUTES = [
   { path: '/approvals', heading: /Sign in to review team work/i },
   { path: '/integrations', heading: /Sign in to open the Setup Center/i },
   { path: '/workspace-admin', heading: /Sign in to manage Library settings/i },
-  { path: '/advanced', heading: /Sign in to open this advanced workspace area/i },
+  { path: '/advanced', heading: /Legacy Advanced tools are unavailable/i },
 ] as const;
 
-test.describe('Option A accessibility', () => {
+test.describe('Brand OS accessibility', () => {
   for (const route of CORE_ROUTES) {
     test(`route ${route.path} has no critical or serious axe violations`, async ({ page }) => {
       await page.goto(route.path, { waitUntil: 'domcontentloaded' });
@@ -27,7 +27,7 @@ test.describe('Option A accessibility', () => {
 
   test('the public first-use path is keyboard reachable', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const firstUseLink = page.getByRole('link', { name: /see the first-use experience/i });
+    const firstUseLink = page.getByRole('link', { name: /see how governance works/i });
     await firstUseLink.focus();
     await expect(firstUseLink).toBeFocused();
     await expectNoBlockingAxeViolations(page);
@@ -42,15 +42,17 @@ test.describe('Option A accessibility', () => {
 
   test('core entry pages stay responsive on mobile and tablet', async ({ page }) => {
     const assertions = [
-      { path: '/', heading: /Your team’s best AI work, ready when you need it/i },
+      { path: '/', heading: /Turn waiting work into trusted team workflows/i },
       { path: '/getting-started', heading: /Your team’s best AI work, ready when you are/i },
       { path: '/library', heading: /Sign in to open your team’s Library/i },
       { path: '/integrations', heading: /Sign in to open the Setup Center/i },
     ];
 
     for (const viewport of [
-      { width: 390, height: 844 },
+      { width: 320, height: 720 },
       { width: 768, height: 1024 },
+      { width: 1024, height: 900 },
+      { width: 1440, height: 1000 },
     ]) {
       await page.setViewportSize(viewport);
 

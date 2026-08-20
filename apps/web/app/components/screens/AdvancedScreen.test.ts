@@ -11,6 +11,7 @@ vi.mock('@/app/components/work-library/WorkspaceContext', () => ({
 }));
 
 import { AdvancedScreen } from './AdvancedScreen';
+import { LegacyAdvancedUnavailable } from './LegacyAdvancedUnavailable';
 
 describe('AdvancedScreen', () => {
   afterEach(() => {
@@ -23,5 +24,14 @@ describe('AdvancedScreen', () => {
     expect(markup).toContain('Legacy Advanced tools are unavailable');
     expect(markup).toContain('The Setup Center remains available');
     expect(markup).not.toContain('Open the technical layer when you need it');
+  });
+});
+
+describe('LegacyAdvancedUnavailable', () => {
+  it('gives every disabled legacy route a semantic page heading', () => {
+    const markup = renderToStaticMarkup(createElement(LegacyAdvancedUnavailable));
+
+    expect(markup).toContain('<h1');
+    expect(markup).toContain('Legacy Advanced tools are unavailable');
   });
 });

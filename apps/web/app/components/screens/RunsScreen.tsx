@@ -181,7 +181,7 @@ function AuthorizedRunsScreen() {
 
       {error ? (
         <div
-          className="rounded-[24px] border border-[color:color-mix(in_oklab,var(--error)_28%,white)] bg-[color:color-mix(in_oklab,var(--error)_9%,white)] px-4 py-4 text-sm text-[var(--error-strong)]"
+          className="border border-[color:color-mix(in_oklab,var(--error)_28%,white)] bg-[color:color-mix(in_oklab,var(--error)_9%,white)] px-4 py-4 text-sm text-[var(--error-strong)]"
           role="alert"
         >
           {error}
@@ -198,7 +198,7 @@ function AuthorizedRunsScreen() {
             <label className="block space-y-2 text-sm">
               <span className="text-[var(--muted)]">Project path on the connected host</span>
               <input
-                className="w-full rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) => setProjectPath(event.target.value)}
                 placeholder="/Users/beta-user/projects/acme-app"
                 value={projectPath}
@@ -207,7 +207,7 @@ function AuthorizedRunsScreen() {
             <label className="block space-y-2 text-sm">
               <span className="text-[var(--muted)]">Mode</span>
               <select
-                className="w-full rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) => setMode(event.target.value as typeof mode)}
                 value={mode}
               >
@@ -219,7 +219,7 @@ function AuthorizedRunsScreen() {
               </select>
             </label>
             <button
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--button-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-secondary-ink)] transition hover:bg-[var(--button-secondary-hover)] disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center bg-[var(--button-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-secondary-ink)] transition hover:bg-[var(--button-secondary-hover)] disabled:opacity-60"
               disabled={creating || !projectPath.trim()}
               onClick={startRun}
               type="button"
@@ -250,7 +250,7 @@ function AuthorizedRunsScreen() {
             <div className="space-y-3">
               {items.map((run) => (
                 <Link
-                  className="block rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 transition hover:-translate-y-0.5 hover:bg-white"
+                  className="block border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 transition hover:-translate-y-0.5 hover:bg-white"
                   href={`/runs/${encodeURIComponent(run.executionId)}`}
                   key={run.executionId}
                 >

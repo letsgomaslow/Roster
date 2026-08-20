@@ -101,7 +101,7 @@ export function HomeScreen() {
             <>
               <SkeletonCardGrid count={3} detail />
               <div className="mt-5 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-                <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
+                <div className="border border-white/12 bg-white/6 p-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
                     Quick-start clients
                   </p>
@@ -109,7 +109,7 @@ export function HomeScreen() {
                     <SkeletonList dense rows={3} />
                   </div>
                 </div>
-                <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
+                <div className="border border-white/12 bg-white/6 p-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
                     MCP readiness checklist
                   </p>
@@ -151,7 +151,7 @@ export function HomeScreen() {
               </div>
 
               <div className="mt-5 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-                <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
+                <div className="border border-white/12 bg-white/6 p-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
                     Quick-start clients
                   </p>
@@ -174,7 +174,7 @@ export function HomeScreen() {
                       },
                     ].map((item) => (
                       <Link
-                        className="rounded-[20px] border border-white/10 bg-black/10 px-4 py-4 transition hover:bg-black/20"
+                        className="border border-white/10 bg-black/10 px-4 py-4 transition hover:bg-black/20"
                         href={item.href}
                         key={item.name}
                       >
@@ -185,7 +185,7 @@ export function HomeScreen() {
                   </div>
                 </div>
 
-                <div className="rounded-[24px] border border-white/12 bg-white/6 p-4">
+                <div className="border border-white/12 bg-white/6 p-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-white/85">
                     MCP readiness checklist
                   </p>
@@ -209,7 +209,7 @@ export function HomeScreen() {
                       },
                     ].map((item) => (
                       <div
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/10 px-4 py-3"
+                        className="flex flex-wrap items-center justify-between gap-3 border border-white/10 px-4 py-3"
                         key={item.label}
                       >
                         <span className="max-w-[22rem] text-sm leading-6 text-white/90">
@@ -280,7 +280,7 @@ export function HomeScreen() {
             <div className="space-y-3">
               {snapshot.recentPrompts.map((item) => (
                 <Link
-                  className="block rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 transition hover:bg-white"
+                  className="block border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 transition hover:bg-white"
                   href={`/library/${encodeURIComponent(item.promptId)}`}
                   key={item.promptId}
                 >
@@ -296,7 +296,7 @@ export function HomeScreen() {
                   <div className="mt-3 flex flex-wrap gap-2">
                     {item.tags.slice(0, 3).map((tag) => (
                       <span
-                        className="rounded-full border border-[var(--line)] px-2 py-1 text-[11px] text-[var(--muted)]"
+                        className="border border-[var(--line)] px-2 py-1 text-[11px] text-[var(--muted)]"
                         key={tag}
                       >
                         {tag}
@@ -340,7 +340,7 @@ export function HomeScreen() {
             <div className="space-y-3">
               {runs.map((run) => (
                 <Link
-                  className="block rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 transition hover:bg-white"
+                  className="block border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 transition hover:bg-white"
                   href={`/runs/${encodeURIComponent(run.executionId)}`}
                   key={run.executionId}
                 >
@@ -384,7 +384,7 @@ export function HomeScreen() {
             <SkeletonCardGrid count={3} detail />
           ) : (
             <div className="space-y-4">
-              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+              <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                   Plan
                 </p>
@@ -400,7 +400,7 @@ export function HomeScreen() {
                 </p>
               </div>
 
-              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+              <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                   Library mix
                 </p>
@@ -416,7 +416,7 @@ export function HomeScreen() {
                 </div>
               </div>
 
-              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+              <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                   Agent health
                 </p>

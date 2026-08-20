@@ -333,7 +333,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
           <>
             {!isNew ? (
               <button
-                className="inline-flex items-center justify-center rounded-full border border-[var(--line)] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
+                className="inline-flex items-center justify-center border border-[var(--line)] px-4 py-2.5 text-sm font-medium text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
                 onClick={onDelete}
                 type="button"
               >
@@ -341,7 +341,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               </button>
             ) : null}
             <button
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
+              className="inline-flex min-h-11 items-center justify-center bg-[var(--button-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-primary-ink)] transition hover:bg-[var(--button-primary-hover)]"
               onClick={onSave}
               type="button"
             >
@@ -356,7 +356,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
 
       {error ? (
         <div
-          className="rounded-[24px] border border-[color:color-mix(in_oklab,var(--error)_28%,white)] bg-[color:color-mix(in_oklab,var(--error)_9%,white)] px-4 py-4 text-sm text-[var(--error-strong)]"
+          className="border border-[color:color-mix(in_oklab,var(--error)_28%,white)] bg-[color:color-mix(in_oklab,var(--error)_9%,white)] px-4 py-4 text-sm text-[var(--error-strong)]"
           role="alert"
         >
           {error}
@@ -383,7 +383,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Prompt ID</span>
               <input
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, promptId: event.target.value }))
                 }
@@ -393,7 +393,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Name</span>
               <input
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, name: event.target.value }))
                 }
@@ -403,7 +403,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Category</span>
               <input
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, category: event.target.value }))
                 }
@@ -413,7 +413,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Access level</span>
               <select
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, accessLevel: event.target.value }))
                 }
@@ -427,7 +427,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm md:col-span-2">
               <span className="text-[var(--muted)]">Description</span>
               <textarea
-                className="min-h-28 w-full rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="min-h-28 w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, description: event.target.value }))
                 }
@@ -437,7 +437,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Prompt type</span>
               <select
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
@@ -457,7 +457,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm">
               <span className="text-[var(--muted)]">Tags</span>
               <input
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, tags: event.target.value }))
                 }
@@ -468,7 +468,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm md:col-span-2">
               <span className="text-[var(--muted)]">Variables</span>
               <input
-                className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, variables: event.target.value }))
                 }
@@ -479,7 +479,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
             <label className="space-y-2 text-sm md:col-span-2">
               <span className="text-[var(--muted)]">Template</span>
               <textarea
-                className="min-h-[360px] w-full rounded-[28px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 font-mono text-sm text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="min-h-[360px] w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 font-mono text-sm text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 onChange={(event) =>
                   setForm((current) => ({ ...current, template: event.target.value }))
                 }
@@ -510,7 +510,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">Model</span>
                   <input
-                    className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, model: event.target.value }))
                     }
@@ -521,7 +521,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">Tools</span>
                   <input
-                    className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, tools: event.target.value }))
                     }
@@ -532,7 +532,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">MCP servers</span>
                   <input
-                    className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, mcpServers: event.target.value }))
                     }
@@ -543,7 +543,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">Compatible project types</span>
                   <input
-                    className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, compatibleWith: event.target.value }))
                     }
@@ -554,7 +554,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">Subagents</span>
                   <input
-                    className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, subagents: event.target.value }))
                     }
@@ -565,7 +565,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                 <label className="space-y-2 text-sm">
                   <span className="text-[var(--muted)]">System prompt</span>
                   <textarea
-                    className="min-h-36 w-full rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                    className="min-h-36 w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, systemPrompt: event.target.value }))
                     }
@@ -583,7 +583,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                   {titleCase(applyState)}
                 </Badge>
                 <button
-                  className="inline-flex min-h-11 items-center rounded-full border border-[color:color-mix(in_oklab,var(--tech)_45%,white)] bg-[var(--tech-wash)] px-4 py-2 text-sm font-medium text-[var(--tech-strong)] transition hover:brightness-95"
+                  className="inline-flex min-h-11 items-center border border-[color:color-mix(in_oklab,var(--tech)_45%,white)] bg-[var(--tech-wash)] px-4 py-2 text-sm font-medium text-[var(--tech-strong)] transition hover:brightness-95"
                   onClick={onApplyPreview}
                   type="button"
                 >
@@ -601,7 +601,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
                   <label className="block space-y-2 text-sm" key={variable}>
                     <span className="text-[var(--muted)]">{variable}</span>
                     <input
-                      className="w-full rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                      className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                       onChange={(event) =>
                         setApplyInputs((current) => ({
                           ...current,
@@ -631,7 +631,7 @@ export function PromptDetailScreen({ promptId }: { promptId: string }) {
               <div className="space-y-3">
                 {detail.versions.map((version) => (
                   <div
-                    className="rounded-[18px] border border-[var(--line)] bg-[var(--panel-soft)] px-3 py-3"
+                    className="border border-[var(--line)] bg-[var(--panel-soft)] px-3 py-3"
                     key={version.version}
                   >
                     <div className="flex items-center justify-between gap-3">

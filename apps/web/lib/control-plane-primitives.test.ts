@@ -2,10 +2,28 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
+  ActionButton,
+  Badge,
   SkeletonCardGrid,
   SkeletonList,
   SurfaceNotice,
 } from '@/app/components/control-plane/primitives';
+
+describe('passive labels and actions', () => {
+  it('renders passive labels as capsules without making actions pill-shaped', () => {
+    const badgeHtml = renderToStaticMarkup(
+      createElement(Badge, { tone: 'strategy' }, 'Approved'),
+    );
+    const actionHtml = renderToStaticMarkup(
+      createElement(ActionButton, null, 'Open work'),
+    );
+
+    expect(badgeHtml).toContain('<span');
+    expect(badgeHtml).toContain('rounded-[var(--maslow-radius-capsule)]');
+    expect(actionHtml).toContain('<button');
+    expect(actionHtml).not.toContain('rounded-[var(--maslow-radius-capsule)]');
+  });
+});
 
 describe('calm loading primitives', () => {
   it('announces a list load without animated placeholders', () => {

@@ -243,7 +243,7 @@ function AuthorizedRunDetailScreen({ executionId }: { executionId: string }) {
             <SkeletonCardGrid count={2} />
           ) : run ? (
             <div className="space-y-4">
-              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+              <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-medium text-[var(--ink)]">{run.projectPath}</p>
                   <Badge>{titleCase(run.mode)}</Badge>
@@ -259,7 +259,7 @@ function AuthorizedRunDetailScreen({ executionId }: { executionId: string }) {
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     Phase count
                   </p>
@@ -267,7 +267,7 @@ function AuthorizedRunDetailScreen({ executionId }: { executionId: string }) {
                     {run.phaseCount ?? 0}
                   </p>
                 </div>
-                <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     Recommendations
                   </p>
@@ -298,7 +298,7 @@ function AuthorizedRunDetailScreen({ executionId }: { executionId: string }) {
               { id: 'html', label: 'HTML' },
             ].map((item) => (
               <button
-                className={`rounded-full border px-4 py-2 text-sm transition ${
+                className={`border px-4 py-2 text-sm transition ${
                   activeReport === item.id
                     ? 'border-[var(--strategy-soft)] bg-[var(--strategy-wash)] text-[var(--strategy-strong)]'
                     : 'border-[var(--line)] text-[var(--muted)] hover:bg-[var(--panel-soft)]'
@@ -316,7 +316,7 @@ function AuthorizedRunDetailScreen({ executionId }: { executionId: string }) {
             {detail.loading || reportsLoading ? (
               <SkeletonCardGrid count={2} />
             ) : activeReport === 'summary' ? (
-              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-sm leading-7 text-[var(--muted)]">
+              <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 text-sm leading-7 text-[var(--muted)]">
                 <p className="font-medium text-[var(--ink)]">Run summary</p>
                 <p className="mt-3">
                   This execution is {run?.status ?? 'unknown'}, targeted{' '}

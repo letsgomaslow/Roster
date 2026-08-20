@@ -167,14 +167,13 @@ function PromptInputField({
 }
 
 function stateLabel(state: string): string {
-  if (state === 'workspace_approved') return 'Workspace approved';
-  if (state === 'team_approved') return 'Team approved';
+  if (state === 'workspace_approved' || state === 'team_approved') return 'Approved';
   if (state === 'shared') return 'Shared for review';
   return titleCase(state);
 }
 
 function currentVersionTrustLabel(reviewState: string, hasApprovalEvidence: boolean): string {
-  if (reviewState.includes('approved') && hasApprovalEvidence) return 'Approved for use';
+  if (reviewState.includes('approved') && hasApprovalEvidence) return 'Approved';
   if (reviewState === 'draft') return 'Private draft';
   return stateLabel(reviewState);
 }
@@ -554,7 +553,7 @@ export function AssetDetailScreen({ assetId }: { assetId: string }) {
   );
   const pageDescription = isReview
     ? descriptionPreview.summary
-      ? `${asset.title} — ${descriptionPreview.summary}`
+      ? `${asset.title}: ${descriptionPreview.summary}`
       : asset.title
     : descriptionPreview.summary || `${assetDisplayKind} saved exactly as written.`;
   const pageEyebrow = isReview
@@ -564,6 +563,19 @@ export function AssetDetailScreen({ assetId }: { assetId: string }) {
       : assetDisplayKind;
   const canOrganize =
     canEdit && asset.visibility === 'private' && asset.reviewState === 'draft';
+  const presentedApprovals = asset.approvals.filter(
+    (approval) => approval.versionNumber === presentedVersionNumber,
+  );
+  const humanDecision = presentedReviewState.includes('approved')
+    ? 'Confirm the inputs and use the approved version'
+    : isReview
+      ? 'Reviewer decides whether this version is ready'
+      : 'Review is required before trusted team use';
+  const evidenceStatus = presentedApprovals.length
+    ? `${presentedApprovals.length} version-specific approval ${presentedApprovals.length === 1 ? 'record' : 'records'}`
+    : !presentedIsPending && asset.lastVerifiedAt
+      ? `Verified ${formatRelativeDate(asset.lastVerifiedAt)}`
+      : 'In preparation';
 
   function runPrimaryAction() {
     if (primaryAction?.kind === 'copy') void copyRenderedPrompt();
@@ -632,7 +644,7 @@ export function AssetDetailScreen({ assetId }: { assetId: string }) {
         <Badge tone={!presentedIsPending && asset.lastVerifiedAt ? 'info' : 'warning'}>
           {!presentedIsPending && asset.lastVerifiedAt
             ? `Verified ${formatRelativeDate(asset.lastVerifiedAt)}`
-            : 'Not verified yet'}
+            : 'Not yet verified'}
         </Badge>
         {!isReview ? (
           <button
@@ -645,6 +657,30 @@ export function AssetDetailScreen({ assetId }: { assetId: string }) {
           </button>
         ) : null}
       </div>
+
+      <aside aria-labelledby="governance-title" className="grid border border-[var(--line)] bg-[var(--panel)] lg:grid-cols-[16rem_repeat(4,minmax(0,1fr))]">
+        <div className="border-l-4 border-[var(--accent)] bg-[var(--panel-strong)] p-5 text-white">
+          <p className="font-brand-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--maslow-color-dark-text)]">Trust record</p>
+          <h2 className="mt-2 font-heading text-xl font-semibold" id="governance-title">Governance</h2>
+          <p className="mt-2 text-xs leading-5 text-[var(--maslow-color-dark-text)]">Version {presentedVersionNumber} only</p>
+        </div>
+        <div className="border-t border-[var(--line)] p-4 lg:border-l lg:border-t-0">
+          <p className="font-brand-mono text-[10px] uppercase tracking-[0.1em] text-[var(--muted)]">Owner</p>
+          <p className="mt-2 text-sm font-medium leading-6 text-[var(--ink)]">{asset.ownerUserId ? 'Workspace member assigned' : 'Not assigned'}</p>
+        </div>
+        <div className="border-t border-[var(--line)] p-4 lg:border-l lg:border-t-0">
+          <p className="font-brand-mono text-[10px] uppercase tracking-[0.1em] text-[var(--muted)]">Human decision</p>
+          <p className="mt-2 text-sm font-medium leading-6 text-[var(--ink)]">{humanDecision}</p>
+        </div>
+        <div className="border-t border-[var(--line)] p-4 lg:border-l lg:border-t-0">
+          <p className="font-brand-mono text-[10px] uppercase tracking-[0.1em] text-[var(--muted)]">Evidence</p>
+          <p className="mt-2 text-sm font-medium leading-6 text-[var(--ink)]">{evidenceStatus}</p>
+        </div>
+        <div className="border-t border-[var(--line)] p-4 lg:border-l lg:border-t-0">
+          <p className="font-brand-mono text-[10px] uppercase tracking-[0.1em] text-[var(--muted)]">Approval</p>
+          <p className="mt-2 text-sm font-medium leading-6 text-[var(--ink)]">{presentedApprovals.length ? 'Recorded for this version' : stateLabel(presentedReviewState)}</p>
+        </div>
+      </aside>
 
       {message ? (
         <SurfaceNotice

@@ -440,7 +440,7 @@ export function WorkspaceAdminScreen() {
             >
               <p className="text-sm leading-7 text-[var(--ink-soft)]">
                 Add 12 client-delivery, business-development, and marketing AI-work examples.
-                They arrive shared for curator review—never pre-approved.
+                They arrive shared for curator review and are never pre-approved.
               </p>
               <button
                 className={`${primaryButtonClassName} mt-4`}

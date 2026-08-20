@@ -4,12 +4,12 @@ import { getClerkEnvironmentDiagnostic } from '@/lib/clerk-diagnostics';
 import { AppProviders } from '@/app/components/AppProviders';
 import { ClerkBootstrapBoundary } from '@/app/components/ClerkBootstrapBoundary';
 import { ControlPlaneShell } from '@/app/components/control-plane/ControlPlaneShell';
-import { manrope } from './fonts';
+import { dmSans, ibmPlexMono, manrope } from './fonts';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Roster — AI Work Library | Maslow AI',
+    default: 'Roster | AI Work Library | Maslow AI',
     template: '%s | Roster',
   },
   description: 'Save reusable AI work once, review it as a team, and use it across your AI tools.',
@@ -59,7 +59,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${manrope.variable} min-h-screen`}>
+      <body className={`${manrope.variable} ${dmSans.variable} ${ibmPlexMono.variable} min-h-screen`}>
         {clerkEnabled ? (
           <ClerkProvider
             afterSignOutUrl="/"

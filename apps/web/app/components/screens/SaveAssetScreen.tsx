@@ -250,21 +250,22 @@ export function SaveAssetScreen() {
             Back to Library
           </ActionButton>
         }
-        description="Paste AI instructions that already help you. Roster saves the exact text privately so you can organize or share it later."
-        eyebrow="Save new work"
-        title="Save AI work"
+        description="Everything else can be added later. Your first save stays private until you choose to share it."
+        eyebrow="Save reusable work"
+        title="Start with the exact AI text"
       />
 
       <SurfaceNotice
         description="Only the AI text is required. Names, teams, work types, and fill-in fields can wait until they are useful."
-        title="Start with what you already use"
+        title="One decision at a time"
         tone="info"
       />
 
-      <form className="mx-auto max-w-3xl space-y-6" onSubmit={onSubmit}>
+      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+      <form className="min-w-0 space-y-6" onSubmit={onSubmit}>
         <Panel
           subtitle="Roster keeps spacing, structure, and wording unchanged."
-          title="Paste your AI work"
+          title="AI text"
           tone="strategy"
         >
           <div className="space-y-5">
@@ -272,7 +273,7 @@ export function SaveAssetScreen() {
               className="block space-y-2 text-sm font-medium text-[var(--ink)]"
               htmlFor="ai-work-body"
             >
-              Paste what you use in ChatGPT, Claude, Copilot, Gemini, or another AI tool.
+              AI text
               <textarea
                 className={`${fieldClass} min-h-72 resize-y py-4 font-mono leading-7`}
                 id="ai-work-body"
@@ -448,7 +449,7 @@ export function SaveAssetScreen() {
               </div>
             ) : (
               <p className="text-sm leading-6 text-[var(--muted)]">
-                No fill-in fields detected. That is fine—you can save this work as it is.
+                No fill-in fields detected. You can save this work as it is.
               </p>
             )}
           </div>
@@ -468,9 +469,32 @@ export function SaveAssetScreen() {
           disabled={isSaving || isImporting || workspace.status !== 'ready'}
           type="submit"
         >
-          {isSaving ? 'Saving to My Work…' : 'Save to My Work'}
+          {isSaving ? 'Saving private draft…' : 'Save private draft'}
         </button>
       </form>
+      <aside className="border-l-4 border-[var(--accent)] bg-[var(--panel)] p-5 lg:sticky lg:top-28">
+        <p className="font-brand-mono text-xs font-medium uppercase tracking-[0.1em] text-[var(--strategy-strong)]">
+          Save, then govern
+        </p>
+        <h2 className="mt-3 font-heading text-xl font-semibold text-[var(--ink)]">One decision at a time</h2>
+        <ol className="mt-5 space-y-0">
+          {[
+            ['Capture', 'Save the reusable AI text without setup work.'],
+            ['Shape', 'Add context and optional labels when useful.'],
+            ['Share', 'Choose who can see the saved version.'],
+            ['Approve', 'Record evidence and the human decision.'],
+          ].map(([title, description], index) => (
+            <li className="grid grid-cols-[2rem_1fr] gap-3 border-t border-[var(--line)] py-4" key={title}>
+              <span className="inline-flex h-8 w-8 items-center justify-center border border-[var(--ink)] font-brand-mono text-xs font-medium text-[var(--ink)]">{index + 1}</span>
+              <span>
+                <strong className="block text-sm text-[var(--ink)]">{title}</strong>
+                <span className="mt-1 block text-xs leading-5 text-[var(--muted)]">{description}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </aside>
+      </div>
     </div>
   );
 }

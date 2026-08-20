@@ -172,7 +172,7 @@ function AuthorizedAgentsScreen() {
                 <button
                   aria-pressed={tab === item.id}
                   className={cx(
-                    'rounded-full border px-4 py-2.5 text-sm transition',
+                    'border px-4 py-2.5 text-sm transition',
                     tab === item.id
                       ? 'border-[var(--strategy-soft)] bg-[var(--strategy-wash)] text-[var(--strategy-strong)] shadow-[0_12px_30px_rgba(160,112,166,0.12)]'
                       : 'border-[var(--line)] text-[var(--muted)] hover:bg-[var(--panel-soft)]',
@@ -191,7 +191,7 @@ function AuthorizedAgentsScreen() {
                 Search agents
               </label>
               <input
-                className="w-full rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
+                className="w-full border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-3 text-[var(--ink)] focus:border-[var(--focus-ring-solid)] focus:outline-none"
                 id="agent-search"
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search agent name, tag, or description"
@@ -205,7 +205,7 @@ function AuthorizedAgentsScreen() {
               ) : items.length ? (
                 items.map((item) => (
                   <Link
-                    className="block rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 transition hover:-translate-y-0.5 hover:bg-white"
+                    className="block border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4 transition hover:-translate-y-0.5 hover:bg-white"
                     href={`/agents/${tab}/${encodeURIComponent(item.promptId)}`}
                     key={item.promptId}
                   >
@@ -226,7 +226,7 @@ function AuthorizedAgentsScreen() {
                     <div className="mt-4 flex flex-wrap gap-2">
                       {item.tags.slice(0, 4).map((tag) => (
                         <span
-                          className="rounded-full border border-[var(--line)] px-2 py-1 text-[11px] text-[var(--muted)]"
+                          className="border border-[var(--line)] px-2 py-1 text-[11px] text-[var(--muted)]"
                           key={tag}
                         >
                           {tag}
@@ -259,7 +259,7 @@ function AuthorizedAgentsScreen() {
               <SkeletonCardGrid count={2} detail={false} />
             ) : (
               <div className="space-y-3">
-                <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     Subagents
                   </p>
@@ -267,7 +267,7 @@ function AuthorizedAgentsScreen() {
                     {formatNumber(subagents?.total)}
                   </p>
                 </div>
-                <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     Main agents
                   </p>

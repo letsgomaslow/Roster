@@ -82,9 +82,9 @@ describe('GettingStartedScreen', () => {
       }),
     );
 
-    expect(html).toContain('Your team’s best AI work, ready to use');
-    expect(html).toContain('Start with something useful');
-    expect(html).toContain('Use trusted work');
+    expect(html).toContain('Find trusted work');
+    expect(html).toContain('See the shared outcome first');
+    expect(html).toContain('Open shared work');
     expect(html).toContain('Save my work');
     expect(html).not.toMatch(/MCP|health|orchestration/i);
   });
@@ -124,9 +124,9 @@ describe('GettingStartedScreen', () => {
       }),
     );
 
-    expect(html).toContain('Build a useful library with your team');
+    expect(html).toContain('Start your library');
     expect(html).toContain('Workspace ready');
-    expect(html).toContain('Add useful work');
+    expect(html).toContain('Save first work');
     expect(html).toContain('Invite a teammate');
     expect(html).toContain('Optional');
     expect(html).not.toMatch(/MCP|health|orchestration/i);
@@ -170,13 +170,18 @@ describe('WorkLibraryHomeScreen', () => {
     const html = renderToStaticMarkup(createElement(WorkLibraryHomeScreen));
 
     expect(html).toContain('What would you like to get done?');
+    expect(html).toContain('Search by outcome, team, or task');
+    expect(html).toContain('name="q"');
     expect(html).toContain('Continue working');
     expect(html).toContain('Favorites');
     expect(html).toContain('Recently approved');
     expect(html).toContain('Proposal drafter');
     expect(html).toContain('Quarterly review draft');
-    expect(html).toContain('Team approved');
+    expect(html).toContain('Approved');
+    expect(html).not.toContain('Team approved');
     expect(html).toContain('Private draft');
+    expect(html).toContain('Version 2');
+    expect(html).toContain('rounded-[var(--maslow-radius-capsule)]');
     expect(html).not.toMatch(/roadmap|lighthouse|in progress|simulated/i);
   });
 

@@ -260,9 +260,6 @@ async function startServer() {
       app.use(cors());
       app.use(express.json());
 
-      // Serve static files
-      app.use(express.static('public'));
-
       // Health check endpoint (no auth)
       app.get('/health', async (req, res) => {
         try {

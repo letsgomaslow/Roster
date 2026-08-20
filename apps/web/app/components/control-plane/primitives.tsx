@@ -165,7 +165,7 @@ export function Badge({
   return (
     <span
       className={cx(
-        'inline-flex min-h-8 items-center border px-3 py-1.5 text-[12px] font-semibold tracking-[0.02em]',
+        'inline-flex min-h-8 items-center rounded-[var(--maslow-radius-capsule)] border px-3 py-1.5 text-[12px] font-semibold tracking-[0.02em]',
         tones[tone],
       )}
     >

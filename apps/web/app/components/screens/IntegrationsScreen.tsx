@@ -158,7 +158,7 @@ export function IntegrationsScreen() {
       />
 
       <SurfaceNotice
-        description="Search, fill, copy, and export always work in Roster. Connecting another AI tool is an optional convenience—not an onboarding requirement."
+        description="Search, fill, copy, and export always work in Roster. Connecting another AI tool is optional and is not an onboarding requirement."
         title="Your Library works without a connection"
         tone="info"
       />
@@ -221,7 +221,7 @@ export function IntegrationsScreen() {
           <ol className="mt-5 space-y-3">
             {activeClient.steps.map((step, index) => (
               <li className="grid grid-cols-[32px_1fr] gap-3 text-sm leading-6 text-[var(--ink-soft)]" key={step}>
-                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--line-strong)] text-xs font-semibold text-[var(--ink)]">
+                <span className="flex h-8 w-8 items-center justify-center border border-[var(--line-strong)] text-xs font-semibold text-[var(--ink)]">
                   {index + 1}
                 </span>
                 <span className="pt-1">{step}</span>

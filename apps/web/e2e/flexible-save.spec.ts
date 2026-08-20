@@ -63,14 +63,16 @@ test.describe('flexible AI work capture', () => {
   test('saves, reopens, and copies a long body-only item exactly', async ({ context, page }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('/library/new', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('heading', { level: 1, name: 'Save AI work' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Start with the exact AI text' }),
+    ).toBeVisible();
 
     await page
       .getByRole('textbox', {
-        name: /Paste what you use in ChatGPT, Claude, Copilot, Gemini, or another AI tool/i,
+        name: 'AI text',
       })
       .fill(LONG_AI_WORK);
-    await page.getByRole('button', { name: 'Save to My Work' }).click();
+    await page.getByRole('button', { name: 'Save private draft' }).click();
 
     await expect(page).toHaveURL(/\/library\/[^?]+\?saved=1$/);
     await expect(page.getByText('Saved to My Work', { exact: true })).toBeVisible();
@@ -86,7 +88,7 @@ test.describe('flexible AI work capture', () => {
     await page.goto('/library/new', { waitUntil: 'domcontentloaded' });
     await page
       .getByRole('textbox', {
-        name: /Paste what you use in ChatGPT, Claude, Copilot, Gemini, or another AI tool/i,
+        name: 'AI text',
       })
       .fill('Turn the supplied renewal notes into a concise, evidence-based renewal brief.');
 
@@ -106,7 +108,7 @@ test.describe('flexible AI work capture', () => {
     await page
       .getByRole('textbox', { name: 'New work type name', exact: true })
       .fill('Create a renewal brief');
-    await page.getByRole('button', { name: 'Save to My Work' }).click();
+    await page.getByRole('button', { name: 'Save private draft' }).click();
 
     await expect(page).toHaveURL(/\/library\/[^?]+\?saved=1$/);
     await expect(
@@ -142,7 +144,7 @@ test.describe('flexible AI work capture', () => {
     await page.goto('/library/new', { waitUntil: 'domcontentloaded' });
     await page
       .getByRole('textbox', {
-        name: /Paste what you use in ChatGPT, Claude, Copilot, Gemini, or another AI tool/i,
+        name: 'AI text',
       })
       .fill(exactAiWork);
     await page.getByText('Organize it (optional)', { exact: true }).click();
@@ -150,7 +152,7 @@ test.describe('flexible AI work capture', () => {
     await page
       .getByRole('textbox', { name: /^Description/ })
       .fill(FORMATTED_DESCRIPTION);
-    await page.getByRole('button', { name: 'Save to My Work' }).click();
+    await page.getByRole('button', { name: 'Save private draft' }).click();
 
     await expect(page).toHaveURL(/\/library\/[^?]+\?saved=1$/);
     const trigger = page.getByRole('button', { name: 'Read full description' });

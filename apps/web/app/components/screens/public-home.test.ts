@@ -4,26 +4,29 @@ import { describe, expect, it } from 'vitest';
 import { PublicBetaHomeScreen } from './PublicBetaHomeScreen';
 
 describe('PublicBetaHomeScreen', () => {
-  it('introduces the calm outcome-first Library without technical setup language', () => {
+  it('leads with the Maslow position and the complete workflow trust model', () => {
     const html = renderToStaticMarkup(
       createElement(PublicBetaHomeScreen, { authSurfaceState: 'disabled' }),
     );
 
-    expect(html).toContain('Your team’s best AI work, ready when you need it');
-    expect(html).toContain('Find trusted work');
-    expect(html).toContain('Add the details');
-    expect(html).toContain('Use it anywhere');
+    expect(html).toContain('AI employees for the work that waits on your busiest people.');
+    expect(html).toContain('Turn waiting work into trusted team workflows');
+    expect(html).toContain('Workflow');
+    expect(html).toContain('Owner');
+    expect(html).toContain('Human decision');
+    expect(html).toContain('Evidence');
+    expect(html).toContain('Start a working session');
     expect(html).not.toMatch(/public beta|bounded|MCP|orchestration/i);
-    expect(html).not.toContain('linear-gradient');
+    expect(html).not.toMatch(/linear-gradient|radial-gradient|—/);
   });
 
-  it('keeps the public layout stable while sign-in finishes loading', () => {
+  it('keeps the external message available when hosted sign-in is disabled', () => {
     const html = renderToStaticMarkup(
-      createElement(PublicBetaHomeScreen, { authSurfaceState: 'loading' }),
+      createElement(PublicBetaHomeScreen, { authSurfaceState: 'disabled' }),
     );
 
-    expect(html).toContain('Your team’s best AI work, ready when you need it');
-    expect(html).toContain('Create workspace');
+    expect(html).toContain('AI employees for the work that waits on your busiest people.');
+    expect(html).toContain('Start a working session');
     expect(html).not.toContain('Getting Roster ready');
   });
 });

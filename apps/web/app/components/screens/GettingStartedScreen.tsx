@@ -171,11 +171,10 @@ function TeammateStart({
         <header className="border-b border-[var(--line)] bg-[var(--strategy-wash)] p-6 md:p-10 lg:border-b-0 lg:border-r">
           <Badge tone="brand">Welcome{displayName ? `, ${displayName}` : ''}</Badge>
           <h1 className="mt-6 max-w-xl font-heading text-balance text-4xl tracking-[-0.055em] text-[var(--ink)] md:text-6xl">
-            Your team’s best AI work, ready to use.
+            Find trusted work.
           </h1>
           <p className="mt-5 max-w-lg text-base leading-8 text-[var(--muted)]">
-            Roster keeps useful prompts and playbooks together, so you can spend less time finding
-            the right version and more time using it.
+            See the shared outcome first, then confirm who owns it, which version was approved, and what human decision still belongs to you.
           </p>
           <p className="mt-8 text-sm leading-7 text-[var(--ink-soft)]">
             You can explore connections and other advanced settings later. They are not required to
@@ -188,7 +187,7 @@ function TeammateStart({
             Your first step
           </p>
           <h2 className="mt-3 text-2xl font-semibold tracking-[-0.035em] text-[var(--ink)] md:text-3xl">
-            Start with something useful
+            Open shared work
           </h2>
           <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
             Pick one. You can change direction at any time.
@@ -263,7 +262,7 @@ function OwnerStart({
       <header className="max-w-3xl">
         <Badge tone="brand">{organizationName ?? 'Your workspace'}</Badge>
         <h1 className="mt-6 font-heading text-balance text-4xl tracking-[-0.055em] text-[var(--ink)] md:text-6xl">
-          Build a useful library with your team.
+          Start your library.
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--muted)]">
           Put useful work in the Library before asking anyone else to learn a new tool. Invitation is

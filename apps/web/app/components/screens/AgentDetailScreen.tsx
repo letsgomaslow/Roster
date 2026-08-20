@@ -215,7 +215,7 @@ function AuthorizedAgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) 
 
       {error ? (
         <div
-          className="rounded-[24px] border border-[color:color-mix(in_oklab,var(--error)_28%,white)] bg-[color:color-mix(in_oklab,var(--error)_9%,white)] px-4 py-4 text-sm text-[var(--error-strong)]"
+          className="border border-[color:color-mix(in_oklab,var(--error)_28%,white)] bg-[color:color-mix(in_oklab,var(--error)_9%,white)] px-4 py-4 text-sm text-[var(--error-strong)]"
           role="alert"
         >
           {error}
@@ -233,14 +233,14 @@ function AuthorizedAgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) 
             <SkeletonCardGrid count={4} />
           ) : agent ? (
             <div className="space-y-4">
-              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+              <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <p className="font-medium text-[var(--ink)]">
                   {agent.description || 'No description available.'}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {(agent.tags ?? []).map((tag: string) => (
                     <span
-                      className="rounded-full border border-[var(--line)] px-2 py-1 text-[11px] text-[var(--muted)]"
+                      className="border border-[var(--line)] px-2 py-1 text-[11px] text-[var(--muted)]"
                       key={tag}
                     >
                       {tag}
@@ -250,13 +250,13 @@ function AuthorizedAgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) 
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     Category
                   </p>
                   <p className="mt-3 text-sm text-[var(--ink)]">{agent.category || 'Unknown'}</p>
                 </div>
-                <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     Model
                   </p>
@@ -267,7 +267,7 @@ function AuthorizedAgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) 
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     Tools
                   </p>
@@ -275,7 +275,7 @@ function AuthorizedAgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) 
                     {(agent.agentConfig?.tools ?? []).join(', ') || 'No tools listed'}
                   </p>
                 </div>
-                <div className="rounded-[20px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+                <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                     MCP servers
                   </p>
@@ -327,21 +327,21 @@ function AuthorizedAgentDetailScreen({ kind, agentId }: AgentDetailScreenProps) 
               >
                 <div className="flex flex-wrap gap-3">
                   <button
-                    className="inline-flex min-h-11 items-center rounded-full border border-[var(--line)] px-4 py-2.5 text-sm text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
+                    className="inline-flex min-h-11 items-center border border-[var(--line)] px-4 py-2.5 text-sm text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
                     onClick={loadValidation}
                     type="button"
                   >
                     Validate configuration
                   </button>
                   <button
-                    className="inline-flex min-h-11 items-center rounded-full border border-[var(--line)] px-4 py-2.5 text-sm text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
+                    className="inline-flex min-h-11 items-center border border-[var(--line)] px-4 py-2.5 text-sm text-[var(--ink)] transition hover:bg-[var(--panel-soft)]"
                     onClick={loadPreview}
                     type="button"
                   >
                     Load execution preview
                   </button>
                   <button
-                    className="inline-flex min-h-11 items-center rounded-full bg-[var(--button-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-secondary-ink)] transition hover:bg-[var(--button-secondary-hover)]"
+                    className="inline-flex min-h-11 items-center bg-[var(--button-secondary)] px-4 py-2.5 text-sm font-semibold text-[var(--button-secondary-ink)] transition hover:bg-[var(--button-secondary-hover)]"
                     onClick={loadSystemPrompt}
                     type="button"
                   >

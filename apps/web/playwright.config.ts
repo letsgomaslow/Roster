@@ -19,6 +19,7 @@ const baseURL = `http://localhost:${port}`;
 const storagePath = process.env.E2E_STORAGE_STATE;
 const storageState = storagePath && fs.existsSync(storagePath) ? storagePath : undefined;
 const skipWebServer = process.env.PW_SKIP_WEB_SERVER === '1';
+const useProductionBuild = process.env.PW_USE_PRODUCTION_BUILD === '1';
 
 export default defineConfig({
   testDir: 'e2e',
@@ -27,6 +28,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'list',
+  outputDir: process.env.PW_OUTPUT_DIR ?? 'test-results',
   use: {
     baseURL,
     trace: 'on-first-retry',
@@ -37,7 +39,9 @@ export default defineConfig({
     ? {}
     : {
         webServer: {
-          command: `pnpm exec next dev --webpack -p ${port}`,
+          command: useProductionBuild
+            ? `pnpm exec next start -p ${port}`
+            : `pnpm exec next dev --webpack -p ${port}`,
           url: baseURL,
           reuseExistingServer: !process.env.CI,
           timeout: 120_000,

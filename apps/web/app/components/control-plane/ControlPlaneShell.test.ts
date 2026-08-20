@@ -10,10 +10,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const shellState = vi.hoisted(() => ({
   authSurfaceState: 'ready' as 'ready' | 'loading',
+  mobileNavOpen: false,
   pathname: '/library',
   role: 'contributor' as 'owner' | 'admin' | 'curator' | 'contributor' | 'viewer',
   signedIn: true,
 }));
+
+vi.mock('react', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react')>();
+  return {
+    ...actual,
+    useState: () => [shellState.mobileNavOpen, vi.fn()],
+  };
+});
 
 vi.mock('next/navigation', () => ({
   usePathname: () => shellState.pathname,
@@ -104,6 +113,7 @@ describe('ControlPlaneShell', () => {
   beforeEach(() => {
     delete process.env.NEXT_PUBLIC_LEGACY_ADVANCED_ENABLED;
     shellState.authSurfaceState = 'ready';
+    shellState.mobileNavOpen = false;
     shellState.pathname = '/library';
     shellState.role = 'contributor';
     shellState.signedIn = true;
@@ -122,13 +132,23 @@ describe('ControlPlaneShell', () => {
     expect(signedInMarkup).not.toContain('Save useful work once. Improve it together.');
   });
 
-  it('reserves the signed-out actions without adding transient header copy', () => {
+  it('uses the immutable Maslow logo master instead of redrawing the mark', () => {
+    const markup = renderShell();
+
+    expect(markup).toContain('maslow-complete-black.png');
+    expect(markup).toContain('alt="Maslow AI"');
+    expect(markup).not.toContain('<svg');
+    expect(markup).not.toContain('linearGradient');
+  });
+
+  it('reserves the signed-out action space without flashing auth choices while identity loads', () => {
     shellState.signedIn = false;
     shellState.authSurfaceState = 'loading';
     const markup = renderShell();
 
-    expect(markup).toContain('Create workspace');
-    expect(markup).not.toContain('Checking sign-in');
+    expect(markup).toContain('aria-label="Preparing sign-in options"');
+    expect(markup).not.toContain('Create workspace');
+    expect(markup).not.toContain('Sign in');
   });
 
   it('uses Next links for the simple contributor navigation without legacy commands', () => {
@@ -175,12 +195,33 @@ describe('ControlPlaneShell', () => {
     expect(renderShell()).toContain('Advanced');
   });
 
-  it('offers feedback once instead of competing calls to action', () => {
+  it('keeps feedback out of the primary header', () => {
     const markup = renderShell();
 
-    expect(markup.match(/>Share feedback</g)?.length ?? 0).toBe(1);
-    expect(markup).toMatch(/class="hidden [^"]* sm:inline-flex/);
-    expect(markup).not.toContain('Share beta feedback');
+    expect(markup).not.toContain('Share feedback');
+  });
+
+  it('opens mobile navigation from the trigger side and marks the current page', () => {
+    shellState.mobileNavOpen = true;
+    shellState.pathname = '/library';
+    const markup = renderShell();
+
+    expect(markup).toContain('inset-y-3 right-3');
+    expect(markup).not.toContain('inset-y-3 left-3');
+    expect(markup).toContain('translate-x-0 opacity-100');
+    expect(markup).toContain('duration-[180ms]');
+    expect(markup).toMatch(
+      /aria-current="page" class="[^"]*border-l-\[3px\][^"]*bg-\[var\(--panel-soft\)\][^"]*" href="\/library"/,
+    );
+  });
+
+  it('keeps closed mobile navigation off-canvas so opening and closing can transition', () => {
+    const markup = renderShell();
+
+    expect(markup).toContain('id="mobile-navigation-panel"');
+    expect(markup).toContain('aria-hidden="true"');
+    expect(markup).toContain('translate-x-[calc(100%+0.75rem)] opacity-0');
+    expect(markup).toContain('pointer-events-none');
   });
 
   it('does not require Clerk Organizations in the default personal workspace', () => {

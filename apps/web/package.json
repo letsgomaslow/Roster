@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.8",
+    "@maslow-ai/brand-os": "file:../../vendor/maslow-brand-os",
     "convex": "^1.44.0",
     "fflate": "0.8.3",
     "mammoth": "1.12.1",

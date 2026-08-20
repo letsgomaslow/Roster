@@ -4,7 +4,6 @@ import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { OrganizationSwitcher, UserButton } from '@clerk/nextjs';
-import { openFeedback } from '@/lib/control-plane-events';
 import { cx } from '@/lib/cx';
 import { getWorkLibraryNavigation, type WorkLibraryNavItem } from '@/lib/work-library-navigation';
 import { isWorkLibraryEnabled } from '@/lib/work-library-flags';
@@ -45,9 +44,13 @@ function NavigationLinks({
                 className={cx(
                   'block px-3 py-2 text-sm font-medium',
                   active
-                    ? 'bg-[var(--strategy-wash)] text-[var(--ink)]'
-                    : 'text-[var(--ink-soft)] hover:bg-[var(--panel-soft)] hover:text-[var(--ink)]',
-                  mobile && 'min-h-11 border border-transparent px-4 py-3',
+                    ? mobile
+                      ? 'border border-[var(--line)] border-l-[3px] border-l-[var(--accent)] bg-[var(--panel-soft)] text-[var(--ink)]'
+                      : 'border-b-[3px] border-[var(--accent)] text-[var(--ink)]'
+                    : mobile
+                      ? 'border border-transparent text-[var(--ink-soft)] hover:border-[var(--line)] hover:bg-[var(--panel-soft)] hover:text-[var(--ink)]'
+                      : 'text-[var(--ink-soft)] hover:bg-[var(--panel-soft)] hover:text-[var(--ink)]',
+                  mobile && 'min-h-11 px-4 py-3',
                 )}
                 href={item.href}
                 onClick={onNavigate}
@@ -81,6 +84,18 @@ function AuthStatus({ authSurfaceState }: { authSurfaceState: AuthSurfaceState }
 }
 
 function SignedOutControls({ authSurfaceState }: { authSurfaceState: AuthSurfaceState }) {
+  if (authSurfaceState === 'loading') {
+    return (
+      <div
+        aria-label="Preparing sign-in options"
+        className="flex items-center gap-3"
+        role="status"
+      >
+        <span aria-hidden="true" className="h-11 w-20 border border-[var(--line)] bg-[var(--panel-soft)]" />
+        <span aria-hidden="true" className="h-11 w-32 bg-[var(--panel-muted)]" />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-wrap items-center justify-end gap-3">
       <AuthStatus authSurfaceState={authSurfaceState} />
@@ -179,13 +194,6 @@ export function ControlPlaneShell({
             <div className="flex flex-wrap items-center justify-end gap-3">
               {signedIn ? (
                 <>
-                  <button
-                    className="hidden min-h-11 border border-[var(--line)] px-3 py-2 text-sm font-medium text-[var(--ink-soft)] hover:bg-[var(--panel-soft)] sm:inline-flex sm:items-center"
-                    onClick={() => openFeedback({ page: pathname, route: pathname })}
-                    type="button"
-                  >
-                    Share feedback
-                  </button>
                   <WorkspaceControls
                     name={workspace.name}
                     organizationsEnabled={organizationsEnabled}
@@ -211,18 +219,33 @@ export function ControlPlaneShell({
           </div>
         </header>
 
-        {signedIn && mobileNavOpen ? (
-          <div className="fixed inset-0 z-30 xl:hidden">
+        {signedIn ? (
+          <div
+            aria-hidden={!mobileNavOpen}
+            className={cx(
+              'fixed inset-0 z-30 xl:hidden',
+              mobileNavOpen ? 'pointer-events-auto' : 'pointer-events-none',
+            )}
+            inert={!mobileNavOpen}
+          >
             <button
               aria-label="Close navigation"
-              className="absolute inset-0 bg-black/30"
+              className={cx(
+                'absolute inset-0 bg-black/30 transition-opacity duration-[180ms] ease-out motion-reduce:transition-none',
+                mobileNavOpen ? 'opacity-100' : 'opacity-0',
+              )}
               onClick={() => setMobileNavOpen(false)}
               type="button"
             />
             <div
               aria-labelledby="mobile-navigation-title"
               aria-modal="true"
-              className="absolute inset-y-3 left-3 w-[min(88vw,320px)] border border-[var(--line)] bg-[var(--panel)] p-5 shadow-[var(--shadow-panel)]"
+              className={cx(
+                'absolute inset-y-3 right-3 w-[min(88vw,320px)] border border-[var(--line)] bg-[var(--panel)] p-5 shadow-[var(--shadow-panel)] transition-[transform,opacity] duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+                mobileNavOpen
+                  ? 'translate-x-0 opacity-100'
+                  : 'translate-x-[calc(100%+0.75rem)] opacity-0',
+              )}
               id="mobile-navigation-panel"
               ref={mobileNavRef}
               role="dialog"

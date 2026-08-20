@@ -181,7 +181,7 @@ function AuthorizedSettingsScreen() {
             <SkeletonCardGrid count={3} />
           ) : (
             <div className="space-y-4">
-              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+              <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                   Account
                 </p>
@@ -189,7 +189,7 @@ function AuthorizedSettingsScreen() {
                   {subscription.data?.data?.email || 'No email returned by the backend.'}
                 </p>
               </div>
-              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+              <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                   Rate limit
                 </p>
@@ -199,7 +199,7 @@ function AuthorizedSettingsScreen() {
                     : 'Rate limit unavailable'}
                 </p>
               </div>
-              <div className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+              <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                   Plans exposed by backend
                 </p>
@@ -234,7 +234,7 @@ function AuthorizedSettingsScreen() {
             <div className="space-y-3">
               {(feedback as FeedbackHistoryItem[]).map((item) => (
                 <div
-                  className="rounded-[24px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4"
+                  className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4"
                   key={item.feedbackId}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -278,7 +278,7 @@ function AuthorizedSettingsScreen() {
           <SkeletonCardGrid count={4} />
         ) : (
           <div className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+            <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                 Server
               </p>
@@ -286,7 +286,7 @@ function AuthorizedSettingsScreen() {
                 {dashboard.data?.data?.health?.data?.status || 'Unknown'}
               </p>
             </div>
-            <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+            <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                 Tools
               </p>
@@ -294,7 +294,7 @@ function AuthorizedSettingsScreen() {
                 {formatNumber(dashboard.data?.data?.tools?.data?.length ?? 0)}
               </p>
             </div>
-            <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+            <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                 Runs
               </p>
@@ -302,7 +302,7 @@ function AuthorizedSettingsScreen() {
                 {formatNumber(dashboard.data?.data?.runs?.data?.executions?.length ?? 0)}
               </p>
             </div>
-            <div className="rounded-[22px] border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
+            <div className="border border-[var(--line)] bg-[var(--panel-soft)] px-4 py-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-[var(--muted)]">
                 Prompt stats
               </p>

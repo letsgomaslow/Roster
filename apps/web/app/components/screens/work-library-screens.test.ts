@@ -196,11 +196,10 @@ describe('SaveAssetScreen', () => {
   it('starts with one required exact-text field and the private-save action', () => {
     const html = renderToStaticMarkup(createElement(SaveAssetScreen));
 
-    expect(html).toContain('Save AI work');
-    expect(html).toContain(
-      'Paste what you use in ChatGPT, Claude, Copilot, Gemini, or another AI tool.',
-    );
-    expect(html).toContain('>Save to My Work<');
+    expect(html).toContain('Start with the exact AI text');
+    expect(html).toContain('AI text');
+    expect(html).toContain('>Save private draft<');
+    expect(html).toContain('One decision at a time');
     expect(html.match(/required=""/g)).toHaveLength(1);
     expect(html).not.toContain('>Playbook<');
     expect(html).not.toContain('value="playbook"');
@@ -312,6 +311,11 @@ describe('AssetDetailScreen', () => {
     expect(html).toContain('<details');
     expect(html).toContain('View exact AI work');
     expect(html).toContain('Version history and approvals');
+    expect(html).toContain('Governance');
+    expect(html).toContain('Owner');
+    expect(html).toContain('Human decision');
+    expect(html).toContain('Evidence');
+    expect(html).toContain('Approval');
     expect(html).toContain('Exports and feedback');
     expect(html).toContain('Required fields must be complete before anything is copied.');
     expect(html).toContain('id="prompt-input-client_name"');
@@ -540,7 +544,8 @@ describe('AssetDetailScreen', () => {
     const html = renderToStaticMarkup(createElement(AssetDetailScreen, { assetId: 'asset-1' }));
 
     expect(html).toContain('Approved prompt for {{client_name}}.');
-    expect(html).toContain('Workspace approved');
+    expect(html).toContain('Approved');
+    expect(html).not.toContain('Workspace approved');
     expect(html).toContain('Version 2');
     expect(html).toContain('Replacement draft for {{client_name}}.');
     expect(html).toContain('Share for review');
@@ -568,7 +573,7 @@ describe('AssetDetailScreen', () => {
     expect(html).toContain('Approval applies only to version 3.');
     expect(html).toContain('Shared replacement for {{client_name}}.');
     expect(html).toContain('Approve for team');
-    expect(html).toContain('Not verified yet');
+    expect(html).toContain('Not yet verified');
     expect(html).not.toMatch(/Verified (today|yesterday|\d)/);
   });
 

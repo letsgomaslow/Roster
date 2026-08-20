@@ -49,8 +49,7 @@ const SCOPE_COPY = {
 } as const;
 
 function trustLabel(state: string): string {
-  if (state === 'workspace_approved') return 'Workspace approved';
-  if (state === 'team_approved') return 'Team approved';
+  if (state === 'workspace_approved' || state === 'team_approved') return 'Approved';
   if (state === 'shared') return 'Ready for review';
   if (state === 'archived') return 'Archived';
   return 'Private draft';
@@ -123,13 +122,20 @@ function LibraryCard({
           ) : null}
         </dl>
       ) : null}
-      <div className="mt-5 flex items-center justify-between gap-4">
-        <p className="text-xs leading-5 text-[var(--muted)]">
-          {item.lastVerifiedAt
-            ? `Verified ${formatRelativeDate(item.lastVerifiedAt)}`
-            : `Updated ${formatRelativeDate(item.updatedAt)}`}{' '}
-          · v{item.versionNumber}
-        </p>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone={item.lastVerifiedAt ? 'info' : 'warning'}>
+            {item.lastVerifiedAt
+              ? `Verified ${formatRelativeDate(item.lastVerifiedAt)}`
+              : 'Not yet verified'}
+          </Badge>
+          <Badge tone="default">Version {item.versionNumber}</Badge>
+          {!item.lastVerifiedAt ? (
+            <span className="text-xs text-[var(--muted)]">
+              Updated {formatRelativeDate(item.updatedAt)}
+            </span>
+          ) : null}
+        </div>
         <ActionButton href={action.href} tone="primary">
           {action.label}
         </ActionButton>

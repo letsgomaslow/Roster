@@ -1,28 +1,28 @@
 import localFont from 'next/font/local';
 
 export const manrope = localFont({
-  variable: '--font-ui',
+  variable: '--font-manrope',
+  display: 'swap',
+  src: '../../../vendor/maslow-brand-os/assets/fonts/Manrope-Variable.ttf',
+});
+
+export const dmSans = localFont({
+  variable: '--font-dm-sans',
+  display: 'swap',
+  src: '../../../vendor/maslow-brand-os/assets/fonts/DMSans-Variable.ttf',
+});
+
+export const ibmPlexMono = localFont({
+  variable: '--font-ibm-plex-mono',
   display: 'swap',
   src: [
     {
-      path: './fonts/Manrope-Regular.otf',
+      path: '../../../vendor/maslow-brand-os/assets/fonts/IBMPlexMono-Regular.ttf',
       weight: '400',
-      style: 'normal',
     },
     {
-      path: './fonts/Manrope-Medium.otf',
+      path: '../../../vendor/maslow-brand-os/assets/fonts/IBMPlexMono-Medium.ttf',
       weight: '500',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Manrope-SemiBold.otf',
-      weight: '600',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Manrope-Bold.otf',
-      weight: '700',
-      style: 'normal',
     },
   ],
 });
