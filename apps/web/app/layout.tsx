@@ -13,6 +13,13 @@ export const metadata: Metadata = {
     template: '%s | Roster',
   },
   description: 'Save reusable AI work once, review it as a team, and use it across your AI tools.',
+  icons: {
+    icon: {
+      url: '/assets/logos/maslow-symbol-webflow-full-color.png',
+      type: 'image/png',
+      sizes: '256x256',
+    },
+  },
 };
 
 const AFTER_AUTH_URL =
